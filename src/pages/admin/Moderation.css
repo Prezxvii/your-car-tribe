@@ -1,0 +1,113 @@
+.mod-container {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  min-height: 90vh;
+  background: #f0f2f5;
+  padding: 20px;
+  gap: 20px;
+}
+
+.mod-sidebar {
+  padding: 30px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.mod-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 900;
+  font-size: 1.1rem;
+}
+
+.mod-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mod-nav button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  color: #666;
+  transition: 0.2s;
+}
+
+.mod-nav button.active, .mod-nav button:hover {
+  background: #eef2f6;
+  color: var(--primary-blue);
+}
+
+.queue-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.queue-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+}
+
+.type-tag {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  font-weight: 800;
+  padding: 4px 8px;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  display: inline-block;
+}
+
+.type-tag.listing { background: #e3f2fd; color: #1976d2; }
+.type-tag.forum { background: #f3e5f5; color: #7b1fa2; }
+.type-tag.user { background: #e8f5e9; color: #388e3c; }
+
+.flag-reason {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #d32f2f;
+  font-size: 0.85rem;
+  margin-top: 10px;
+}
+
+.item-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-approve {
+  background: #2e7d32;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.btn-reject {
+  background: #c62828;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}

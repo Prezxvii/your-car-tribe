@@ -1,0 +1,303 @@
+/* ==========================================================================
+   YOURCAR TRIBE - COMPLETE FORUM STYLESHEET (FIXED & FULL)
+   ========================================================================== */
+
+   :root {
+    --primary-blue: #0066ff;
+    --primary-dark: #1e293b;
+    --bg-soft: #f8fafc;
+    --border-light: #f1f4f8;
+    --text-main: #2d3748;
+    --text-muted: #a0aec0;
+    --admin-gold: #f59e0b;
+    --danger-red: #ef4444;
+    --white: #ffffff;
+    --shadow-main: 0 4px 25px rgba(0, 0, 0, 0.04);
+  }
+  
+  /* --- 1. MAIN LAYOUT --- */
+  .forum-container {
+    display: flex;
+    max-width: 1300px;
+    margin: 40px auto;
+    gap: 30px;
+    padding: 0 20px;
+    align-items: flex-start;
+    min-height: 100vh;
+  }
+  
+  /* --- 2. SIDEBAR NAVIGATION --- */
+  .forum-sidebar {
+    width: 280px;
+    padding: 24px;
+    background: var(--white);
+    border-radius: 24px;
+    position: sticky;
+    top: 100px;
+    box-shadow: var(--shadow-main);
+    border: 1px solid var(--border-light);
+    flex-shrink: 0;
+  }
+  
+  .sidebar-label {
+    font-size: 0.7rem;
+    font-weight: 800;
+    color: var(--text-muted);
+    letter-spacing: 1.2px;
+    margin: 25px 0 12px 5px;
+    text-transform: uppercase;
+  }
+  
+  .sidebar-menu { list-style: none; padding: 0; margin: 0; }
+  .sidebar-menu li {
+    padding: 14px 18px;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: 0.2s ease;
+    font-weight: 700;
+    color: #64748b;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  .sidebar-menu li.active {
+    background: var(--primary-blue);
+    color: var(--white);
+    box-shadow: 0 8px 16px rgba(0, 102, 255, 0.2);
+  }
+  
+  /* --- 3. SORT TOGGLE --- */
+  .sort-toggle-group {
+    display: flex;
+    background: #f1f5f9;
+    padding: 5px;
+    border-radius: 16px;
+    margin-bottom: 10px;
+  }
+  
+  .sort-tab {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px;
+    border: none;
+    background: transparent;
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: #64748b;
+    cursor: pointer;
+    border-radius: 12px;
+  }
+  
+  .sort-tab.active {
+    background: var(--white);
+    color: var(--primary-blue);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  }
+  
+  /* --- 4. MAIN FEED & POST CARDS --- */
+  .forum-main { flex: 1; min-width: 0; }
+  
+  .question-view {
+    background: var(--white);
+    padding: 32px;
+    border-radius: 28px;
+    border: 1px solid var(--border-light);
+    margin-bottom: 25px;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.02);
+  }
+  
+  .question-header { display: flex; gap: 12px; align-items: center; margin-bottom: 18px; }
+  
+  .question-tag {
+    background: #ebf4ff;
+    color: var(--primary-blue);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+  
+  .post-time { margin-left: auto; font-size: 0.85rem; color: var(--text-muted); font-weight: 600; }
+  
+  .question-view h2 {
+    font-size: 1.8rem;
+    color: var(--primary-dark);
+    font-weight: 800;
+    margin-bottom: 15px;
+  }
+  
+  .question-view p { color: #475569; line-height: 1.7; font-size: 1.05rem; }
+  
+  /* --- 5. ADMIN TOOLS (FIXES SCREENSHOT 1) --- */
+  .admin-input-section {
+    background: #fffbeb;
+    border: 2px dashed var(--admin-gold);
+    border-radius: 24px;
+    padding: 24px;
+    margin: 24px 0;
+  }
+  
+  .admin-input-section textarea {
+    width: 100%;
+    min-height: 110px;
+    padding: 16px;
+    border-radius: 16px;
+    border: 1.5px solid #fde68a;
+    background: var(--white);
+    font-family: inherit;
+    font-size: 1rem;
+    box-sizing: border-box;
+    margin-bottom: 15px;
+    resize: vertical;
+  }
+  
+  .admin-input-section textarea:focus {
+    outline: none;
+    border-color: var(--admin-gold);
+    box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.1);
+  }
+  
+  .admin-actions { display: flex; justify-content: flex-end; gap: 12px; }
+  
+  .btn-admin-submit {
+    background: var(--admin-gold);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 14px;
+    border: none;
+    font-weight: 800;
+    text-transform: uppercase;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: 0.2s;
+  }
+  
+  .btn-admin-submit:hover { background: #d97706; transform: translateY(-2px); }
+  
+  /* --- 6. MODAL SYSTEM (FIXES SCREENSHOT 2) --- */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.7);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    padding: 20px;
+  }
+  
+  .modal-card {
+    background: var(--white);
+    width: 100%;
+    max-width: 580px;
+    padding: 45px;
+    border-radius: 35px;
+    box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.4);
+    box-sizing: border-box;
+  }
+  
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+  }
+  
+  .modal-card form { display: flex; flex-direction: column; gap: 20px; }
+  
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+  }
+  
+  .modal-card input, 
+  .modal-card select, 
+  .modal-card textarea {
+    width: 100%;
+    padding: 16px 20px;
+    border-radius: 16px;
+    border: 2px solid var(--border-light);
+    background: var(--bg-soft);
+    font-size: 1rem;
+    font-family: inherit;
+    box-sizing: border-box;
+  }
+  
+  .modal-card input:focus, 
+  .modal-card textarea:focus,
+  .modal-card select:focus {
+    outline: none;
+    border-color: var(--primary-blue);
+    background: var(--white);
+  }
+  
+  .modal-card textarea { height: 160px; resize: none; }
+  
+  /* --- 7. BUTTONS & STATS --- */
+  .btn-add-question {
+    width: 100%;
+    background: var(--primary-blue);
+    color: var(--white);
+    padding: 16px 24px;
+    border-radius: 16px;
+    border: none;
+    font-weight: 800;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+  }
+  
+  .post-footer {
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-light);
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  .post-stats { display: flex; gap: 12px; }
+  .post-stats button {
+    background: #f8fafc;
+    border: 1px solid #edf2f7;
+    padding: 10px 18px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 800;
+    color: #64748b;
+    cursor: pointer;
+  }
+  
+  /* --- 8. OFFICIAL ANSWER BOX --- */
+  .admin-answer-box {
+    background: #f0f7ff;
+    border-left: 5px solid var(--primary-blue);
+    padding: 24px;
+    margin: 24px 0;
+    border-radius: 0 20px 20px 0;
+  }
+  
+  .admin-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.7rem;
+    font-weight: 900;
+    color: var(--primary-blue);
+    margin-bottom: 10px;
+    text-transform: uppercase;
+  }
