@@ -1,10 +1,13 @@
-import React, { useState, useEffect, useCallback } from 'react'; // Added useCallback to imports
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   PlusCircle, X, ThumbsUp, MessageSquare, Send, Loader2, Flame, Clock, CheckCircle 
 } from 'lucide-react';
 import axios from 'axios';
 import './Forum.css';
+
+// --- DYNAMIC API URL ---
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 const ForumPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -36,18 +39,19 @@ const ForumPage = () => {
 
   const fetchReplies = async (postId) => {
     try {
-      const { data } = await axios.get(`http://localhost:5000/api/forum/posts/${postId}/replies`);
+      // UPDATED: Now uses API_BASE_URL
+      const { data } = await axios.get(`${API_BASE_URL}/api/forum/posts/${postId}/replies`);
       setReplies(prev => ({ ...prev, [postId]: data }));
     } catch (error) {
       console.error('Error fetching replies:', error);
     }
   };
 
-  // --- FIXED: fetchPosts using useCallback ---
   const fetchPosts = useCallback(async () => {
     try {
       setLoading(true);
-      const { data } = await axios.get('http://localhost:5000/api/forum/posts', {
+      // UPDATED: Now uses API_BASE_URL
+      const { data } = await axios.get(`${API_BASE_URL}/api/forum/posts`, {
         params: { 
           category: activeFilter !== 'All' ? activeFilter : undefined,
           sort: sortBy 
@@ -61,9 +65,8 @@ const ForumPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [activeFilter, sortBy]); // Dependencies for callback
+  }, [activeFilter, sortBy]); 
 
-  // --- FIXED: useEffect calling memoized fetchPosts ---
   useEffect(() => {
     fetchPosts();
   }, [fetchPosts]); 
@@ -75,7 +78,8 @@ const ForumPage = () => {
 
     try {
       setSubmitting(true);
-      const { data } = await axios.post('http://localhost:5000/api/forum/posts', newQuestion, config);
+      // UPDATED: Now uses API_BASE_URL
+      const { data } = await axios.post(`${API_BASE_URL}/api/forum/posts`, newQuestion, config);
       setForumData(prev => [data, ...prev]);
       setIsModalOpen(false);
       setNewQuestion({ title: '', description: '', tribe: 'All', category: 'Discussion' });
@@ -92,7 +96,8 @@ const ForumPage = () => {
     if (!answer?.trim()) return;
 
     try {
-      const { data } = await axios.patch(`http://localhost:5000/api/forum/posts/${postId}/answer`, { answer }, config);
+      // UPDATED: Now uses API_BASE_URL
+      const { data } = await axios.patch(`${API_BASE_URL}/api/forum/posts/${postId}/answer`, { answer }, config);
       setForumData(prev => prev.map(p => p._id === postId ? data : p));
       setAdminAnswerText(prev => ({ ...prev, [postId]: "" }));
     } catch (error) {
@@ -104,7 +109,8 @@ const ForumPage = () => {
     const config = getAuthHeaders();
     if (!config) return alert('Log in to vote.');
     try {
-      const { data } = await axios.post(`http://localhost:5000/api/forum/posts/${postId}/vote`, {}, config);
+      // UPDATED: Now uses API_BASE_URL
+      const { data } = await axios.post(`${API_BASE_URL}/api/forum/posts/${postId}/vote`, {}, config);
       setForumData(prev => prev.map(p => p._id === postId ? { ...p, voteCount: data.voteCount, hasVoted: data.hasVoted } : p));
     } catch (error) {}
   };
@@ -113,7 +119,8 @@ const ForumPage = () => {
     const config = getAuthHeaders();
     if (!config || !commentText.trim()) return;
     try {
-      const { data } = await axios.post(`http://localhost:5000/api/forum/posts/${postId}/replies`, { text: commentText }, config);
+      // UPDATED: Now uses API_BASE_URL
+      const { data } = await axios.post(`${API_BASE_URL}/api/forum/posts/${postId}/replies`, { text: commentText }, config);
       setReplies(prev => ({ ...prev, [postId]: [...(prev[postId] || []), data] }));
       setForumData(prev => prev.map(p => p._id === postId ? { ...p, replyCount: p.replyCount + 1 } : p));
       setCommentText("");
@@ -187,72 +194,80 @@ const ForumPage = () => {
           <div className="forum-loading"><Loader2 className="spinner" size={40} /></div>
         ) : (
           <AnimatePresence>
-            {forumData.map(post => (
-              <motion.section key={post._id} className="question-view" layout initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                <div className="question-header">
-                  <span className="question-tag">{post.tribe}</span>
-                  {post.category === 'FAQ' && <span className="faq-tag">FAQ</span>}
-                  {post.voteCount >= 5 && <span className="hot-tag"><Flame size={12} /> HOT</span>}
-                  <span className="post-time">{getTimeAgo(post.createdAt)}</span>
-                </div>
-                <h2>{post.title}</h2>
-                <p>{post.description}</p>
-
-                {post.answer && (
-                  <div className="admin-answer-box">
-                    <div className="admin-badge"><CheckCircle size={12} /> TRIBE ADMIN ANSWER</div>
-                    <p>{post.answer}</p>
+            {forumData.length > 0 ? (
+              forumData.map(post => (
+                <motion.section key={post._id} className="question-view" layout initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                  {/* ... (Post rendering logic remains exactly as you wrote it) */}
+                  <div className="question-header">
+                    <span className="question-tag">{post.tribe}</span>
+                    {post.category === 'FAQ' && <span className="faq-tag">FAQ</span>}
+                    {post.voteCount >= 5 && <span className="hot-tag"><Flame size={12} /> HOT</span>}
+                    <span className="post-time">{getTimeAgo(post.createdAt)}</span>
                   </div>
-                )}
+                  <h2>{post.title}</h2>
+                  <p>{post.description}</p>
 
-                {user?.role === 'admin' && !post.answer && (
-                  <div className="admin-input-section">
-                    <textarea 
-                      placeholder="Admin: Provide an official answer..." 
-                      value={adminAnswerText[post._id] || ""}
-                      onChange={(e) => setAdminAnswerText({...adminAnswerText, [post._id]: e.target.value})}
-                    />
-                    <button onClick={() => handleAdminAnswer(post._id)}>Submit Official Answer</button>
-                  </div>
-                )}
-
-                <div className="post-footer">
-                  <div className="post-author">
-                    <div className="avatar-placeholder" />
-                    <span>{post.author?.username || 'Member'}</span>
-                  </div>
-                  <div className="post-stats">
-                    <button onClick={() => handleVote(post._id)} className={post.hasVoted ? 'voted' : ''}>
-                      <ThumbsUp size={18} /> {post.voteCount || 0}
-                    </button>
-                    <button onClick={() => setActiveCommentBox(activeCommentBox === post._id ? null : post._id)}>
-                      <MessageSquare size={18} /> {post.replyCount || 0}
-                    </button>
-                  </div>
-                </div>
-
-                <div className="comment-section">
-                  {activeCommentBox === post._id && (
-                    <div className="comment-input-area">
-                      <input 
-                        autoFocus 
-                        placeholder="Write a reply..." 
-                        value={commentText} 
-                        onChange={e => setCommentText(e.target.value)} 
-                        onKeyDown={e => e.key === 'Enter' && handleAddComment(post._id)} 
-                      />
-                      <button onClick={() => handleAddComment(post._id)}><Send size={16} /></button>
+                  {post.answer && (
+                    <div className="admin-answer-box">
+                      <div className="admin-badge"><CheckCircle size={12} /> TRIBE ADMIN ANSWER</div>
+                      <p>{post.answer}</p>
                     </div>
                   )}
-                  {replies[post._id]?.map(reply => (
-                    <div key={reply._id} className="reply-item">
-                      <div className="reply-meta"><b>{reply.author?.username}</b> • {getTimeAgo(reply.createdAt)}</div>
-                      <p>{reply.text}</p>
+
+                  {user?.role === 'admin' && !post.answer && (
+                    <div className="admin-input-section">
+                      <textarea 
+                        placeholder="Admin: Provide an official answer..." 
+                        value={adminAnswerText[post._id] || ""}
+                        onChange={(e) => setAdminAnswerText({...adminAnswerText, [post._id]: e.target.value})}
+                      />
+                      <button onClick={() => handleAdminAnswer(post._id)}>Submit Official Answer</button>
                     </div>
-                  ))}
-                </div>
-              </motion.section>
-            ))}
+                  )}
+
+                  <div className="post-footer">
+                    <div className="post-author">
+                      <div className="avatar-placeholder" />
+                      <span>{post.author?.username || 'Member'}</span>
+                    </div>
+                    <div className="post-stats">
+                      <button onClick={() => handleVote(post._id)} className={post.hasVoted ? 'voted' : ''}>
+                        <ThumbsUp size={18} /> {post.voteCount || 0}
+                      </button>
+                      <button onClick={() => setActiveCommentBox(activeCommentBox === post._id ? null : post._id)}>
+                        <MessageSquare size={18} /> {post.replyCount || 0}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="comment-section">
+                    {activeCommentBox === post._id && (
+                      <div className="comment-input-area">
+                        <input 
+                          autoFocus 
+                          placeholder="Write a reply..." 
+                          value={commentText} 
+                          onChange={e => setCommentText(e.target.value)} 
+                          onKeyDown={e => e.key === 'Enter' && handleAddComment(post._id)} 
+                        />
+                        <button onClick={() => handleAddComment(post._id)}><Send size={16} /></button>
+                      </div>
+                    )}
+                    {replies[post._id]?.map(reply => (
+                      <div key={reply._id} className="reply-item">
+                        <div className="reply-meta"><b>{reply.author?.username}</b> • {getTimeAgo(reply.createdAt)}</div>
+                        <p>{reply.text}</p>
+                      </div>
+                    ))}
+                  </div>
+                </motion.section>
+              ))
+            ) : (
+              <div className="no-posts-placeholder">
+                <MessageSquare size={48} strokeWidth={1} />
+                <p>No topics found in this category. Start the conversation!</p>
+              </div>
+            )}
           </AnimatePresence>
         )}
       </main>

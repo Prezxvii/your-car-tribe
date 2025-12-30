@@ -16,6 +16,10 @@ const Homepage = () => {
   const [localNews, setLocalNews] = useState([]);
   const [newsLoading, setNewsLoading] = useState(true);
 
+  // --- NEW: DYNAMIC API URL ---
+  // This uses the variable you set in Vercel, or localhost if you're developing locally
+  const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
   useEffect(() => {
     const savedTribes = localStorage.getItem('userTribes');
     const savedName = localStorage.getItem('userName');
@@ -33,8 +37,8 @@ const Homepage = () => {
 
     const fetchNews = async () => {
       try {
-        // CALLING YOUR BACKEND PROXY INSTEAD OF EXTERNAL API
-        const response = await fetch('http://localhost:5000/api/news/car-news');
+        // UPDATED: Now uses the dynamic base URL
+        const response = await fetch(`${API_BASE_URL}/api/news/car-news`);
         const data = await response.json();
         setLocalNews(data);
       } catch (error) {
@@ -45,7 +49,7 @@ const Homepage = () => {
     };
 
     fetchNews();
-  }, []);
+  }, [API_BASE_URL]); // Added API_BASE_URL to dependency array
 
   const handleLogout = () => {
     localStorage.clear();

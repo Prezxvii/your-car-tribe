@@ -7,10 +7,14 @@ import {
   Loader2,
   MapPin,
   Navigation,
-  Search
+  Search,
+  Car
 } from 'lucide-react';
 import ListingCard from './ListingCard';
 import './Marketplace.css';
+
+// --- DYNAMIC API URL ---
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 const MarketplaceFeed = () => {
   const [selectedCategory, setSelectedCategory] = useState('All Categories');
@@ -33,12 +37,13 @@ const MarketplaceFeed = () => {
 
     setLoading(true);
     try {
-      const url = new URL('http://localhost:5000/api/market/all');
+      // Use URL constructor with the dynamic API base
+      const url = new URL(`${API_BASE_URL}/api/market/all`);
       url.searchParams.set('search', searchQuery);
       url.searchParams.set('zip', zip);
       url.searchParams.set('radius', radius);
 
-      const response = await fetch(url);
+      const response = await fetch(url.toString());
       const data = await response.json();
 
       setListings(Array.isArray(data) ? data : []);
@@ -48,7 +53,7 @@ const MarketplaceFeed = () => {
     } finally {
       setLoading(false);
     }
-  }, [searchQuery, zip, radius, isValidZip]);
+  }, [searchQuery, zip, radius, isValidZip]); // Removed API_BASE_URL from deps as it is a constant outside
 
   useEffect(() => {
     fetchLiveAuctions();
@@ -59,7 +64,6 @@ const MarketplaceFeed = () => {
     fetchLiveAuctions();
   };
 
-  // Updated filter: match search query against make, model, or year
   const filteredCars = listings.filter((car) => {
     const matchesCategory =
       selectedCategory === 'All Categories' || car.tag === selectedCategory;
@@ -79,7 +83,7 @@ const MarketplaceFeed = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
     >
-      {/* HERO */}
+      {/* HERO SECTION */}
       <section className="market-hero">
         <div className="hero-overlay">
           <motion.div
@@ -116,9 +120,7 @@ const MarketplaceFeed = () => {
                     maxLength={5}
                     placeholder="ZIP"
                     value={zip}
-                    onChange={(e) =>
-                      setZip(e.target.value.replace(/\D/g, ''))
-                    }
+                    onChange={(e) => setZip(e.target.value.replace(/\D/g, ''))}
                   />
                 </div>
 
@@ -148,24 +150,18 @@ const MarketplaceFeed = () => {
         </div>
       </section>
 
-      {/* FEED */}
+      {/* FEED SECTION */}
       <div className="marketplace-container">
         {loading ? (
           <div className="market-loading-state">
             <Loader2 className="spinner" size={40} />
-            <p>
-              Searching enthusiast cars within {radius} miles of {zip}...
-            </p>
+            <p>Searching enthusiast cars within {radius} miles of {zip}...</p>
           </div>
         ) : (
           <>
             <div className="feed-header">
               <div className="header-text">
-                <h2>
-                  {searchQuery
-                    ? `Results for "${searchQuery}"`
-                    : `Cars near ${zip}`}
-                </h2>
+                <h2>{searchQuery ? `Results for "${searchQuery}"` : `Cars near ${zip}`}</h2>
                 <p>Showing {filteredCars.length} results</p>
               </div>
 
@@ -196,9 +192,7 @@ const MarketplaceFeed = () => {
                       {categories.map((cat) => (
                         <div
                           key={cat}
-                          className={`filter-option ${
-                            selectedCategory === cat ? 'active' : ''
-                          }`}
+                          className={`filter-option ${selectedCategory === cat ? 'active' : ''}`}
                           onClick={() => {
                             setSelectedCategory(cat);
                             setIsFilterOpen(false);
@@ -213,13 +207,27 @@ const MarketplaceFeed = () => {
               </div>
             </div>
 
-            <div className="listing-grid">
-              {filteredCars.map((car) => (
-                <div key={car.id} className="card-wrapper-rel">
-                  <ListingCard car={car} />
-                </div>
-              ))}
-            </div>
+            {filteredCars.length > 0 ? (
+              <div className="listing-grid">
+                {filteredCars.map((car) => (
+                  <div key={car.id || car._id} className="card-wrapper-rel">
+                    <ListingCard car={car} />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="no-results-state">
+                <Car size={48} strokeWidth={1} />
+                <h3>No cars found</h3>
+                <p>Try widening your radius or searching for a different tribe.</p>
+                <button 
+                  className="btn-outline-blue" 
+                  onClick={() => {setSearchQuery(''); setSelectedCategory('All Categories');}}
+                >
+                  Clear Filters
+                </button>
+              </div>
+            )}
           </>
         )}
       </div>
