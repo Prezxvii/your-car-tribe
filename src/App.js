@@ -35,14 +35,12 @@ function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  // 1. Sync Login Status
   useEffect(() => {
     const checkAuth = () => {
       const token = localStorage.getItem('token');
       setIsLoggedIn(!!token);
     };
     checkAuth();
-    // Listen for storage changes from other tabs
     window.addEventListener('storage', checkAuth);
     return () => window.removeEventListener('storage', checkAuth);
   }, []);
@@ -69,6 +67,7 @@ function App() {
 
             {/* --- DESKTOP NAVIGATION --- */}
             <div className="nav-links desktop-only">
+              <Link to="/">Home</Link> 
               <Link to="/marketplace">Marketplace</Link>
               <Link to="/forum">Forum</Link>
               <Link to="/mechanics">Mechanics</Link>
@@ -89,18 +88,17 @@ function App() {
                 </>
               )}
               
-              {/* MOBILE HAMBURGER BUTTON */}
-              <button className="mobile-menu-toggle" onClick={toggleMenu} aria-label="Toggle Menu">
+              {/* MOBILE ONLY TOGGLE */}
+              <button className="mobile-menu-toggle mobile-only" onClick={toggleMenu}>
                 {isMenuOpen ? <X size={28} /> : <Menu size={28} />}
               </button>
             </div>
           </div>
 
-          {/* --- MOBILE OVERLAY MENU WITH ANIMATION --- */}
+          {/* --- MOBILE OVERLAY --- */}
           <AnimatePresence>
             {isMenuOpen && (
               <>
-                {/* Dark Backdrop */}
                 <motion.div 
                   className="mobile-menu-backdrop"
                   initial={{ opacity: 0 }}
@@ -108,8 +106,6 @@ function App() {
                   exit={{ opacity: 0 }}
                   onClick={closeMenu}
                 />
-                
-                {/* Slide-out Drawer */}
                 <motion.div 
                   className="mobile-overlay-menu"
                   initial={{ x: '100%' }}
@@ -121,7 +117,6 @@ function App() {
                     <span>Menu</span>
                     <button onClick={closeMenu}><X size={24} /></button>
                   </div>
-
                   <div className="mobile-menu-body">
                     <Link to="/" onClick={closeMenu}>Home <ChevronRight size={16}/></Link>
                     <Link to="/marketplace" onClick={closeMenu}>Marketplace <ChevronRight size={16}/></Link>
@@ -129,17 +124,11 @@ function App() {
                     <Link to="/mechanics" onClick={closeMenu}>Mechanics <ChevronRight size={16}/></Link>
                     <Link to="/events" onClick={closeMenu}>Events <ChevronRight size={16}/></Link>
                     <Link to="/sell" onClick={closeMenu}>Sell My Car <ChevronRight size={16}/></Link>
-                    
                     <div className="menu-divider-label">Account</div>
-                    
                     {isLoggedIn ? (
                       <>
-                        <Link to="/profile" onClick={closeMenu} className="menu-sub-link">
-                          <User size={18} /> My Garage
-                        </Link>
-                        <button onClick={handleLogout} className="mobile-logout-btn">
-                          <LogOut size={18} /> Sign Out
-                        </button>
+                        <Link to="/profile" onClick={closeMenu} className="menu-sub-link"><User size={18} /> My Garage</Link>
+                        <button onClick={handleLogout} className="mobile-logout-btn"><LogOut size={18} /> Sign Out</button>
                       </>
                     ) : (
                       <>
