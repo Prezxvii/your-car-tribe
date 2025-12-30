@@ -19,14 +19,15 @@ const PORT = process.env.PORT || 10000;
 connectDB();
 
 // 4. Middleware
-// Updated CORS to allow your specific Vercel domain and local development
+// UPDATED: Added your specific -mai9 Vercel URL and extra headers for stability
 app.use(cors({
   origin: [
-    'https://your-car-tribe.vercel.app', // Update this with your actual Vercel URL
-    'http://localhost:3000'              // Standard React local port
+    'https://your-car-tribe-mai9.vercel.app', 
+    'http://localhost:3000'
   ],
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
-  credentials: true
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  credentials: true,
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 app.use(express.json());
@@ -38,16 +39,12 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/forum', forumRoutes);
 
 // --- SECURE NEWS PROXY ROUTE ---
-// This protects your API key by keeping it on the server
 app.get('/api/news/car-news', async (req, res) => {
   try {
     const NEWS_API_KEY = process.env.NEWS_API_KEY;
-    
-    // We fetch from NewsAPI here so the frontend doesn't have to
     const response = await axios.get(
       `https://newsapi.org/v2/everything?q=car+AND+automotive&sortBy=publishedAt&pageSize=5&apiKey=${NEWS_API_KEY}`
     );
-    
     res.json(response.data.articles || []);
   } catch (error) {
     console.error("News Proxy Error:", error.message);
@@ -55,7 +52,7 @@ app.get('/api/news/car-news', async (req, res) => {
   }
 });
 
-// Health Check (Used by Render to monitor if the app is alive)
+// Health Check
 app.get('/', (req, res) => res.send('🚀 Tribe Market API is running...'));
 
 app.listen(PORT, () => {
