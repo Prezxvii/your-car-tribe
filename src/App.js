@@ -15,21 +15,16 @@ import ForumPage from './pages/forum/ForumPage';
 import UserProfile from './pages/profile/UserProfile';
 import MechanicPage from './pages/mechanics/MechanicPage';
 
-// Events Imports
+// Events/Admin Imports
 import EventsPage from './pages/events/EventsPage';
 import EventDetail from './pages/events/EventDetail'; 
 import EventCreatorTemplate from './pages/events/EventCreatorTemplate'; 
-
-// Admin Import
 import ModerationDashboard from './pages/admin/ModerationDashboard'; 
-
-// Component Imports
 import Footer from './components/common/Footer';
 
 // Styles
 import './styles/App.css';
 import './styles/Mobile.css'; 
-import './styles/Navbar.css';
 
 function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -75,20 +70,25 @@ function App() {
               <Link to="/sell">Sell</Link>
             </div>
 
-            {/* --- NAV ACTIONS --- */}
+            {/* --- DESKTOP ACTIONS --- */}
             <div className="nav-actions">
               {isLoggedIn ? (
-                <Link to="/profile" className="nav-profile-link desktop-only">
-                  <User size={18} /> My Garage
-                </Link>
+                <div className="nav-auth-group desktop-only">
+                  <Link to="/profile" className="nav-login-link">
+                    <User size={18} /> My Garage
+                  </Link>
+                  <button onClick={handleLogout} className="nav-logout-inline" style={{background:'none', border:'none', cursor:'pointer'}}>
+                    <LogOut size={18} />
+                  </button>
+                </div>
               ) : (
-                <>
-                  <Link to="/login" className="nav-login-link desktop-only">Sign In</Link>
-                  <Link to="/onboarding" className="nav-profile-btn desktop-only">Join the Tribe</Link>
-                </>
+                <div className="nav-auth-group desktop-only">
+                  <Link to="/login" className="nav-login-link">Sign In</Link>
+                  <Link to="/onboarding" className="nav-profile-btn">Join the Tribe</Link>
+                </div>
               )}
               
-              {/* MOBILE ONLY TOGGLE */}
+              {/* MOBILE HAMBURGER BUTTON */}
               <button className="mobile-menu-toggle mobile-only" onClick={toggleMenu}>
                 {isMenuOpen ? <X size={28} /> : <Menu size={28} />}
               </button>
@@ -99,20 +99,8 @@ function App() {
           <AnimatePresence>
             {isMenuOpen && (
               <>
-                <motion.div 
-                  className="mobile-menu-backdrop"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  onClick={closeMenu}
-                />
-                <motion.div 
-                  className="mobile-overlay-menu"
-                  initial={{ x: '100%' }}
-                  animate={{ x: 0 }}
-                  exit={{ x: '100%' }}
-                  transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                >
+                <motion.div className="mobile-menu-backdrop" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={closeMenu} />
+                <motion.div className="mobile-overlay-menu" initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={{ type: 'spring', damping: 25, stiffness: 200 }}>
                   <div className="mobile-menu-header">
                     <span>Menu</span>
                     <button onClick={closeMenu}><X size={24} /></button>
@@ -124,17 +112,18 @@ function App() {
                     <Link to="/mechanics" onClick={closeMenu}>Mechanics <ChevronRight size={16}/></Link>
                     <Link to="/events" onClick={closeMenu}>Events <ChevronRight size={16}/></Link>
                     <Link to="/sell" onClick={closeMenu}>Sell My Car <ChevronRight size={16}/></Link>
+                    
                     <div className="menu-divider-label">Account</div>
                     {isLoggedIn ? (
                       <>
                         <Link to="/profile" onClick={closeMenu} className="menu-sub-link"><User size={18} /> My Garage</Link>
-                        <button onClick={handleLogout} className="mobile-logout-btn"><LogOut size={18} /> Sign Out</button>
+                        <button onClick={handleLogout} className="mobile-logout-btn">Sign Out</button>
                       </>
                     ) : (
-                      <>
-                        <Link to="/login" onClick={closeMenu} className="menu-sub-link">Sign In</Link>
-                        <Link to="/onboarding" onClick={closeMenu} className="menu-highlight-btn">Join the Tribe</Link>
-                      </>
+                      <div className="mobile-auth-stack">
+                        <Link to="/login" onClick={closeMenu} className="mobile-signin-btn">Sign In</Link>
+                        <Link to="/onboarding" onClick={closeMenu} className="mobile-join-btn">Join the Tribe</Link>
+                      </div>
                     )}
                   </div>
                 </motion.div>
