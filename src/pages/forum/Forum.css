@@ -368,3 +368,37 @@
     gap: 15px;
   }
 }
+
+/* --- For iPhones and Small Phones --- */
+@media (max-width: 480px) {
+  .home-hero-section {
+    padding: 20px;
+    height: auto;
+    text-align: center;
+  }
+
+  .home-main-layout {
+    display: flex;
+    flex-direction: column; /* Stacks the sidebar below the feed */
+  }
+
+  .home-content-grid, .listing-grid {
+    grid-template-columns: 1fr !important; /* Forces cards into a single column */
+  }
+
+  .hero-cta-group {
+    flex-direction: column;
+    gap: 10px;
+  }
+}
+
+/* --- For iPads and Tablets --- */
+@media (max-width: 1024px) {
+  .home-dashboard-inner {
+    flex-direction: column;
+  }
+  
+  .listing-grid {
+    grid-template-columns: 1fr 1fr; /* 2 columns for tablets */
+  }
+}

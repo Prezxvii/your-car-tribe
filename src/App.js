@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react'; // Added hooks
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import { Menu, X, User } from 'lucide-react'; // Added icons
+import { Menu, X, User, LogOut, ChevronRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // Page Imports
 import Homepage from './pages/home/Homepage'; 
@@ -27,16 +28,23 @@ import Footer from './components/common/Footer';
 
 // Styles
 import './styles/App.css';
-import './styles/Mobile.css'; // New mobile styles
+import './styles/Mobile.css'; 
+import './styles/Navbar.css';
 
 function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  // Check login status on load
+  // 1. Sync Login Status
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    setIsLoggedIn(!!token);
+    const checkAuth = () => {
+      const token = localStorage.getItem('token');
+      setIsLoggedIn(!!token);
+    };
+    checkAuth();
+    // Listen for storage changes from other tabs
+    window.addEventListener('storage', checkAuth);
+    return () => window.removeEventListener('storage', checkAuth);
   }, []);
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
@@ -60,8 +68,7 @@ function App() {
             </Link>
 
             {/* --- DESKTOP NAVIGATION --- */}
-            <div className="nav-links">
-              <Link to="/">Home</Link> 
+            <div className="nav-links desktop-only">
               <Link to="/marketplace">Marketplace</Link>
               <Link to="/forum">Forum</Link>
               <Link to="/mechanics">Mechanics</Link>
@@ -73,7 +80,7 @@ function App() {
             <div className="nav-actions">
               {isLoggedIn ? (
                 <Link to="/profile" className="nav-profile-link desktop-only">
-                  <User size={20} /> My Garage
+                  <User size={18} /> My Garage
                 </Link>
               ) : (
                 <>
@@ -83,35 +90,68 @@ function App() {
               )}
               
               {/* MOBILE HAMBURGER BUTTON */}
-              <button className="mobile-menu-toggle" onClick={toggleMenu}>
+              <button className="mobile-menu-toggle" onClick={toggleMenu} aria-label="Toggle Menu">
                 {isMenuOpen ? <X size={28} /> : <Menu size={28} />}
               </button>
             </div>
           </div>
 
-          {/* --- MOBILE OVERLAY MENU --- */}
-          {isMenuOpen && (
-            <div className="mobile-overlay-menu">
-              <Link to="/" onClick={closeMenu}>Home</Link>
-              <Link to="/marketplace" onClick={closeMenu}>Marketplace</Link>
-              <Link to="/forum" onClick={closeMenu}>Forum</Link>
-              <Link to="/mechanics" onClick={closeMenu}>Mechanics</Link>
-              <Link to="/events" onClick={closeMenu}>Events</Link>
-              <Link to="/sell" onClick={closeMenu}>Sell My Car</Link>
-              <hr className="menu-divider" />
-              {isLoggedIn ? (
-                <>
-                  <Link to="/profile" onClick={closeMenu}>My Garage</Link>
-                  <button onClick={handleLogout} className="mobile-logout-btn">Sign Out</button>
-                </>
-              ) : (
-                <>
-                  <Link to="/login" onClick={closeMenu}>Sign In</Link>
-                  <Link to="/onboarding" onClick={closeMenu} className="menu-highlight">Join the Tribe</Link>
-                </>
-              )}
-            </div>
-          )}
+          {/* --- MOBILE OVERLAY MENU WITH ANIMATION --- */}
+          <AnimatePresence>
+            {isMenuOpen && (
+              <>
+                {/* Dark Backdrop */}
+                <motion.div 
+                  className="mobile-menu-backdrop"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  onClick={closeMenu}
+                />
+                
+                {/* Slide-out Drawer */}
+                <motion.div 
+                  className="mobile-overlay-menu"
+                  initial={{ x: '100%' }}
+                  animate={{ x: 0 }}
+                  exit={{ x: '100%' }}
+                  transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                >
+                  <div className="mobile-menu-header">
+                    <span>Menu</span>
+                    <button onClick={closeMenu}><X size={24} /></button>
+                  </div>
+
+                  <div className="mobile-menu-body">
+                    <Link to="/" onClick={closeMenu}>Home <ChevronRight size={16}/></Link>
+                    <Link to="/marketplace" onClick={closeMenu}>Marketplace <ChevronRight size={16}/></Link>
+                    <Link to="/forum" onClick={closeMenu}>Forum <ChevronRight size={16}/></Link>
+                    <Link to="/mechanics" onClick={closeMenu}>Mechanics <ChevronRight size={16}/></Link>
+                    <Link to="/events" onClick={closeMenu}>Events <ChevronRight size={16}/></Link>
+                    <Link to="/sell" onClick={closeMenu}>Sell My Car <ChevronRight size={16}/></Link>
+                    
+                    <div className="menu-divider-label">Account</div>
+                    
+                    {isLoggedIn ? (
+                      <>
+                        <Link to="/profile" onClick={closeMenu} className="menu-sub-link">
+                          <User size={18} /> My Garage
+                        </Link>
+                        <button onClick={handleLogout} className="mobile-logout-btn">
+                          <LogOut size={18} /> Sign Out
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <Link to="/login" onClick={closeMenu} className="menu-sub-link">Sign In</Link>
+                        <Link to="/onboarding" onClick={closeMenu} className="menu-highlight-btn">Join the Tribe</Link>
+                      </>
+                    )}
+                  </div>
+                </motion.div>
+              </>
+            )}
+          </AnimatePresence>
         </nav>
 
         <main className="content-area">
