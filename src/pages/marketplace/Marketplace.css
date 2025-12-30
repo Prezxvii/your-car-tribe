@@ -983,3 +983,157 @@
 .radius-select:not(:focus-within) svg {
   color: #3b82f6;          /* soft blue */
 }
+
+
+/* --- MARKETPLACE MOBILE OVERRIDES --- */
+@media (max-width: 900px) {
+  .market-hero {
+    height: auto;
+    padding: 120px 20px 60px;
+    border-radius: 0 0 40px 40px;
+  }
+
+  .hero-search-container {
+    flex-direction: column;
+    padding: 10px;
+    gap: 0;
+    background: white;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+  }
+
+  .search-main, .search-location {
+    width: 100%;
+    border-right: none !important;
+    padding: 15px;
+  }
+
+  .search-main { border-bottom: 1px solid #f0f0f0; }
+
+  .search-location {
+    flex-direction: row; /* Keep Zip and Radius side-by-side */
+    gap: 10px;
+  }
+
+  .hero-search-btn {
+    width: 100%;
+    border-radius: 15px;
+    margin-top: 10px;
+  }
+
+  .feed-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
+
+  .listing-grid {
+    grid-template-columns: 1fr !important; /* Force single column */
+    gap: 20px;
+  }
+}
+
+/* --- LISTING CARD MOBILE OPTIMIZATION --- */
+@media (max-width: 900px) {
+  /* Ensure the card takes full width and removes desktop fixed heights */
+  .card-wrapper-rel {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+
+  .listing-card {
+    border-radius: 24px;
+    overflow: hidden;
+    background: #ffffff;
+    border: 1px solid #f0f0f0;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  }
+
+  /* Make the car image larger and more of a "hero" on mobile */
+  .card-image-container {
+    height: 240px !important; /* Fixed height for consistency */
+    position: relative;
+  }
+
+  /* Scale up badges (Price/Year) for better readability */
+  .card-badge-top {
+    top: 15px;
+    left: 15px;
+    padding: 8px 14px;
+    font-size: 0.9rem;
+    font-weight: 800;
+  }
+
+  /* Card Content Padding */
+  .card-content {
+    padding: 20px;
+  }
+
+  .card-title-row h3 {
+    font-size: 1.3rem;
+    margin-bottom: 5px;
+  }
+
+  /* Info Grid (Specs like mileage, transmission) */
+  .card-specs-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* 2x2 grid on mobile */
+    gap: 12px;
+    margin: 15px 0;
+  }
+
+  .spec-item {
+    font-size: 0.85rem;
+    padding: 10px;
+    background: #f8fafc;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* Action Buttons (The "View" or "Contact" buttons) */
+  .card-footer {
+    padding-top: 15px;
+    border-top: 1px solid #f1f5f9;
+    display: flex;
+    gap: 10px;
+  }
+
+  .btn-view-details {
+    flex: 2; /* Main action is bigger */
+    height: 50px;
+    font-size: 1rem;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .btn-favorite {
+    flex: 1;
+    height: 50px;
+    border-radius: 14px;
+    background: #f1f5f9;
+  }
+
+  /* Price Tag Highlight */
+  .card-price-mobile {
+    font-size: 1.4rem;
+    font-weight: 900;
+    color: var(--primary-blue);
+    margin-top: 5px;
+  }
+}
+
+/* Small phones adjustment */
+@media (max-width: 400px) {
+  .card-image-container {
+    height: 200px !important;
+  }
+  
+  .card-title-row h3 {
+    font-size: 1.1rem;
+  }
+}

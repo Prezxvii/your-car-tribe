@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Navigation, Clock, Plus, Trash2, Image as ImageIcon, 
+   Clock, Plus, Trash2, Image as ImageIcon, 
   MapPin, ChevronLeft, Save, Info, Calendar, 
   Loader2, PartyPopper, Eye, Edit3, X, Trophy, AlignLeft
 } from 'lucide-react';

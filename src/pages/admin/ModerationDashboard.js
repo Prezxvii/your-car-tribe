@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ShieldAlert, MessageSquare, Search, Trash2, BarChart3, 
   ShieldCheck, X, Edit3, LogOut, Package, HelpCircle, 
-  Check, AlertTriangle, Eye, EyeOff, Ban, UserX
+  Check, Eye, EyeOff, Ban, UserX
 } from 'lucide-react';
 import axios from 'axios';
 import '../../styles/Admin.css';
@@ -25,24 +25,22 @@ const ModerationDashboard = () => {
   
   // Modal states
   const [selectedUser, setSelectedUser] = useState(null);
-  const [selectedPost, setSelectedPost] = useState(null);
-  const [selectedReply, setSelectedReply] = useState(null);
   const [selectedFAQ, setSelectedFAQ] = useState(null);
   
   const token = localStorage.getItem('token');
   
-  const authHeaders = {
+  const authHeaders = useMemo(() => ({
     headers: { 'Authorization': `Bearer ${token}` }
-  };
+  }), [token]);
+
+  const handleLogout = useCallback(() => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setIsAuthenticated(false);
+  }, []);
 
   // Fetch all data
-  useEffect(() => {
-    if (isAuthenticated) {
-      fetchAllData();
-    }
-  }, [isAuthenticated, currentView]);
-
-  const fetchAllData = async () => {
+  const fetchAllData = useCallback(async () => {
     try {
       const [usersRes, postsRes, repliesRes, listingsRes, faqsRes, statsRes] = await Promise.all([
         axios.get('http://localhost:5000/api/admin/users', authHeaders),
@@ -65,7 +63,13 @@ const ModerationDashboard = () => {
         handleLogout();
       }
     }
-  };
+  }, [authHeaders, handleLogout]);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchAllData();
+    }
+  }, [isAuthenticated, currentView, fetchAllData]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -87,17 +91,10 @@ const ModerationDashboard = () => {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setIsAuthenticated(false);
-  };
-
   // User actions
   const handleBanUser = async (userId, banned) => {
     try {
-      // Changed to window.prompt
-      const reason = banned ? window.prompt("Ban reason:") : null;
+      const reason = banned ? prompt("Ban reason:") : null;
       await axios.put(
         `http://localhost:5000/api/admin/users/${userId}/ban`,
         { banned, banReason: reason },
@@ -111,7 +108,6 @@ const ModerationDashboard = () => {
   };
 
   const handleDeleteUser = async (userId) => {
-    // Changed to window.confirm
     if (!window.confirm('Delete this user and all their content?')) return;
     try {
       await axios.delete(`http://localhost:5000/api/admin/users/${userId}`, authHeaders);
@@ -122,19 +118,8 @@ const ModerationDashboard = () => {
     }
   };
 
-  const handleUpdateUser = async (userId, updates) => {
-    try {
-      await axios.put(`http://localhost:5000/api/admin/users/${userId}`, updates, authHeaders);
-      fetchAllData();
-      setSelectedUser(null);
-    } catch (error) {
-      alert('Error updating user');
-    }
-  };
-
   // Post actions
   const handleDeletePost = async (postId) => {
-    // Changed to window.confirm
     if (!window.confirm('Delete this post?')) return;
     try {
       await axios.delete(`http://localhost:5000/api/admin/posts/${postId}`, authHeaders);
@@ -146,7 +131,6 @@ const ModerationDashboard = () => {
 
   // Reply actions
   const handleDeleteReply = async (replyId) => {
-    // Changed to window.confirm
     if (!window.confirm('Delete this reply?')) return;
     try {
       await axios.delete(`http://localhost:5000/api/admin/replies/${replyId}`, authHeaders);
@@ -158,7 +142,6 @@ const ModerationDashboard = () => {
 
   // Listing actions
   const handleDeleteListing = async (listingId) => {
-    // Changed to window.confirm
     if (!window.confirm('Delete this listing?')) return;
     try {
       await axios.delete(`http://localhost:5000/api/admin/listings/${listingId}`, authHeaders);
@@ -210,7 +193,6 @@ const ModerationDashboard = () => {
   };
 
   const handleDeleteFAQ = async (faqId) => {
-    // Changed to window.confirm
     if (!window.confirm('Delete this FAQ?')) return;
     try {
       await axios.delete(`http://localhost:5000/api/admin/faqs/${faqId}`, authHeaders);

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, CheckCircle, ArrowRight, Car, Wrench, Mail, Lock, AtSign } from 'lucide-react';
+import { CheckCircle, ArrowRight, Car, Wrench, Mail, Lock, AtSign } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../../styles/Onboarding.css';

@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, MapPin, Users, Ticket, Bell, PlusCircle, ChevronRight } from 'lucide-react';
+import { Calendar, Bell, PlusCircle, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import '../../styles/Events.css';
 

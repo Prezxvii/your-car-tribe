@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Car, Users, MapPin, ChevronRight, LogOut, Newspaper, User } from 'lucide-react';
+import { Users, ChevronRight, LogOut, Newspaper, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import ProfileLicense from '../../components/profile/ProfileLicense';
 import '../../styles/Home.css';

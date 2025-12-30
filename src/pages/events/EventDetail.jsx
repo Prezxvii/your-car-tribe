@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MapPin, Navigation, Clock, Users, Share2, Check, Calendar, ChevronLeft, Info, Trophy, ExternalLink } from 'lucide-react';
+import { MapPin, Navigation, Clock, Share2, Check, Calendar, ChevronLeft, Trophy, ExternalLink } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import '../../styles/Events.css';

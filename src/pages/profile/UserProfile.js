@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Settings, Save, Check, LogOut, Loader2, Camera } from 'lucide-react';
+import { Settings, Save, Check, LogOut, Loader2 } from 'lucide-react';
 import ProfileLicense from '../../components/profile/ProfileLicense';
 import '../../styles/Profile.css';
 

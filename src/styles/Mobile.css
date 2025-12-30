@@ -1,0 +1,146 @@
+/* YourCarTRIBE - Comprehensive Mobile Design System */
+
+/* --- GLOBAL RESPONSIVE VARIABLES --- */
+:root {
+  --glass-bg: rgba(255, 255, 255, 0.85);
+  --glass-blur: blur(15px);
+}
+
+@media (max-width: 900px) {
+  /* --- 1. NAVIGATION & GLASS OVERLAY --- */
+  .desktop-only { display: none !important; }
+
+  .nav-container {
+    padding: 0 15px;
+    height: 70px;
+  }
+
+  .mobile-menu-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f1f5f9;
+    border: none;
+    padding: 8px;
+    border-radius: 12px;
+    color: var(--carbon-black);
+  }
+
+  .mobile-overlay-menu {
+    position: fixed;
+    top: 70px;
+    left: 0;
+    width: 100%;
+    height: calc(100vh - 70px);
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    display: flex;
+    flex-direction: column;
+    padding: 20px 30px;
+    z-index: 9999;
+    animation: slideIn 0.3s ease-out;
+  }
+
+  .mobile-overlay-menu a {
+    text-decoration: none;
+    color: var(--carbon-black);
+    font-size: 1.4rem;
+    font-weight: 800;
+    padding: 18px 0;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .mobile-overlay-menu a::after { content: '→'; color: var(--primary-blue); opacity: 0.4; }
+
+  /* --- 2. MARKETPLACE OPTIMIZATION --- */
+  .market-hero {
+    min-height: 400px;
+    padding: 100px 20px 40px;
+  }
+
+  .hero-content h1 { font-size: 2.2rem; }
+  
+  .hero-search-container {
+    flex-direction: column;
+    background: white;
+    padding: 15px;
+    border-radius: 20px;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .search-main, .search-location {
+    width: 100%;
+    border-right: none !important;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+  }
+
+  .hero-search-btn {
+    width: 100%;
+    height: 55px;
+  }
+
+  .listing-grid {
+    grid-template-columns: 1fr; /* Single column for cars */
+    padding: 10px;
+  }
+
+  /* --- 3. FORUM OPTIMIZATION --- */
+  .forum-container {
+    flex-direction: column; /* Move sidebar to top or bottom */
+    padding: 10px;
+  }
+
+  .forum-sidebar {
+    width: 100%;
+    position: static;
+    margin-bottom: 20px;
+  }
+
+  .sidebar-menu {
+    display: flex;
+    overflow-x: auto; /* Scroll categories horizontally */
+    gap: 10px;
+    padding-bottom: 10px;
+  }
+
+  .sidebar-menu li {
+    white-space: nowrap;
+    padding: 8px 15px;
+    background: white;
+    border-radius: 10px;
+    border: 1px solid #eee;
+  }
+
+  .question-view {
+    padding: 20px;
+    border-radius: 20px;
+  }
+
+  .modal-card {
+    width: 95%;
+    margin: 10px;
+    padding: 25px;
+  }
+
+  /* --- 4. HOMEPAGE & LICENSE --- */
+  .license-card {
+    transform: scale(0.8);
+    transform-origin: top center;
+    margin-bottom: -80px;
+  }
+
+  .home-dashboard-inner {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

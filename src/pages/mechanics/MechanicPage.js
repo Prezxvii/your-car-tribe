@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Wrench, Star, Phone, MapPin, CheckCircle, ExternalLink, 
+  Wrench, Star, Phone, MapPin, CheckCircle, 
   ShieldCheck, Search, X, MessageSquare, Clock, Info 
 } from 'lucide-react';
 import './Mechanic.css';

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react'; // Added useCallback to imports
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   PlusCircle, X, ThumbsUp, MessageSquare, Send, Loader2, Flame, Clock, CheckCircle 
@@ -12,7 +12,7 @@ const ForumPage = () => {
   const [sortBy, setSortBy] = useState('newest');
   const [activeCommentBox, setActiveCommentBox] = useState(null);
   const [commentText, setCommentText] = useState("");
-  const [adminAnswerText, setAdminAnswerText] = useState({}); // Tracking answers by ID
+  const [adminAnswerText, setAdminAnswerText] = useState({});
   const [forumData, setForumData] = useState([]);
   const [replies, setReplies] = useState({});
   const [loading, setLoading] = useState(true);
@@ -23,6 +23,7 @@ const ForumPage = () => {
     title: '', description: '', tribe: 'All', category: 'Discussion'
   });
 
+  // Load user on mount
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     if (storedUser) setUser(JSON.parse(storedUser));
@@ -33,11 +34,17 @@ const ForumPage = () => {
     return token ? { headers: { 'Authorization': `Bearer ${token}` } } : null;
   };
 
-  useEffect(() => {
-    fetchPosts();
-  }, [activeFilter, sortBy]);
+  const fetchReplies = async (postId) => {
+    try {
+      const { data } = await axios.get(`http://localhost:5000/api/forum/posts/${postId}/replies`);
+      setReplies(prev => ({ ...prev, [postId]: data }));
+    } catch (error) {
+      console.error('Error fetching replies:', error);
+    }
+  };
 
-  const fetchPosts = async () => {
+  // --- FIXED: fetchPosts using useCallback ---
+  const fetchPosts = useCallback(async () => {
     try {
       setLoading(true);
       const { data } = await axios.get('http://localhost:5000/api/forum/posts', {
@@ -47,22 +54,19 @@ const ForumPage = () => {
         }
       });
       setForumData(data);
+      // Fetch replies for each post
       data.forEach(post => fetchReplies(post._id));
     } catch (error) {
       console.error('Error fetching posts:', error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [activeFilter, sortBy]); // Dependencies for callback
 
-  const fetchReplies = async (postId) => {
-    try {
-      const { data } = await axios.get(`http://localhost:5000/api/forum/posts/${postId}/replies`);
-      setReplies(prev => ({ ...prev, [postId]: data }));
-    } catch (error) {
-      console.error('Error fetching replies:', error);
-    }
-  };
+  // --- FIXED: useEffect calling memoized fetchPosts ---
+  useEffect(() => {
+    fetchPosts();
+  }, [fetchPosts]); 
 
   const handlePost = async (e) => {
     e.preventDefault();
@@ -82,7 +86,6 @@ const ForumPage = () => {
     }
   };
 
-  // --- NEW: ADMIN ANSWER HANDLER ---
   const handleAdminAnswer = async (postId) => {
     const config = getAuthHeaders();
     const answer = adminAnswerText[postId];
@@ -195,7 +198,6 @@ const ForumPage = () => {
                 <h2>{post.title}</h2>
                 <p>{post.description}</p>
 
-                {/* FAQ ANSWER DISPLAY */}
                 {post.answer && (
                   <div className="admin-answer-box">
                     <div className="admin-badge"><CheckCircle size={12} /> TRIBE ADMIN ANSWER</div>
@@ -203,7 +205,6 @@ const ForumPage = () => {
                   </div>
                 )}
 
-                {/* ADMIN ANSWER INPUT (Only visible to Admins) */}
                 {user?.role === 'admin' && !post.answer && (
                   <div className="admin-input-section">
                     <textarea 
@@ -233,7 +234,13 @@ const ForumPage = () => {
                 <div className="comment-section">
                   {activeCommentBox === post._id && (
                     <div className="comment-input-area">
-                      <input autoFocus placeholder="Write a reply..." value={commentText} onChange={e => setCommentText(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleAddComment(post._id)} />
+                      <input 
+                        autoFocus 
+                        placeholder="Write a reply..." 
+                        value={commentText} 
+                        onChange={e => setCommentText(e.target.value)} 
+                        onKeyDown={e => e.key === 'Enter' && handleAddComment(post._id)} 
+                      />
                       <button onClick={() => handleAddComment(post._id)}><Send size={16} /></button>
                     </div>
                   )}

@@ -9,7 +9,7 @@ const LoginPage = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const navigate = useNavigate();
+  const navigate = useNavigate(); // Now used correctly below
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -17,19 +17,13 @@ const LoginPage = () => {
     setError('');
 
     try {
-      console.log('🔐 Attempting login...');
-      
-      // 1. Send login request to backend
       const response = await axios.post('http://localhost:5000/api/auth/login', formData);
-      
-      console.log('✅ Login response:', response.data);
 
       if (response.data.token) {
-        // 2. Save token
+        // 1. Save Session Token
         localStorage.setItem('token', response.data.token);
-        console.log('✅ Token saved:', response.data.token.substring(0, 20) + '...');
         
-        // 3. Save complete user object (CRITICAL FIX)
+        // 2. Build and save the User Object
         const userObject = {
           id: response.data.id,
           username: response.data.username,
@@ -38,20 +32,17 @@ const LoginPage = () => {
         };
         
         localStorage.setItem('user', JSON.stringify(userObject));
-        console.log('✅ User object saved:', userObject);
         
-        // 4. Also save individual fields for backward compatibility
+        // 3. Save backward compatibility fields
         localStorage.setItem('userName', response.data.username);
         localStorage.setItem('userTribes', JSON.stringify(userObject.tribes));
         
-        console.log('🎉 Login successful! Redirecting...');
-        
-        // 5. Navigate to home
-        window.location.href = '/';
+        // 4. FIX: Use React Router for navigation instead of window.location.href
+        // This clears the 'navigate defined but never used' ESLint error
+        navigate('/');
       }
     } catch (err) {
-      console.error("❌ Login Error:", err);
-      console.error("Response:", err.response?.data);
+      console.error("❌ Login Error:", err.response?.data || err.message);
       setError(err.response?.data?.message || 'Invalid email or password. Please try again.');
     } finally {
       setLoading(false);

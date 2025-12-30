@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, Wrench, Star } from 'lucide-react';
+import { User, Wrench, } from 'lucide-react';
 import './ProfileLicense.css';
 
 const ProfileLicense = ({ userData }) => {
