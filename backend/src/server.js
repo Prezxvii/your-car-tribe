@@ -1,6 +1,3 @@
-// ============================================
-// FIXED: backend/src/server.js
-// ============================================
 const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
@@ -21,17 +18,15 @@ connectDB();
 
 // --- SAFARI & VERCEL COMPLIANT CORS CONFIG ---
 const allowedOrigins = [
-  'https://your-car-tribe-mai9.vercel.app', // Your Vercel URL
-  'https://your-car-tribe.vercel.app',      // Alternative Vercel URL
-  'http://localhost:3000',                   // Local development
-  'http://localhost:3001'                    // Alternative local port
+  'https://your-car-tribe-mai9.vercel.app', 
+  'https://your-car-tribe.vercel.app',      
+  'http://localhost:3000',                   
+  'http://localhost:3001'                    
 ];
 
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
-    
     if (allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
@@ -44,15 +39,15 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Requested-With']
 }));
 
-// CRITICAL: Handle Safari preflight OPTIONS requests
+// Handle Safari preflight OPTIONS requests
 app.options('*', cors());
 
-// Body parser middleware
 app.use(express.json());
 
-// Request logging for debugging
+// Enhanced Request Logging
 app.use((req, res, next) => {
-  console.log(`${req.method} ${req.path} - Origin: ${req.get('origin')}`);
+  const origin = req.get('origin') || 'No Origin';
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path} - Origin: ${origin}`);
   next();
 });
 
@@ -66,6 +61,8 @@ app.use('/api/forum', forumRoutes);
 app.get('/api/news/car-news', async (req, res) => {
   try {
     const NEWS_API_KEY = process.env.NEWS_API_KEY;
+    if (!NEWS_API_KEY) throw new Error('News API Key missing');
+    
     const response = await axios.get(
       `https://newsapi.org/v2/everything?q=car+AND+automotive&sortBy=publishedAt&pageSize=5&apiKey=${NEWS_API_KEY}`
     );
@@ -76,11 +73,9 @@ app.get('/api/news/car-news', async (req, res) => {
   }
 });
 
-// Health check
 app.get('/', (req, res) => res.send('🚀 Tribe Market API is running...'));
 
-// Start server
 app.listen(PORT, () => {
   console.log(`🚀 Tribe Market Server running on port ${PORT}`);
-  console.log(`📡 Allowed origins: ${allowedOrigins.join(', ')}`);
+  console.log(`📡 CORS allowed for: ${allowedOrigins.join(', ')}`);
 });
