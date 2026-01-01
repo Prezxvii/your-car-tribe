@@ -3,17 +3,17 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Loader2, ArrowLeft, ShieldCheck, MapPin, Calendar, Gauge, AlertCircle } from 'lucide-react';
 import './ListingDetail.css';
 
-// --- ROBUST URL SELECTION ---
-// Hardcode your production URL here as the primary fallback
-const PROD_URL = 'https://your-car-tribe.onrender.com';
-const LOCAL_URL = 'http://localhost:5000';
+// --- STRICT URL SELECTION ---
+// This prevents Safari from ever attempting to hit http://localhost:5000 
+// when the site is running on Vercel.
+const getApiUrl = () => {
+  if (window.location.hostname.includes('vercel.app')) {
+    return 'https://your-car-tribe.onrender.com';
+  }
+  return process.env.REACT_APP_API_URL || 'http://localhost:5000';
+};
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 
-  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-    ? LOCAL_URL 
-    : PROD_URL);
-
-console.log('🔗 Tribe API active at:', API_BASE_URL);
+const API_BASE_URL = getApiUrl();
 
 const ListingDetail = () => {
   const { id } = useParams();
@@ -31,11 +31,10 @@ const ListingDetail = () => {
       setIsColdStart(false);
 
       const controller = new AbortController();
-      // 60-second timeout to handle Render "Cold Starts"
-      const timeoutId = setTimeout(() => controller.abort(), 60000);
+      const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s for Render wakes
 
       try {
-        console.log(`📡 Requesting vehicle ${id}...`);
+        console.log(`📡 Tribe API Request: ${API_BASE_URL}/api/market/listing/${id}`);
         
         const coldStartTimer = setTimeout(() => {
           setIsColdStart(true);
@@ -72,7 +71,7 @@ const ListingDetail = () => {
         if (err.name === 'AbortError') {
           setError('Server wakeup timed out. Please refresh to try again.');
         } else if (err.message.includes('Failed to fetch')) {
-          setError('Network security block or Server offline. Ensure you are not on a restricted VPN.');
+          setError('Network security block. If you are on a restricted network or VPN, please disable it.');
         } else {
           setError(err.message || 'Failed to load vehicle details');
         }
@@ -85,7 +84,6 @@ const ListingDetail = () => {
     fetchVehicleDetails();
   }, [id]);
 
-  // UI Renders (Loading, Error, and Success) remain largely the same
   if (loading) return (
     <div className="listing-loading">
       <Loader2 className="spinner" size={48} />
@@ -101,12 +99,12 @@ const ListingDetail = () => {
   if (error || !vehicle) return (
     <div className="listing-error-container">
       <div className="error-card card">
-        <AlertCircle size={48} className="error-icon" />
+        <AlertCircle size={48} className="error-icon" style={{ color: '#ff4444', marginBottom: '16px' }} />
         <h2>Listing Unavailable</h2>
         <p>{error}</p>
-        <div className="error-actions">
+        <div className="error-actions" style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
           <button onClick={() => window.location.reload()} className="btn-offer">Retry</button>
-          <button onClick={() => navigate('/market')} className="btn-buy">Marketplace</button>
+          <button onClick={() => navigate('/marketplace')} className="btn-buy">Back to Marketplace</button>
         </div>
       </div>
     </div>
@@ -115,7 +113,7 @@ const ListingDetail = () => {
   return (
     <div className='listing-container'>
       <button className="back-btn" onClick={() => navigate(-1)}>
-        <ArrowLeft size={18} /> Back
+        <ArrowLeft size={18} /> Back to Results
       </button>
 
       <h1 className='listing-title'>{vehicle.year} {vehicle.make} {vehicle.model}</h1>
@@ -151,8 +149,8 @@ const ListingDetail = () => {
           </div>
           <div className='action-box card'>
             <div className="price-tag">${vehicle.displayPrice}</div>
-            <button className='btn-buy' onClick={() => alert('Feature coming soon!')}>CONTACT SELLER</button>
-            <button className='btn-offer' onClick={() => alert('Feature coming soon!')}>MAKE OFFER</button>
+            <button className='btn-buy' onClick={() => alert('Contacting seller...')}>CONTACT SELLER</button>
+            <button className='btn-offer' onClick={() => alert('Offer functionality coming soon!')}>MAKE OFFER</button>
           </div>
         </aside>
       </div>
