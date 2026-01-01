@@ -4,12 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
 import axios from 'axios';
 import '../../styles/Onboarding.css';
-
-// SMART URL LOGIC: Fixes Safari and Mobile "Localhost" errors
-const API_BASE_URL = process.env.REACT_APP_API_URL || 
-  (window.location.hostname === 'localhost' 
-    ? 'http://localhost:5000' 
-    : 'https://your-car-tribe.onrender.com'); // Your live Render URL
+import { API_BASE_URL } from '../../config/api';
 
 const LoginPage = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });
@@ -23,37 +18,32 @@ const LoginPage = () => {
     setError('');
 
     try {
-      // Added explicit headers and credentials for Safari security
       const response = await axios.post(`${API_BASE_URL}/api/auth/login`, formData, {
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        withCredentials: true 
+          Accept: 'application/json'
+        }
+        // IMPORTANT: only keep withCredentials if your backend uses cookies.
+        // withCredentials: true
       });
 
       if (response.data.token) {
-        // 1. Save Session Token
         localStorage.setItem('token', response.data.token);
-        
-        // 2. Build and save the User Object
+
         const userObject = {
           id: response.data.id,
           username: response.data.username,
           role: response.data.role,
           tribes: response.data.tribes || ['JDM']
         };
-        
+
         localStorage.setItem('user', JSON.stringify(userObject));
-        
-        // 3. Save backward compatibility fields
         localStorage.setItem('userName', response.data.username);
-        
-        // 4. Navigate to home or marketplace
+
         navigate('/');
       }
     } catch (err) {
-      console.error("❌ Login Error:", err.response?.data || err.message);
+      console.error('❌ Login Error:', err.response?.data || err.message);
       setError(err.response?.data?.message || 'Invalid email or password. Please try again.');
     } finally {
       setLoading(false);
@@ -62,7 +52,7 @@ const LoginPage = () => {
 
   return (
     <div className="login-page-container">
-      <motion.div 
+      <motion.div
         className="login-card"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -73,7 +63,20 @@ const LoginPage = () => {
         </div>
 
         {error && (
-          <div className="login-error-msg" style={{color: '#e53e3e', background: '#fff5f5', padding: '10px', borderRadius: '8px', marginBottom: '15px', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '8px'}}>
+          <div
+            className="login-error-msg"
+            style={{
+              color: '#e53e3e',
+              background: '#fff5f5',
+              padding: '10px',
+              borderRadius: '8px',
+              marginBottom: '15px',
+              fontSize: '0.9rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}
+          >
             <AlertCircle size={16} /> {error}
           </div>
         )}
@@ -83,12 +86,12 @@ const LoginPage = () => {
             <label>Email Address</label>
             <div className="input-with-icon">
               <Mail size={18} />
-              <input 
-                type="email" 
-                placeholder="driver@yctribe.com" 
-                required 
+              <input
+                type="email"
+                placeholder="driver@yctribe.com"
+                required
                 value={formData.email}
-                onChange={(e) => setFormData({...formData, email: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               />
             </div>
           </div>
@@ -97,12 +100,12 @@ const LoginPage = () => {
             <label>Password</label>
             <div className="input-with-icon">
               <Lock size={18} />
-              <input 
-                type="password" 
-                placeholder="••••••••" 
-                required 
+              <input
+                type="password"
+                placeholder="••••••••"
+                required
                 value={formData.password}
-                onChange={(e) => setFormData({...formData, password: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
               />
             </div>
           </div>

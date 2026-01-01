@@ -12,13 +12,7 @@ import {
 } from 'lucide-react';
 import ListingCard from './ListingCard';
 import './Marketplace.css';
-
-// --- SMART API URL LOGIC ---
-// Fixes Safari/Mobile "Localhost" errors by detecting the environment
-const API_BASE_URL = process.env.REACT_APP_API_URL || 
-  (window.location.hostname === 'localhost' 
-    ? 'http://localhost:5000' 
-    : 'https://your-car-tribe.onrender.com'); //
+import { API_BASE_URL } from '../../config/api';
 
 const MarketplaceFeed = () => {
   const [selectedCategory, setSelectedCategory] = useState('All Categories');
@@ -41,30 +35,33 @@ const MarketplaceFeed = () => {
 
     setLoading(true);
     try {
-      // Use URL constructor with the dynamic API base
-      const url = new URL(`${API_BASE_URL}/api/market/all`); //
+      const url = new URL(`${API_BASE_URL}/api/market/all`);
       url.searchParams.set('search', searchQuery);
       url.searchParams.set('zip', zip);
       url.searchParams.set('radius', radius);
 
-      // Safari compatibility: Explicitly set headers for cross-domain requests
       const response = await fetch(url.toString(), {
         method: 'GET',
         headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
+          Accept: 'application/json'
         }
-      }); //
-      
+      });
+
+      if (!response.ok) {
+        console.error(`Marketplace fetch failed: ${response.status}`);
+        setListings([]);
+        return;
+      }
+
       const data = await response.json();
       setListings(Array.isArray(data) ? data : []);
     } catch (err) {
-      console.error('Fetch error on Safari/Mobile:', err); //
+      console.error('Fetch error:', err);
       setListings([]);
     } finally {
       setLoading(false);
     }
-  }, [searchQuery, zip, radius, isValidZip]); 
+  }, [searchQuery, zip, radius, isValidZip]);
 
   useEffect(() => {
     fetchLiveAuctions();
@@ -80,9 +77,12 @@ const MarketplaceFeed = () => {
       selectedCategory === 'All Categories' || car.tag === selectedCategory;
 
     const query = searchQuery.toLowerCase().trim();
+    const make = (car.make || '').toLowerCase();
+    const model = (car.model || '').toLowerCase();
+
     const matchesSearch =
-      car.make.toLowerCase().includes(query) ||
-      car.model.toLowerCase().includes(query) ||
+      make.includes(query) ||
+      model.includes(query) ||
       (car.year && car.year.toString().includes(query));
 
     return matchesCategory && matchesSearch;
@@ -231,9 +231,12 @@ const MarketplaceFeed = () => {
                 <Car size={48} strokeWidth={1} />
                 <h3>No cars found</h3>
                 <p>Try widening your radius or searching for a different tribe.</p>
-                <button 
-                  className="btn-outline-blue" 
-                  onClick={() => {setSearchQuery(''); setSelectedCategory('All Categories');}}
+                <button
+                  className="btn-outline-blue"
+                  onClick={() => {
+                    setSearchQuery('');
+                    setSelectedCategory('All Categories');
+                  }}
                 >
                   Clear Filters
                 </button>

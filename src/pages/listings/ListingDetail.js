@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { 
-  CheckCircle, 
-  MessageSquare, 
-  ChevronLeft, 
-  MapPin, 
-  ShieldCheck, 
-  X, 
-  Send, 
-  Gauge, 
+import {
+  CheckCircle,
+  MessageSquare,
+  ChevronLeft,
+  MapPin,
+  ShieldCheck,
+  X,
+  Send,
+  Gauge,
   Loader2,
   Info,
   Zap
@@ -17,63 +17,77 @@ import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 import ProfileLicense from '../../components/profile/ProfileLicense';
 import './ListingDetail.css';
+import { API_BASE_URL } from '../../config/api';
 
 const ListingDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  
+
   const [car, setCar] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [mainImage, setMainImage] = useState("");
+  const [mainImage, setMainImage] = useState('');
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
-  const [messageText, setMessageText] = useState("");
+  const [messageText, setMessageText] = useState('');
 
   useEffect(() => {
+    if (!id) return;
+
     const fetchCar = async () => {
       try {
         setLoading(true);
-        // FIX: Ensure the path includes '/listing/' to match your backend router
-        const { data } = await axios.get(`http://localhost:5000/api/market/listing/${id}`);
+
+        const { data } = await axios.get(
+          `${API_BASE_URL}/api/market/listing/${id}`,
+          { headers: { Accept: 'application/json' } }
+        );
+
         setCar(data);
-        
-        // Handle image extraction from both internal Tribe DB and external Dealer API
-        const firstImg = data.images?.[0] || data.media?.photo_links?.[0] || "/api/placeholder/800/600";
+
+        const firstImg =
+          data.images?.[0] ||
+          data.media?.photo_links?.[0] ||
+          '/api/placeholder/800/600';
+
         setMainImage(firstImg);
       } catch (err) {
-        console.error("Listing fetch error:", err);
+        console.error('Listing fetch error:', err);
         setCar(null);
       } finally {
         setLoading(false);
       }
     };
+
     fetchCar();
   }, [id]);
 
   const handleSendMessage = () => {
-    alert(`Inquiry sent to ${car.seller?.name || car.dealer_name || 'Dealer'}`);
+    alert(`Inquiry sent to ${car?.seller?.name || car?.dealer_name || 'Dealer'}`);
     setIsContactModalOpen(false);
   };
 
-  if (loading) return (
-    <div className="market-loader-ui">
-      <Loader2 className="spinner" size={40} />
-      <p>Retrieving Vehicle Dossier...</p>
-    </div>
-  );
-
-  if (!car) return (
-    <div className="listing-detail-container">
-      <div className="error-state card">
-        <h1>Vehicle Not Found</h1>
-        <p>The requested listing could not be retrieved from the network.</p>
-        <button className="btn-primary-contact" onClick={() => navigate('/market')}>
-          Return to Marketplace
-        </button>
+  if (loading) {
+    return (
+      <div className="market-loader-ui">
+        <Loader2 className="spinner" size={40} />
+        <p>Retrieving Vehicle Dossier...</p>
       </div>
-    </div>
-  );
+    );
+  }
 
-  // Consolidate photos from different API structures
+  if (!car) {
+    return (
+      <div className="listing-detail-container">
+        <div className="error-state card">
+          <h1>Vehicle Not Found</h1>
+          <p>The requested listing could not be retrieved from the network.</p>
+          <button className="btn-primary-contact" onClick={() => navigate('/market')}>
+            Return to Marketplace
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   const allPhotos = car.images || car.media?.photo_links || [];
 
   return (
@@ -95,6 +109,7 @@ const ListingDetail = () => {
             <MapPin size={14} /> {car.location || `${car.city}, ${car.state}`}
           </div>
         </div>
+
         <div className="title-right">
           <div className="header-price-display">
             <span>Asking Price</span>
@@ -111,21 +126,21 @@ const ListingDetail = () => {
         <div className="listing-visuals">
           <div className="main-image-wrapper card">
             <AnimatePresence mode="wait">
-              <motion.img 
-                key={mainImage} 
-                src={mainImage} 
-                initial={{ opacity: 0 }} 
-                animate={{ opacity: 1 }} 
+              <motion.img
+                key={mainImage}
+                src={mainImage}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                alt="Main View" 
+                alt="Main View"
               />
             </AnimatePresence>
           </div>
-          
+
           <div className="thumbnail-strip">
             {allPhotos.slice(0, 10).map((img, i) => (
-              <div 
-                key={i} 
+              <div
+                key={i}
                 className={`thumb card ${mainImage === img ? 'active-thumb' : ''}`}
                 onClick={() => setMainImage(img)}
               >
@@ -140,7 +155,7 @@ const ListingDetail = () => {
               <h3>Seller's Description</h3>
             </div>
             <p className="description-text">
-              {car.description || "No description provided. Contact seller for details."}
+              {car.description || 'No description provided. Contact seller for details.'}
             </p>
           </div>
 
@@ -152,15 +167,15 @@ const ListingDetail = () => {
             <div className="specs-info-grid">
               <div className="spec-item">
                 <label>Engine</label>
-                <span>{car.specs?.engine || car.engine_description || "N/A"}</span>
+                <span>{car.specs?.engine || car.engine_description || 'N/A'}</span>
               </div>
               <div className="spec-item">
                 <label>Transmission</label>
-                <span>{car.specs?.transmission || car.transmission_description || "N/A"}</span>
+                <span>{car.specs?.transmission || car.transmission_description || 'N/A'}</span>
               </div>
               <div className="spec-item">
                 <label>VIN</label>
-                <span className="vin-text">{car.specs?.vin || car.vin || "Inquire"}</span>
+                <span className="vin-text">{car.specs?.vin || car.vin || 'Inquire'}</span>
               </div>
             </div>
           </div>
@@ -169,14 +184,16 @@ const ListingDetail = () => {
         <div className="listing-sidebar">
           <div className="sticky-sidebar">
             <h3 className="sidebar-label">Authorized Seller</h3>
-            {/* Seller Identity via the ProfileLicense component */}
-            <ProfileLicense userData={{
-              username: car.seller?.name || car.dealer_name || "Dealer Network",
-              personalName: car.seller?.type === "dealer" || car.dealer_name ? "Verified Dealer" : "Verified Member",
-              interests: car.seller?.tribes || ["Westchester Network"],
-              avatar: car.seller?.avatar || null,
-              knowWhats: ["Verified Identity", "Clean Title Status"]
-            }} />
+
+            <ProfileLicense
+              userData={{
+                username: car.seller?.name || car.dealer_name || 'Dealer Network',
+                personalName: car.seller?.type === 'dealer' || car.dealer_name ? 'Verified Dealer' : 'Verified Member',
+                interests: car.seller?.tribes || ['Westchester Network'],
+                avatar: car.seller?.avatar || null,
+                knowWhats: ['Verified Identity', 'Clean Title Status'],
+              }}
+            />
 
             <div className="action-buttons">
               <button className="btn-primary-contact" onClick={() => setIsContactModalOpen(true)}>
@@ -201,7 +218,7 @@ const ListingDetail = () => {
       <AnimatePresence>
         {isContactModalOpen && (
           <div className="modal-overlay">
-            <motion.div 
+            <motion.div
               className="contact-modal card"
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -213,12 +230,13 @@ const ListingDetail = () => {
                   <X size={20} />
                 </button>
               </div>
+
               <div className="modal-body">
-                <textarea 
+                <textarea
                   value={messageText}
                   onChange={(e) => setMessageText(e.target.value)}
                   placeholder="Ask about availability or schedule a viewing..."
-                ></textarea>
+                />
                 <button className="btn-send-message" onClick={handleSendMessage}>
                   <Send size={18} /> Send Message
                 </button>

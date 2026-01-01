@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  ShieldAlert, MessageSquare, Search, Trash2, BarChart3, 
-  ShieldCheck, X, Edit3, LogOut, Package, HelpCircle, 
+import {
+  ShieldAlert, MessageSquare, Search, Trash2, BarChart3,
+  ShieldCheck, X, Edit3, LogOut, Package, HelpCircle,
   Check, Eye, EyeOff, Ban, UserX
 } from 'lucide-react';
 import axios from 'axios';
 import '../../styles/Admin.css';
+import { API_BASE_URL } from '../../config/api';
 
 const ModerationDashboard = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('token'));
@@ -14,7 +15,7 @@ const ModerationDashboard = () => {
   const [loading, setLoading] = useState(false);
   const [currentView, setCurrentView] = useState('overview');
   const [searchQuery, setSearchQuery] = useState("");
-  
+
   // Data states
   const [users, setUsers] = useState([]);
   const [posts, setPosts] = useState([]);
@@ -22,15 +23,15 @@ const ModerationDashboard = () => {
   const [listings, setListings] = useState([]);
   const [faqs, setFAQs] = useState([]);
   const [stats, setStats] = useState({});
-  
+
   // Modal states
   const [selectedUser, setSelectedUser] = useState(null);
   const [selectedFAQ, setSelectedFAQ] = useState(null);
-  
+
   const token = localStorage.getItem('token');
-  
+
   const authHeaders = useMemo(() => ({
-    headers: { 'Authorization': `Bearer ${token}` }
+    headers: { Authorization: `Bearer ${token}` }
   }), [token]);
 
   const handleLogout = useCallback(() => {
@@ -43,14 +44,14 @@ const ModerationDashboard = () => {
   const fetchAllData = useCallback(async () => {
     try {
       const [usersRes, postsRes, repliesRes, listingsRes, faqsRes, statsRes] = await Promise.all([
-        axios.get('http://localhost:5000/api/admin/users', authHeaders),
-        axios.get('http://localhost:5000/api/admin/posts', authHeaders),
-        axios.get('http://localhost:5000/api/admin/replies', authHeaders),
-        axios.get('http://localhost:5000/api/admin/listings', authHeaders),
-        axios.get('http://localhost:5000/api/admin/faqs', authHeaders),
-        axios.get('http://localhost:5000/api/admin/stats', authHeaders)
+        axios.get(`${API_BASE_URL}/api/admin/users`, authHeaders),
+        axios.get(`${API_BASE_URL}/api/admin/posts`, authHeaders),
+        axios.get(`${API_BASE_URL}/api/admin/replies`, authHeaders),
+        axios.get(`${API_BASE_URL}/api/admin/listings`, authHeaders),
+        axios.get(`${API_BASE_URL}/api/admin/faqs`, authHeaders),
+        axios.get(`${API_BASE_URL}/api/admin/stats`, authHeaders)
       ]);
-      
+
       setUsers(usersRes.data);
       setPosts(postsRes.data);
       setReplies(repliesRes.data);
@@ -75,8 +76,8 @@ const ModerationDashboard = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const { data } = await axios.post('http://localhost:5000/api/auth/login', loginData);
-      
+      const { data } = await axios.post(`${API_BASE_URL}/api/auth/login`, loginData);
+
       if (data.role === 'admin') {
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data));
@@ -96,7 +97,7 @@ const ModerationDashboard = () => {
     try {
       const reason = banned ? prompt("Ban reason:") : null;
       await axios.put(
-        `http://localhost:5000/api/admin/users/${userId}/ban`,
+        `${API_BASE_URL}/api/admin/users/${userId}/ban`,
         { banned, banReason: reason },
         authHeaders
       );
@@ -110,7 +111,7 @@ const ModerationDashboard = () => {
   const handleDeleteUser = async (userId) => {
     if (!window.confirm('Delete this user and all their content?')) return;
     try {
-      await axios.delete(`http://localhost:5000/api/admin/users/${userId}`, authHeaders);
+      await axios.delete(`${API_BASE_URL}/api/admin/users/${userId}`, authHeaders);
       fetchAllData();
       setSelectedUser(null);
     } catch (error) {
@@ -122,7 +123,7 @@ const ModerationDashboard = () => {
   const handleDeletePost = async (postId) => {
     if (!window.confirm('Delete this post?')) return;
     try {
-      await axios.delete(`http://localhost:5000/api/admin/posts/${postId}`, authHeaders);
+      await axios.delete(`${API_BASE_URL}/api/admin/posts/${postId}`, authHeaders);
       fetchAllData();
     } catch (error) {
       alert('Error deleting post');
@@ -133,7 +134,7 @@ const ModerationDashboard = () => {
   const handleDeleteReply = async (replyId) => {
     if (!window.confirm('Delete this reply?')) return;
     try {
-      await axios.delete(`http://localhost:5000/api/admin/replies/${replyId}`, authHeaders);
+      await axios.delete(`${API_BASE_URL}/api/admin/replies/${replyId}`, authHeaders);
       fetchAllData();
     } catch (error) {
       alert('Error deleting reply');
@@ -144,7 +145,7 @@ const ModerationDashboard = () => {
   const handleDeleteListing = async (listingId) => {
     if (!window.confirm('Delete this listing?')) return;
     try {
-      await axios.delete(`http://localhost:5000/api/admin/listings/${listingId}`, authHeaders);
+      await axios.delete(`${API_BASE_URL}/api/admin/listings/${listingId}`, authHeaders);
       fetchAllData();
     } catch (error) {
       alert('Error deleting listing');
@@ -154,7 +155,7 @@ const ModerationDashboard = () => {
   const handleUpdateListingStatus = async (listingId, status) => {
     try {
       await axios.put(
-        `http://localhost:5000/api/admin/listings/${listingId}/status`,
+        `${API_BASE_URL}/api/admin/listings/${listingId}/status`,
         { status },
         authHeaders
       );
@@ -168,7 +169,7 @@ const ModerationDashboard = () => {
   const handleAnswerFAQ = async (faqId, answer, category) => {
     try {
       await axios.put(
-        `http://localhost:5000/api/admin/faqs/${faqId}/answer`,
+        `${API_BASE_URL}/api/admin/faqs/${faqId}/answer`,
         { answer, category },
         authHeaders
       );
@@ -182,7 +183,7 @@ const ModerationDashboard = () => {
   const handlePublishFAQ = async (faqId, published) => {
     try {
       await axios.put(
-        `http://localhost:5000/api/admin/faqs/${faqId}/publish`,
+        `${API_BASE_URL}/api/admin/faqs/${faqId}/publish`,
         { published },
         authHeaders
       );
@@ -195,7 +196,7 @@ const ModerationDashboard = () => {
   const handleDeleteFAQ = async (faqId) => {
     if (!window.confirm('Delete this FAQ?')) return;
     try {
-      await axios.delete(`http://localhost:5000/api/admin/faqs/${faqId}`, authHeaders);
+      await axios.delete(`${API_BASE_URL}/api/admin/faqs/${faqId}`, authHeaders);
       fetchAllData();
     } catch (error) {
       alert('Error deleting FAQ');
@@ -206,15 +207,15 @@ const ModerationDashboard = () => {
   const filteredData = useMemo(() => {
     const query = searchQuery.toLowerCase();
     return {
-      users: users.filter(u => 
-        u.username?.toLowerCase().includes(query) || 
+      users: users.filter(u =>
+        u.username?.toLowerCase().includes(query) ||
         u.email?.toLowerCase().includes(query)
       ),
-      posts: posts.filter(p => 
+      posts: posts.filter(p =>
         p.title?.toLowerCase().includes(query) ||
         p.description?.toLowerCase().includes(query)
       ),
-      replies: replies.filter(r => 
+      replies: replies.filter(r =>
         r.text?.toLowerCase().includes(query)
       ),
       listings: listings.filter(l =>
@@ -231,28 +232,28 @@ const ModerationDashboard = () => {
   if (!isAuthenticated) {
     return (
       <div className="admin-login-overlay">
-        <motion.form 
-          initial={{ opacity: 0, y: 20 }} 
+        <motion.form
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="admin-login-card" 
+          className="admin-login-card"
           onSubmit={handleLogin}
         >
           <ShieldAlert size={40} className="text-red" />
           <h2>Tribe Admin Portal</h2>
           <p>Restricted Access. Please login.</p>
-          <input 
-            type="email" 
-            placeholder="Admin Email" 
+          <input
+            type="email"
+            placeholder="Admin Email"
             required
-            value={loginData.email} 
-            onChange={(e) => setLoginData({...loginData, email: e.target.value})}
+            value={loginData.email}
+            onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
           />
-          <input 
-            type="password" 
-            placeholder="Password" 
+          <input
+            type="password"
+            placeholder="Password"
             required
-            value={loginData.password} 
-            onChange={(e) => setLoginData({...loginData, password: e.target.value})}
+            value={loginData.password}
+            onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
           />
           <button type="submit" disabled={loading}>
             {loading ? "Verifying..." : "Unlock Dashboard"}
@@ -271,47 +272,47 @@ const ModerationDashboard = () => {
         </div>
         <nav className="admin-nav">
           <p className="nav-label">Main</p>
-          <button 
-            className={`nav-item ${currentView === 'overview' ? 'active' : ''}`} 
+          <button
+            className={`nav-item ${currentView === 'overview' ? 'active' : ''}`}
             onClick={() => setCurrentView('overview')}
           >
-            <BarChart3 size={18}/> Overview
+            <BarChart3 size={18} /> Overview
           </button>
-          
+
           <p className="nav-label">Management</p>
-          <button 
-            className={`nav-item ${currentView === 'users' ? 'active' : ''}`} 
+          <button
+            className={`nav-item ${currentView === 'users' ? 'active' : ''}`}
             onClick={() => setCurrentView('users')}
           >
-            <ShieldCheck size={18}/> Users ({users.length})
+            <ShieldCheck size={18} /> Users ({users.length})
           </button>
-          <button 
-            className={`nav-item ${currentView === 'posts' ? 'active' : ''}`} 
+          <button
+            className={`nav-item ${currentView === 'posts' ? 'active' : ''}`}
             onClick={() => setCurrentView('posts')}
           >
-            <MessageSquare size={18}/> Forum Posts ({posts.length})
+            <MessageSquare size={18} /> Forum Posts ({posts.length})
           </button>
-          <button 
-            className={`nav-item ${currentView === 'replies' ? 'active' : ''}`} 
+          <button
+            className={`nav-item ${currentView === 'replies' ? 'active' : ''}`}
             onClick={() => setCurrentView('replies')}
           >
-            <MessageSquare size={18}/> Replies ({replies.length})
+            <MessageSquare size={18} /> Replies ({replies.length})
           </button>
-          <button 
-            className={`nav-item ${currentView === 'listings' ? 'active' : ''}`} 
+          <button
+            className={`nav-item ${currentView === 'listings' ? 'active' : ''}`}
             onClick={() => setCurrentView('listings')}
           >
-            <Package size={18}/> Listings ({listings.length})
+            <Package size={18} /> Listings ({listings.length})
           </button>
-          <button 
-            className={`nav-item ${currentView === 'faqs' ? 'active' : ''}`} 
+          <button
+            className={`nav-item ${currentView === 'faqs' ? 'active' : ''}`}
             onClick={() => setCurrentView('faqs')}
           >
-            <HelpCircle size={18}/> FAQs ({stats.unansweredQuestions || 0} new)
+            <HelpCircle size={18} /> FAQs ({stats.unansweredQuestions || 0} new)
           </button>
-          
+
           <button className="nav-item logout" onClick={handleLogout}>
-            <LogOut size={18}/> Logout
+            <LogOut size={18} /> Logout
           </button>
         </nav>
       </aside>
@@ -321,10 +322,10 @@ const ModerationDashboard = () => {
           <h1>{currentView.toUpperCase()}</h1>
           <div className="admin-search">
             <Search size={18} />
-            <input 
-              placeholder="Search records..." 
-              value={searchQuery} 
-              onChange={(e) => setSearchQuery(e.target.value)} 
+            <input
+              placeholder="Search records..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
         </header>
@@ -350,7 +351,7 @@ const ModerationDashboard = () => {
                 <h2>{stats.unansweredQuestions || 0}</h2>
               </div>
               <div className="stat-card-lg status-live">
-                <div className="pulse-icon"/>
+                <div className="pulse-icon" />
                 <h4>Database Connected</h4>
               </div>
             </div>
@@ -387,11 +388,11 @@ const ModerationDashboard = () => {
                         )}
                       </td>
                       <td>
-                        <button 
-                          className="btn-edit-sm" 
+                        <button
+                          className="btn-edit-sm"
                           onClick={() => setSelectedUser(user)}
                         >
-                          <Edit3 size={14}/>
+                          <Edit3 size={14} />
                         </button>
                       </td>
                     </tr>
@@ -420,17 +421,15 @@ const ModerationDashboard = () => {
                     <tr key={post._id}>
                       <td>{post.title}</td>
                       <td>@{post.author?.username}</td>
-                      <td>
-                        <span className="type-tag">{post.tribe}</span>
-                      </td>
+                      <td><span className="type-tag">{post.tribe}</span></td>
                       <td>{post.voteCount}</td>
                       <td>{new Date(post.createdAt).toLocaleDateString()}</td>
                       <td>
-                        <button 
-                          className="btn-delete-sm" 
+                        <button
+                          className="btn-delete-sm"
                           onClick={() => handleDeletePost(post._id)}
                         >
-                          <Trash2 size={14}/>
+                          <Trash2 size={14} />
                         </button>
                       </td>
                     </tr>
@@ -461,11 +460,11 @@ const ModerationDashboard = () => {
                       <td>{reply.post?.title?.substring(0, 30)}...</td>
                       <td>{new Date(reply.createdAt).toLocaleDateString()}</td>
                       <td>
-                        <button 
-                          className="btn-delete-sm" 
+                        <button
+                          className="btn-delete-sm"
                           onClick={() => handleDeleteReply(reply._id)}
                         >
-                          <Trash2 size={14}/>
+                          <Trash2 size={14} />
                         </button>
                       </td>
                     </tr>
@@ -495,7 +494,7 @@ const ModerationDashboard = () => {
                       <td>@{listing.seller?.username || 'Unknown'}</td>
                       <td>${listing.price?.toLocaleString()}</td>
                       <td>
-                        <select 
+                        <select
                           value={listing.status}
                           onChange={(e) => handleUpdateListingStatus(listing._id, e.target.value)}
                           className="status-select"
@@ -507,11 +506,11 @@ const ModerationDashboard = () => {
                         </select>
                       </td>
                       <td>
-                        <button 
-                          className="btn-delete-sm" 
+                        <button
+                          className="btn-delete-sm"
                           onClick={() => handleDeleteListing(listing._id)}
                         >
-                          <Trash2 size={14}/>
+                          <Trash2 size={14} />
                         </button>
                       </td>
                     </tr>
@@ -547,25 +546,19 @@ const ModerationDashboard = () => {
                         )}
                       </td>
                       <td>
-                        <button 
+                        <button
                           className={`btn-${faq.published ? 'approve' : 'secondary'}-sm`}
                           onClick={() => handlePublishFAQ(faq._id, !faq.published)}
                         >
-                          {faq.published ? <Eye size={14}/> : <EyeOff size={14}/>}
+                          {faq.published ? <Eye size={14} /> : <EyeOff size={14} />}
                         </button>
                       </td>
                       <td>
-                        <button 
-                          className="btn-edit-sm" 
-                          onClick={() => setSelectedFAQ(faq)}
-                        >
-                          <Edit3 size={14}/>
+                        <button className="btn-edit-sm" onClick={() => setSelectedFAQ(faq)}>
+                          <Edit3 size={14} />
                         </button>
-                        <button 
-                          className="btn-delete-sm" 
-                          onClick={() => handleDeleteFAQ(faq._id)}
-                        >
-                          <Trash2 size={14}/>
+                        <button className="btn-delete-sm" onClick={() => handleDeleteFAQ(faq._id)}>
+                          <Trash2 size={14} />
                         </button>
                       </td>
                     </tr>
@@ -581,7 +574,7 @@ const ModerationDashboard = () => {
       <AnimatePresence>
         {selectedUser && (
           <div className="admin-modal-overlay" onClick={() => setSelectedUser(null)}>
-            <motion.div 
+            <motion.div
               className="admin-edit-modal"
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -594,32 +587,23 @@ const ModerationDashboard = () => {
                   <X size={20} />
                 </button>
               </div>
-              
+
               <div className="user-actions-panel">
                 {selectedUser.banned ? (
-                  <button 
-                    className="btn-approve"
-                    onClick={() => handleBanUser(selectedUser._id, false)}
-                  >
-                    <Check size={16}/> Unban User
+                  <button className="btn-approve" onClick={() => handleBanUser(selectedUser._id, false)}>
+                    <Check size={16} /> Unban User
                   </button>
                 ) : (
-                  <button 
-                    className="btn-warning"
-                    onClick={() => handleBanUser(selectedUser._id, true)}
-                  >
-                    <Ban size={16}/> Ban User
+                  <button className="btn-warning" onClick={() => handleBanUser(selectedUser._id, true)}>
+                    <Ban size={16} /> Ban User
                   </button>
                 )}
-                
-                <button 
-                  className="btn-delete"
-                  onClick={() => handleDeleteUser(selectedUser._id)}
-                >
-                  <UserX size={16}/> Delete User
+
+                <button className="btn-delete" onClick={() => handleDeleteUser(selectedUser._id)}>
+                  <UserX size={16} /> Delete User
                 </button>
               </div>
-              
+
               <div className="user-info">
                 <p><strong>Email:</strong> {selectedUser.email}</p>
                 <p><strong>Role:</strong> {selectedUser.role}</p>
@@ -637,7 +621,7 @@ const ModerationDashboard = () => {
       <AnimatePresence>
         {selectedFAQ && (
           <div className="admin-modal-overlay" onClick={() => setSelectedFAQ(null)}>
-            <motion.div 
+            <motion.div
               className="admin-edit-modal"
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -650,19 +634,16 @@ const ModerationDashboard = () => {
                   <X size={20} />
                 </button>
               </div>
-              
+
               <div className="faq-form">
                 <div className="form-group">
                   <label>Question</label>
                   <p className="question-text">{selectedFAQ.question}</p>
                 </div>
-                
+
                 <div className="form-group">
                   <label>Category</label>
-                  <select 
-                    defaultValue={selectedFAQ.category}
-                    id="faq-category"
-                  >
+                  <select defaultValue={selectedFAQ.category} id="faq-category">
                     <option value="Account">Account</option>
                     <option value="Marketplace">Marketplace</option>
                     <option value="Forum">Forum</option>
@@ -671,18 +652,18 @@ const ModerationDashboard = () => {
                     <option value="General">General</option>
                   </select>
                 </div>
-                
+
                 <div className="form-group">
                   <label>Answer</label>
-                  <textarea 
+                  <textarea
                     id="faq-answer"
                     defaultValue={selectedFAQ.answer}
                     rows="6"
                     placeholder="Provide a helpful answer..."
                   />
                 </div>
-                
-                <button 
+
+                <button
                   className="btn-save-admin"
                   onClick={() => {
                     const answer = document.getElementById('faq-answer').value;
@@ -690,7 +671,7 @@ const ModerationDashboard = () => {
                     handleAnswerFAQ(selectedFAQ._id, answer, category);
                   }}
                 >
-                  <Check size={16}/> Save Answer
+                  <Check size={16} /> Save Answer
                 </button>
               </div>
             </motion.div>

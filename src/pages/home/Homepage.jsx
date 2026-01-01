@@ -4,11 +4,12 @@ import { Users, ChevronRight, LogOut, Newspaper, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import ProfileLicense from '../../components/profile/ProfileLicense';
 import '../../styles/Home.css';
+import { API_BASE_URL } from '../../config/api';
 
 const Homepage = () => {
   const navigate = useNavigate();
 
-  const [activeTab, setActiveTab] = useState('JDM'); 
+  const [activeTab, setActiveTab] = useState('JDM');
   const [userTribes, setUserTribes] = useState([]);
   const [userName, setUserName] = useState('');
   const [avatar, setAvatar] = useState(null);
@@ -16,19 +17,16 @@ const Homepage = () => {
   const [localNews, setLocalNews] = useState([]);
   const [newsLoading, setNewsLoading] = useState(true);
 
-  // --- NEW: DYNAMIC API URL ---
-  // This uses the variable you set in Vercel, or localhost if you're developing locally
-  const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
-
   useEffect(() => {
     const savedTribes = localStorage.getItem('userTribes');
     const savedName = localStorage.getItem('userName');
     const savedAvatar = localStorage.getItem('userAvatar');
     const token = localStorage.getItem('token');
-    
+
     setIsLoggedIn(!!token);
     if (savedName) setUserName(savedName);
     if (savedAvatar) setAvatar(savedAvatar);
+
     if (savedTribes) {
       const tribes = JSON.parse(savedTribes);
       setUserTribes(tribes);
@@ -37,19 +35,18 @@ const Homepage = () => {
 
     const fetchNews = async () => {
       try {
-        // UPDATED: Now uses the dynamic base URL
         const response = await fetch(`${API_BASE_URL}/api/news/car-news`);
         const data = await response.json();
         setLocalNews(data);
       } catch (error) {
-        console.error("Error fetching news:", error);
+        console.error('Error fetching news:', error);
       } finally {
         setNewsLoading(false);
       }
     };
 
     fetchNews();
-  }, [API_BASE_URL]); // Added API_BASE_URL to dependency array
+  }, []);
 
   const handleLogout = () => {
     localStorage.clear();
@@ -58,11 +55,11 @@ const Homepage = () => {
   };
 
   const licenseData = {
-    username: userName || "Enthusiast",
-    personalName: "Verified Member",
-    interests: userTribes.length > 0 ? userTribes : ["No Tribes Joined"],
-    knowWhats: ["Active Contributor", "Tribe Member"],
-    avatar: avatar 
+    username: userName || 'Enthusiast',
+    personalName: 'Verified Member',
+    interests: userTribes.length > 0 ? userTribes : ['No Tribes Joined'],
+    knowWhats: ['Active Contributor', 'Tribe Member'],
+    avatar
   };
 
   const feedContent = [
@@ -76,16 +73,18 @@ const Homepage = () => {
     <div className="home-container">
       <section className="home-hero-section">
         <div className="hero-overlay"></div>
+
         {isLoggedIn && (
           <div className="sign-out-tab" onClick={handleLogout}>
             <LogOut size={16} /> <span>Sign Out</span>
           </div>
         )}
+
         <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} className="hero-text-block">
           <span className="welcome-badge">Welcome back, {userName || 'Enthusiast'}</span>
           <h1>Who we are</h1>
           <p className="client-copy">
-            We are committed to bring cars and community together. This starts with 
+            We are committed to bring cars and community together. This starts with
             connecting the right people and a space to meet. <strong>Welcome!</strong>
           </p>
           <div className="hero-cta-group">
@@ -113,6 +112,7 @@ const Homepage = () => {
                 Manage Account <User size={18} />
               </button>
             </div>
+
             <div className="license-preview-container" onClick={() => navigate('/profile')}>
               <div className="license-hover-hint">View My Profile License</div>
               <ProfileLicense userData={licenseData} />
@@ -126,18 +126,25 @@ const Homepage = () => {
           <div className="feed-nav">
             <div className="tabs">
               {(userTribes.length > 0 ? userTribes : ['JDM', 'Muscle', 'Euro']).map(tab => (
-                <button key={tab} className={activeTab === tab ? 'tab-active' : ''} onClick={() => setActiveTab(tab)}>{tab}</button>
+                <button key={tab} className={activeTab === tab ? 'tab-active' : ''} onClick={() => setActiveTab(tab)}>
+                  {tab}
+                </button>
               ))}
             </div>
           </div>
+
           <div className="home-content-grid">
             <AnimatePresence mode="wait">
               {feedContent.filter(item => item.interest === activeTab).map((item) => (
                 <motion.div key={item.id} layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={`content-card ${item.type}`}>
                   <span className="content-badge">{item.tag}</span>
                   <h3>{item.title}</h3>
-                  {item.type === 'listing' ? <p className="price-text">{item.price}</p> : <p className="desc-text">{item.desc}</p>}
-                  <button className="card-action-btn">View {item.type === 'listing' ? 'Listing' : 'Story'} <ChevronRight size={16} /></button>
+                  {item.type === 'listing'
+                    ? <p className="price-text">{item.price}</p>
+                    : <p className="desc-text">{item.desc}</p>}
+                  <button className="card-action-btn">
+                    View {item.type === 'listing' ? 'Listing' : 'Story'} <ChevronRight size={16} />
+                  </button>
                 </motion.div>
               ))}
             </AnimatePresence>
@@ -145,7 +152,11 @@ const Homepage = () => {
         </div>
 
         <aside className="home-news-sidebar">
-          <div className="news-header"><Newspaper size={20} /><h3>NYC Car News</h3></div>
+          <div className="news-header">
+            <Newspaper size={20} />
+            <h3>NYC Car News</h3>
+          </div>
+
           <div className="news-list">
             {newsLoading ? (
               <p>Loading news...</p>
@@ -154,12 +165,13 @@ const Homepage = () => {
                 <div key={idx} className="news-item" onClick={() => window.open(article.url, '_blank')}>
                   <h4>{article.title}</h4>
                   <div className="news-meta">
-                    <span>{article.source.name}</span> • <span>{new Date(article.publishedAt).toLocaleDateString()}</span>
+                    <span>{article.source?.name}</span> • <span>{new Date(article.publishedAt).toLocaleDateString()}</span>
                   </div>
                 </div>
               ))
             )}
           </div>
+
           <button className="view-all-news">Stay Updated</button>
         </aside>
       </div>
@@ -170,8 +182,8 @@ const Homepage = () => {
           <div className="banner-text">
             <h2>Why use this platform?</h2>
             <p className="client-copy-alt">
-              Why not get advice, find products and vehicles from people who are proven 
-              to know what they are talking about? This is the place to find all you need 
+              Why not get advice, find products and vehicles from people who are proven
+              to know what they are talking about? This is the place to find all you need
               to know about cars, the people who work on them and keep the community alive.
             </p>
           </div>

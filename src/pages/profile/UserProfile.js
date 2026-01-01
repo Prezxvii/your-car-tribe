@@ -3,11 +3,12 @@ import axios from 'axios';
 import { Settings, Save, Check, LogOut, Loader2 } from 'lucide-react';
 import ProfileLicense from '../../components/profile/ProfileLicense';
 import '../../styles/Profile.css';
+import { API_BASE_URL } from '../../config/api';
 
 const UserProfile = () => {
   const [userTribes, setUserTribes] = useState([]);
   const [userName, setUserName] = useState('');
-  const [avatar, setAvatar] = useState(null); // Holds the image file or URL
+  const [avatar, setAvatar] = useState(null);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
 
@@ -16,24 +17,20 @@ const UserProfile = () => {
   useEffect(() => {
     const savedTribes = localStorage.getItem('userTribes');
     const savedName = localStorage.getItem('userName');
-    const savedAvatar = localStorage.getItem('userAvatar'); // We'll store the URL here
-    
+    const savedAvatar = localStorage.getItem('userAvatar');
+
     if (savedName) setUserName(savedName);
     if (savedTribes) setUserTribes(JSON.parse(savedTribes));
     if (savedAvatar) setAvatar(savedAvatar);
   }, []);
 
-  // --- AVATAR UPLOAD HANDLER ---
   const handleAvatarChange = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      // Create a local preview URL
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setAvatar(reader.result); // This is a Base64 string for immediate preview
-      };
-      reader.readAsDataURL(file);
-    }
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = () => setAvatar(reader.result);
+    reader.readAsDataURL(file);
   };
 
   const handleSignOut = () => {
@@ -42,7 +39,7 @@ const UserProfile = () => {
   };
 
   const toggleTribe = (tribe) => {
-    setUserTribes(prev => 
+    setUserTribes(prev =>
       prev.includes(tribe) ? prev.filter(t => t !== tribe) : [...prev, tribe]
     );
   };
@@ -51,15 +48,16 @@ const UserProfile = () => {
     setSaving(true);
     try {
       const token = localStorage.getItem('token');
-      
-      // If we were using a real backend, we'd use FormData to send the image file
-      await axios.put('http://localhost:5000/api/auth/update-profile', 
-        { tribes: userTribes, avatar: avatar },
-        { headers: { Authorization: `Bearer ${token}` }}
+
+      await axios.put(
+        `${API_BASE_URL}/api/auth/update-profile`,
+        { tribes: userTribes, avatar },
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-      
+
       localStorage.setItem('userTribes', JSON.stringify(userTribes));
       localStorage.setItem('userAvatar', avatar);
+
       setMessage('Profile Updated!');
       setTimeout(() => setMessage(''), 3000);
     } catch (err) {
@@ -74,29 +72,25 @@ const UserProfile = () => {
     personalName: "Verified Member",
     interests: userTribes,
     knowWhats: ["Active Contributor", "Tribe Member"],
-    avatar: avatar // Pass the avatar to the license component
+    avatar
   };
 
   return (
     <div className="profile-page-wrapper">
-      
-      {/* 1. THE VISUAL LICENSE */}
       <section className="license-display-section">
         <div className="license-relative-wrapper">
           <ProfileLicense userData={licenseData} />
-          
-          {/* Hidden File Input triggered by the License's CSS hover state */}
-          <input 
-            type="file" 
-            id="avatar-input" 
-            onChange={handleAvatarChange} 
-            accept="image/*" 
-            hidden 
+
+          <input
+            type="file"
+            id="avatar-input"
+            onChange={handleAvatarChange}
+            accept="image/*"
+            hidden
           />
         </div>
       </section>
 
-      {/* 2. MANAGE TRIBES SECTION */}
       <section className="settings-content-area">
         <div className="settings-card card">
           <div className="settings-header">
@@ -106,10 +100,10 @@ const UserProfile = () => {
               <LogOut size={16} /> Sign Out
             </button>
           </div>
-          
+
           <div className="tribes-selection-grid">
             {allAvailableTribes.map(tribe => (
-              <button 
+              <button
                 key={tribe}
                 className={`tribe-pill ${userTribes.includes(tribe) ? 'active' : ''}`}
                 onClick={() => toggleTribe(tribe)}
