@@ -13,8 +13,12 @@ import {
 import ListingCard from './ListingCard';
 import './Marketplace.css';
 
-// --- DYNAMIC API URL ---
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+// --- SMART API URL LOGIC ---
+// Fixes Safari/Mobile "Localhost" errors by detecting the environment
+const API_BASE_URL = process.env.REACT_APP_API_URL || 
+  (window.location.hostname === 'localhost' 
+    ? 'http://localhost:5000' 
+    : 'https://your-car-tribe.onrender.com'); //
 
 const MarketplaceFeed = () => {
   const [selectedCategory, setSelectedCategory] = useState('All Categories');
@@ -38,22 +42,29 @@ const MarketplaceFeed = () => {
     setLoading(true);
     try {
       // Use URL constructor with the dynamic API base
-      const url = new URL(`${API_BASE_URL}/api/market/all`);
+      const url = new URL(`${API_BASE_URL}/api/market/all`); //
       url.searchParams.set('search', searchQuery);
       url.searchParams.set('zip', zip);
       url.searchParams.set('radius', radius);
 
-      const response = await fetch(url.toString());
+      // Safari compatibility: Explicitly set headers for cross-domain requests
+      const response = await fetch(url.toString(), {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      }); //
+      
       const data = await response.json();
-
       setListings(Array.isArray(data) ? data : []);
     } catch (err) {
-      console.error('Fetch error:', err);
+      console.error('Fetch error on Safari/Mobile:', err); //
       setListings([]);
     } finally {
       setLoading(false);
     }
-  }, [searchQuery, zip, radius, isValidZip]); // Removed API_BASE_URL from deps as it is a constant outside
+  }, [searchQuery, zip, radius, isValidZip]); 
 
   useEffect(() => {
     fetchLiveAuctions();

@@ -3,8 +3,13 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Loader2, ArrowLeft, ShieldCheck, MapPin, Calendar, Gauge } from 'lucide-react';
 import './ListingDetail.css';
 
-// --- DYNAMIC API URL ---
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+// --- SMART API URL LOGIC ---
+// This prioritizes the .env variable you created, then checks if you're on your phone/Safari, 
+// and finally defaults to your live Render URL.
+const API_BASE_URL = process.env.REACT_APP_API_URL || 
+  (window.location.hostname === 'localhost' 
+    ? 'http://localhost:5000' 
+    : 'https://your-car-tribe.onrender.com');
 
 const ListingDetail = () => {
   const { id } = useParams();
@@ -15,39 +20,56 @@ const ListingDetail = () => {
 
   useEffect(() => {
     const fetchVehicleDetails = async () => {
+      if (!id) return;
       setLoading(true);
+      setError(false);
+
       try {
-        // Fetch from your Render backend
-        const response = await fetch(`${API_BASE_URL}/api/market/details/${id}`);
-        if (!response.ok) throw new Error('Vehicle not found');
+        // Fetching with Safari-compliant headers
+        const response = await fetch(`${API_BASE_URL}/api/market/details/${id}`, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            // Include authorization if your marketplace requires login to view details
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+
+        if (!response.ok) {
+          console.error(`Server responded with ${response.status}`);
+          throw new Error('Vehicle not found');
+        }
         
         const data = await response.json();
         setVehicle(data);
       } catch (err) {
-        console.error('Fetch error:', err);
+        console.error('Fetch error on Safari/Desktop:', err);
         setError(true);
       } finally {
         setLoading(false);
       }
     };
 
-    if (id) fetchVehicleDetails();
+    fetchVehicleDetails();
   }, [id]);
 
   if (loading) return (
     <div className="listing-loading">
       <Loader2 className="spinner" size={48} />
-      <p>Loading vehicle specs...</p>
+      <p>Loading vehicle specs from the Tribe...</p>
     </div>
   );
 
   if (error || !vehicle) return (
     <div className="listing-error-container">
-      <h2>Vehicle Not Found</h2>
-      <p>The requested listing could not be retrieved from the network.</p>
-      <button onClick={() => navigate('/marketplace')} className="btn-buy">
-        Return to Marketplace
-      </button>
+      <div className="error-card card">
+        <h2>Vehicle Not Found</h2>
+        <p>We couldn't retrieve this listing. This usually happens if the link is old or the connection to our server was interrupted.</p>
+        <button onClick={() => navigate('/marketplace')} className="btn-buy">
+          Return to Marketplace
+        </button>
+      </div>
     </div>
   );
 
@@ -67,17 +89,23 @@ const ListingDetail = () => {
           <div className='image-gallery card'>
             <div 
               className='main-image' 
-              style={{ backgroundImage: `url(${vehicle.image || '/api/placeholder/800/500'})` }}
+              style={{ 
+                backgroundImage: `url(${vehicle.image || '/api/placeholder/800/500'})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center'
+              }}
             ></div>
-            <div className="thumbnail-strip">
-              {vehicle.gallery?.map((img, i) => (
-                <div 
-                  key={i} 
-                  className="thumb" 
-                  style={{ backgroundImage: `url(${img})` }}
-                ></div>
-              ))}
-            </div>
+            {vehicle.gallery && vehicle.gallery.length > 0 && (
+              <div className="thumbnail-strip">
+                {vehicle.gallery.map((img, i) => (
+                  <div 
+                    key={i} 
+                    className="thumb" 
+                    style={{ backgroundImage: `url(${img})` }}
+                  ></div>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className='description card'>
@@ -91,22 +119,22 @@ const ListingDetail = () => {
           <div className='highlight-box card'>
             <h4>VEHICLE STATS</h4>
             <ul className="stats-list">
-              <li><Calendar size={16} /> <b>Year:</b> {vehicle.year}</li>
-              <li><Gauge size={16} /> <b>Mileage:</b> {vehicle.mileage?.toLocaleString()} mi</li>
-              <li><MapPin size={16} /> <b>Location:</b> {vehicle.location || 'Unavailable'}</li>
-              <li><ShieldCheck size={16} /> <b>VIN:</b> {vehicle.vin || 'Verified'}</li>
+              <li><Calendar size={16} /> <span><b>Year:</b> {vehicle.year}</span></li>
+              <li><Gauge size={16} /> <span><b>Mileage:</b> {vehicle.mileage?.toLocaleString() || '0'} mi</span></li>
+              <li><MapPin size={16} /> <span><b>Location:</b> {vehicle.location || 'Nationwide'}</span></li>
+              <li><ShieldCheck size={16} /> <span><b>VIN:</b> {vehicle.vin || 'Not Provided'}</span></li>
             </ul>
           </div>
 
           <div className='action-box card'>
-            <div className="price-tag">${vehicle.price?.toLocaleString()}</div>
-            <button className='btn-buy'>BUY NOW</button>
-            <button className='btn-offer'>MAKE OFFER</button>
+            <div className="price-tag">${vehicle.price?.toLocaleString() || 'TBD'}</div>
+            <button className='btn-buy' onClick={() => alert('Feature coming soon!')}>BUY NOW</button>
+            <button className='btn-offer' onClick={() => alert('Feature coming soon!')}>MAKE OFFER</button>
           </div>
 
           <div className='seller-info card'>
             <h4>SELLER INFORMATION</h4>
-            <p><b>Dealer:</b> {vehicle.seller_name || 'Private Party'}</p>
+            <p><b>Seller:</b> {vehicle.seller_name || 'Verified Member'}</p>
             <p><b>Rating:</b> ⭐⭐⭐⭐⭐ (4.9)</p>
           </div>
         </aside>

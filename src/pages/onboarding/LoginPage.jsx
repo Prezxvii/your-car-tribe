@@ -5,11 +5,17 @@ import { Mail, Lock, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
 import axios from 'axios';
 import '../../styles/Onboarding.css';
 
+// SMART URL LOGIC: Fixes Safari and Mobile "Localhost" errors
+const API_BASE_URL = process.env.REACT_APP_API_URL || 
+  (window.location.hostname === 'localhost' 
+    ? 'http://localhost:5000' 
+    : 'https://your-car-tribe.onrender.com'); // Your live Render URL
+
 const LoginPage = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const navigate = useNavigate(); // Now used correctly below
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -17,7 +23,14 @@ const LoginPage = () => {
     setError('');
 
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/login', formData);
+      // Added explicit headers and credentials for Safari security
+      const response = await axios.post(`${API_BASE_URL}/api/auth/login`, formData, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        withCredentials: true 
+      });
 
       if (response.data.token) {
         // 1. Save Session Token
@@ -35,10 +48,8 @@ const LoginPage = () => {
         
         // 3. Save backward compatibility fields
         localStorage.setItem('userName', response.data.username);
-        localStorage.setItem('userTribes', JSON.stringify(userObject.tribes));
         
-        // 4. FIX: Use React Router for navigation instead of window.location.href
-        // This clears the 'navigate defined but never used' ESLint error
+        // 4. Navigate to home or marketplace
         navigate('/');
       }
     } catch (err) {
@@ -62,7 +73,7 @@ const LoginPage = () => {
         </div>
 
         {error && (
-          <div className="login-error-msg">
+          <div className="login-error-msg" style={{color: '#e53e3e', background: '#fff5f5', padding: '10px', borderRadius: '8px', marginBottom: '15px', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '8px'}}>
             <AlertCircle size={16} /> {error}
           </div>
         )}
