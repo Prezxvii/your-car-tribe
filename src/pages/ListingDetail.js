@@ -3,13 +3,17 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Loader2, ArrowLeft, ShieldCheck, MapPin, Calendar, Gauge, AlertCircle } from 'lucide-react';
 import './ListingDetail.css';
 
-// PRODUCTION API URL - Uses Vercel env var, falls back to deployed Render URL
-const API_BASE_URL = process.env.REACT_APP_API_URL || 
-  (window.location.hostname === 'localhost' 
-    ? 'http://localhost:5000' 
-    : 'https://your-car-tribe.onrender.com');
+// --- ROBUST URL SELECTION ---
+// Hardcode your production URL here as the primary fallback
+const PROD_URL = 'https://your-car-tribe.onrender.com';
+const LOCAL_URL = 'http://localhost:5000';
 
-console.log('🔗 Using API Base URL:', API_BASE_URL);
+const API_BASE_URL = process.env.REACT_APP_API_URL || 
+  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+    ? LOCAL_URL 
+    : PROD_URL);
+
+console.log('🔗 Tribe API active at:', API_BASE_URL);
 
 const ListingDetail = () => {
   const { id } = useParams();
@@ -26,15 +30,16 @@ const ListingDetail = () => {
       setError(null);
       setIsColdStart(false);
 
-      const startTime = Date.now();
+      const controller = new AbortController();
+      // 60-second timeout to handle Render "Cold Starts"
+      const timeoutId = setTimeout(() => controller.abort(), 60000);
 
       try {
-        console.log(`📡 Fetching from: ${API_BASE_URL}/api/market/listing/${id}`);
+        console.log(`📡 Requesting vehicle ${id}...`);
         
-        // Show cold start message after 3 seconds
         const coldStartTimer = setTimeout(() => {
           setIsColdStart(true);
-        }, 3000);
+        }, 3500);
 
         const response = await fetch(`${API_BASE_URL}/api/market/listing/${id}`, {
           method: 'GET',
@@ -42,21 +47,18 @@ const ListingDetail = () => {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
           },
-          signal: AbortSignal.timeout(60000) // 60 second timeout for cold starts
+          signal: controller.signal
         });
 
         clearTimeout(coldStartTimer);
-        const elapsed = Date.now() - startTime;
-        console.log(`⏱️ Request took ${elapsed}ms`);
+        clearTimeout(timeoutId);
 
         if (!response.ok) {
-          throw new Error(`Vehicle not found (HTTP ${response.status})`);
+          throw new Error(`Vehicle data unavailable (Status: ${response.status})`);
         }
         
         const data = await response.json();
-        console.log('✅ Vehicle data received:', data);
         
-        // Normalize data to handle both internal DB and external API structures
         setVehicle({
           ...data,
           displayPrice: data.price?.toLocaleString() || data.msrp?.toLocaleString() || 'TBD',
@@ -65,13 +67,12 @@ const ListingDetail = () => {
           displayGallery: data.images || data.media?.photo_links || []
         });
       } catch (err) {
-        console.error('❌ Fetch error:', err);
+        console.error('❌ Tribe API Fetch Failed:', err);
         
-        // Provide helpful error messages
         if (err.name === 'AbortError') {
-          setError('Request timed out. The server may be waking up, please try again.');
-        } else if (err.message.includes('Failed to fetch') || err.message.includes('Network')) {
-          setError('Cannot connect to server. Please check your internet connection.');
+          setError('Server wakeup timed out. Please refresh to try again.');
+        } else if (err.message.includes('Failed to fetch')) {
+          setError('Network security block or Server offline. Ensure you are not on a restricted VPN.');
         } else {
           setError(err.message || 'Failed to load vehicle details');
         }
@@ -84,13 +85,14 @@ const ListingDetail = () => {
     fetchVehicleDetails();
   }, [id]);
 
+  // UI Renders (Loading, Error, and Success) remain largely the same
   if (loading) return (
     <div className="listing-loading">
       <Loader2 className="spinner" size={48} />
-      <p>Loading vehicle specs...</p>
+      <p>Consulting the Tribe archives...</p>
       {isColdStart && (
-        <p style={{ marginTop: '10px', color: '#888', fontSize: '14px' }}>
-          ⏳ Server is waking up, this may take up to 60 seconds...
+        <p className="cold-start-msg">
+          ⏳ Server is waking up (Render Free Tier), please stay with us...
         </p>
       )}
     </div>
@@ -99,16 +101,12 @@ const ListingDetail = () => {
   if (error || !vehicle) return (
     <div className="listing-error-container">
       <div className="error-card card">
-        <AlertCircle size={48} style={{ color: '#ff4444', marginBottom: '16px' }} />
-        <h2>Vehicle Not Found</h2>
-        <p>{error || "The requested listing could not be retrieved."}</p>
-        <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
-          <button onClick={() => window.location.reload()} className="btn-offer">
-            Try Again
-          </button>
-          <button onClick={() => navigate('/marketplace')} className="btn-buy">
-            Return to Marketplace
-          </button>
+        <AlertCircle size={48} className="error-icon" />
+        <h2>Listing Unavailable</h2>
+        <p>{error}</p>
+        <div className="error-actions">
+          <button onClick={() => window.location.reload()} className="btn-offer">Retry</button>
+          <button onClick={() => navigate('/market')} className="btn-buy">Marketplace</button>
         </div>
       </div>
     </div>
@@ -117,7 +115,7 @@ const ListingDetail = () => {
   return (
     <div className='listing-container'>
       <button className="back-btn" onClick={() => navigate(-1)}>
-        <ArrowLeft size={18} /> Back to Results
+        <ArrowLeft size={18} /> Back
       </button>
 
       <h1 className='listing-title'>{vehicle.year} {vehicle.make} {vehicle.model}</h1>
@@ -148,13 +146,13 @@ const ListingDetail = () => {
               <li><Calendar size={16} /> <b>Year:</b> {vehicle.year}</li>
               <li><Gauge size={16} /> <b>Mileage:</b> {vehicle.displayMiles} mi</li>
               <li><MapPin size={16} /> <b>Location:</b> {vehicle.location || 'Nationwide'}</li>
-              <li><ShieldCheck size={16} /> <b>VIN:</b> {vehicle.vin || 'Verified'}</li>
+              <li><ShieldCheck size={16} /> <b>VIN:</b> {vehicle.vin || 'Not Listed'}</li>
             </ul>
           </div>
           <div className='action-box card'>
             <div className="price-tag">${vehicle.displayPrice}</div>
-            <button className='btn-buy'>BUY NOW</button>
-            <button className='btn-offer'>MAKE OFFER</button>
+            <button className='btn-buy' onClick={() => alert('Feature coming soon!')}>CONTACT SELLER</button>
+            <button className='btn-offer' onClick={() => alert('Feature coming soon!')}>MAKE OFFER</button>
           </div>
         </aside>
       </div>

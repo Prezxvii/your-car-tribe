@@ -24,7 +24,7 @@ const allowedOrigins = [
   'http://localhost:3001'                    
 ];
 
-app.use(cors({
+const corsOptions = {
   origin: function (origin, callback) {
     // Allow requests with no origin (mobile apps, Postman, etc.)
     if (!origin) return callback(null, true);
@@ -39,10 +39,15 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   credentials: true,
   allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Requested-With']
-}));
+};
 
-// Handle preflight OPTIONS requests
-app.options('*', cors());
+// Apply CORS to all standard routes
+app.use(cors(corsOptions));
+
+// --- FIXED FOR EXPRESS 5 ---
+// Using a Regular Expression for the catch-all OPTIONS handler 
+// This avoids the "Missing parameter name" PathError
+app.options(/^(.*)$/, cors(corsOptions));
 
 app.use(express.json());
 
@@ -114,5 +119,4 @@ app.use((err, req, res, next) => {
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Tribe Market Server running on port ${PORT}`);
   console.log(`📡 CORS allowed for: ${allowedOrigins.join(', ')}`);
-  console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
 });
