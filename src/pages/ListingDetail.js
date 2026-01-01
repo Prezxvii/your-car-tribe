@@ -12,16 +12,12 @@ import {
 import './ListingDetail.css';
 
 /**
- * 🚫 IMPORTANT
- * - localhost is ONLY used during local development
- * - Production always uses HTTPS backend
- * - Safari-safe (no eager fallback evaluation)
+ * ✅ PRODUCTION API ONLY
+ * - No localhost
+ * - HTTPS only
+ * - Safari-safe
  */
-const API_BASE_URL =
-  process.env.REACT_APP_API_URL ??
-  (window.location.hostname === 'localhost'
-    ? 'http://localhost:5000'
-    : 'https://your-car-tribe.onrender.com');
+const API_BASE_URL = 'https://your-car-tribe.onrender.com';
 
 const ListingDetail = () => {
   const { id } = useParams();
@@ -96,7 +92,7 @@ const ListingDetail = () => {
           setError('Server wake-up timed out. Please refresh to try again.');
         } else if (err.message.includes('Failed to fetch')) {
           setError(
-            'Network security block. Please disable VPNs or restrictive networks.'
+            'Network error. Please check your connection or disable VPNs.'
           );
         } else {
           setError(err.message || 'Failed to load vehicle details');
@@ -115,7 +111,7 @@ const ListingDetail = () => {
     };
   }, [id]);
 
-  /* ------------------ UI STATES ------------------ */
+  /* ------------------ LOADING ------------------ */
 
   if (loading) {
     return (
@@ -130,6 +126,8 @@ const ListingDetail = () => {
       </div>
     );
   }
+
+  /* ------------------ ERROR ------------------ */
 
   if (error || !vehicle) {
     return (
@@ -240,4 +238,5 @@ const ListingDetail = () => {
 };
 
 export default ListingDetail;
+
 
