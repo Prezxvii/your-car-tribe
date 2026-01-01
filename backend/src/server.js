@@ -16,7 +16,7 @@ const PORT = process.env.PORT || 10000;
 // Connect to Database
 connectDB();
 
-// --- SAFARI & VERCEL COMPLIANT CORS CONFIG ---
+// --- PRODUCTION-READY CORS CONFIG ---
 const allowedOrigins = [
   'https://your-car-tribe-mai9.vercel.app', 
   'https://your-car-tribe.vercel.app',      
@@ -26,7 +26,9 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: function (origin, callback) {
+    // Allow requests with no origin (mobile apps, Postman, etc.)
     if (!origin) return callback(null, true);
+    
     if (allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
@@ -39,7 +41,7 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Requested-With']
 }));
 
-// Handle Safari preflight OPTIONS requests
+// Handle preflight OPTIONS requests
 app.options('*', cors());
 
 app.use(express.json());
@@ -49,6 +51,15 @@ app.use((req, res, next) => {
   const origin = req.get('origin') || 'No Origin';
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.path} - Origin: ${origin}`);
   next();
+});
+
+// Health check endpoint for Render
+app.get('/health', (req, res) => {
+  res.status(200).json({ 
+    status: 'healthy', 
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
+  });
 });
 
 // API Routes
@@ -73,9 +84,35 @@ app.get('/api/news/car-news', async (req, res) => {
   }
 });
 
-app.get('/', (req, res) => res.send('🚀 Tribe Market API is running...'));
+// Root endpoint
+app.get('/', (req, res) => {
+  res.json({ 
+    message: '🚀 Tribe Market API is running',
+    version: '1.0.0',
+    endpoints: {
+      health: '/health',
+      market: '/api/market',
+      auth: '/api/auth',
+      admin: '/api/admin',
+      forum: '/api/forum',
+      news: '/api/news/car-news'
+    }
+  });
+});
 
-app.listen(PORT, () => {
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({ error: 'Route not found' });
+});
+
+// Error handler
+app.use((err, req, res, next) => {
+  console.error('Server error:', err);
+  res.status(500).json({ error: 'Internal server error' });
+});
+
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Tribe Market Server running on port ${PORT}`);
   console.log(`📡 CORS allowed for: ${allowedOrigins.join(', ')}`);
+  console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
 });

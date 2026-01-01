@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Loader2, ArrowLeft, ShieldCheck, MapPin, Calendar, Gauge } from 'lucide-react';
+import { Loader2, ArrowLeft, ShieldCheck, MapPin, Calendar, Gauge, AlertCircle } from 'lucide-react';
 import './ListingDetail.css';
 
-// SMART URL: Prioritizes .env, then production Render, then localhost
+// PRODUCTION API URL - Uses Vercel env var, falls back to deployed Render URL
 const API_BASE_URL = process.env.REACT_APP_API_URL || 
   (window.location.hostname === 'localhost' 
     ? 'http://localhost:5000' 
     : 'https://your-car-tribe.onrender.com');
+
+console.log('🔗 Using API Base URL:', API_BASE_URL);
 
 const ListingDetail = () => {
   const { id } = useParams();
@@ -15,26 +17,44 @@ const ListingDetail = () => {
   const [vehicle, setVehicle] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isColdStart, setIsColdStart] = useState(false);
 
   useEffect(() => {
     const fetchVehicleDetails = async () => {
       if (!id) return;
       setLoading(true);
       setError(null);
+      setIsColdStart(false);
+
+      const startTime = Date.now();
 
       try {
-        // Fetches from the synchronized backend route
+        console.log(`📡 Fetching from: ${API_BASE_URL}/api/market/listing/${id}`);
+        
+        // Show cold start message after 3 seconds
+        const coldStartTimer = setTimeout(() => {
+          setIsColdStart(true);
+        }, 3000);
+
         const response = await fetch(`${API_BASE_URL}/api/market/listing/${id}`, {
           method: 'GET',
           headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
-          }
+          },
+          signal: AbortSignal.timeout(60000) // 60 second timeout for cold starts
         });
 
-        if (!response.ok) throw new Error('Vehicle not found');
+        clearTimeout(coldStartTimer);
+        const elapsed = Date.now() - startTime;
+        console.log(`⏱️ Request took ${elapsed}ms`);
+
+        if (!response.ok) {
+          throw new Error(`Vehicle not found (HTTP ${response.status})`);
+        }
         
         const data = await response.json();
+        console.log('✅ Vehicle data received:', data);
         
         // Normalize data to handle both internal DB and external API structures
         setVehicle({
@@ -46,9 +66,18 @@ const ListingDetail = () => {
         });
       } catch (err) {
         console.error('❌ Fetch error:', err);
-        setError(err.message);
+        
+        // Provide helpful error messages
+        if (err.name === 'AbortError') {
+          setError('Request timed out. The server may be waking up, please try again.');
+        } else if (err.message.includes('Failed to fetch') || err.message.includes('Network')) {
+          setError('Cannot connect to server. Please check your internet connection.');
+        } else {
+          setError(err.message || 'Failed to load vehicle details');
+        }
       } finally {
         setLoading(false);
+        setIsColdStart(false);
       }
     };
 
@@ -59,17 +88,28 @@ const ListingDetail = () => {
     <div className="listing-loading">
       <Loader2 className="spinner" size={48} />
       <p>Loading vehicle specs...</p>
+      {isColdStart && (
+        <p style={{ marginTop: '10px', color: '#888', fontSize: '14px' }}>
+          ⏳ Server is waking up, this may take up to 60 seconds...
+        </p>
+      )}
     </div>
   );
 
   if (error || !vehicle) return (
     <div className="listing-error-container">
       <div className="error-card card">
+        <AlertCircle size={48} style={{ color: '#ff4444', marginBottom: '16px' }} />
         <h2>Vehicle Not Found</h2>
         <p>{error || "The requested listing could not be retrieved."}</p>
-        <button onClick={() => navigate('/marketplace')} className="btn-buy">
-          Return to Marketplace
-        </button>
+        <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+          <button onClick={() => window.location.reload()} className="btn-offer">
+            Try Again
+          </button>
+          <button onClick={() => navigate('/marketplace')} className="btn-buy">
+            Return to Marketplace
+          </button>
+        </div>
       </div>
     </div>
   );
