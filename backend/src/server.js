@@ -1,3 +1,6 @@
+// ============================================
+// FIXED: backend/src/server.js
+// ============================================
 const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
@@ -16,17 +19,23 @@ const PORT = process.env.PORT || 10000;
 // Connect to Database
 connectDB();
 
-// --- SAFARI COMPLIANT CORS CONFIG ---
+// --- SAFARI & VERCEL COMPLIANT CORS CONFIG ---
 const allowedOrigins = [
   'https://your-car-tribe-mai9.vercel.app', // Your Vercel URL
-  'http://localhost:3000'
+  'https://your-car-tribe.vercel.app',      // Alternative Vercel URL
+  'http://localhost:3000',                   // Local development
+  'http://localhost:3001'                    // Alternative local port
 ];
 
 app.use(cors({
   origin: function (origin, callback) {
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
+      console.log('❌ Blocked by CORS:', origin);
       callback(new Error('Not allowed by CORS'));
     }
   },
@@ -35,10 +44,17 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Requested-With']
 }));
 
-// Handle Safari Preflight requests
+// CRITICAL: Handle Safari preflight OPTIONS requests
 app.options('*', cors());
 
+// Body parser middleware
 app.use(express.json());
+
+// Request logging for debugging
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.path} - Origin: ${req.get('origin')}`);
+  next();
+});
 
 // API Routes
 app.use('/api/market', marketRoutes);
@@ -55,12 +71,16 @@ app.get('/api/news/car-news', async (req, res) => {
     );
     res.json(response.data.articles || []);
   } catch (error) {
+    console.error('News API error:', error.message);
     res.status(500).json({ error: "Failed to fetch news" });
   }
 });
 
+// Health check
 app.get('/', (req, res) => res.send('🚀 Tribe Market API is running...'));
 
+// Start server
 app.listen(PORT, () => {
   console.log(`🚀 Tribe Market Server running on port ${PORT}`);
+  console.log(`📡 Allowed origins: ${allowedOrigins.join(', ')}`);
 });

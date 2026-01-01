@@ -1,15 +1,19 @@
+// ============================================
+// FIXED: src/pages/marketplace/ListingDetail.js
+// ============================================
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Loader2, ArrowLeft, ShieldCheck, MapPin, Calendar, Gauge } from 'lucide-react';
 import './ListingDetail.css';
 
-// --- SMART API URL LOGIC ---
-// This prioritizes the .env variable you created, then checks if you're on your phone/Safari, 
-// and finally defaults to your live Render URL.
+// --- FIXED: Smart API URL Logic ---
+// Priority: 1) .env variable, 2) Production Render URL, 3) Localhost fallback
 const API_BASE_URL = process.env.REACT_APP_API_URL || 
-  (window.location.hostname === 'localhost' 
-    ? 'http://localhost:5000' 
-    : 'https://your-car-tribe.onrender.com');
+  (window.location.hostname.includes('vercel.app') || window.location.hostname.includes('localhost') === false
+    ? 'https://your-car-tribe.onrender.com' 
+    : 'http://localhost:5000');
+
+console.log('🌐 API_BASE_URL:', API_BASE_URL); // Debug log
 
 const ListingDetail = () => {
   const { id } = useParams();
@@ -25,26 +29,30 @@ const ListingDetail = () => {
       setError(false);
 
       try {
-        // Fetching with Safari-compliant headers
-        const response = await fetch(`${API_BASE_URL}/api/market/details/${id}`, {
+        console.log(`🚗 Fetching vehicle: ${id} from ${API_BASE_URL}`);
+        
+        // Safari-compliant fetch with proper headers
+        const response = await fetch(`${API_BASE_URL}/api/market/listing/${id}`, {
           method: 'GET',
           headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
-            // Include authorization if your marketplace requires login to view details
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
+          },
+          credentials: 'omit', // Important for Safari cross-origin
         });
 
+        console.log('Response status:', response.status);
+
         if (!response.ok) {
-          console.error(`Server responded with ${response.status}`);
+          console.error(`❌ Server responded with ${response.status}`);
           throw new Error('Vehicle not found');
         }
         
         const data = await response.json();
+        console.log('✅ Vehicle data received:', data);
         setVehicle(data);
       } catch (err) {
-        console.error('Fetch error on Safari/Desktop:', err);
+        console.error('❌ Fetch error:', err);
         setError(true);
       } finally {
         setLoading(false);
@@ -65,8 +73,8 @@ const ListingDetail = () => {
     <div className="listing-error-container">
       <div className="error-card card">
         <h2>Vehicle Not Found</h2>
-        <p>We couldn't retrieve this listing. This usually happens if the link is old or the connection to our server was interrupted.</p>
-        <button onClick={() => navigate('/marketplace')} className="btn-buy">
+        <p>We couldn't retrieve this listing. The vehicle may have been sold or removed.</p>
+        <button onClick={() => navigate('/market')} className="btn-buy">
           Return to Marketplace
         </button>
       </div>
@@ -90,14 +98,14 @@ const ListingDetail = () => {
             <div 
               className='main-image' 
               style={{ 
-                backgroundImage: `url(${vehicle.image || '/api/placeholder/800/500'})`,
+                backgroundImage: `url(${vehicle.images?.[0] || vehicle.media?.photo_links?.[0] || '/api/placeholder/800/500'})`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center'
               }}
             ></div>
-            {vehicle.gallery && vehicle.gallery.length > 0 && (
+            {(vehicle.images || vehicle.media?.photo_links) && (
               <div className="thumbnail-strip">
-                {vehicle.gallery.map((img, i) => (
+                {(vehicle.images || vehicle.media?.photo_links || []).slice(0, 6).map((img, i) => (
                   <div 
                     key={i} 
                     className="thumb" 
@@ -120,22 +128,26 @@ const ListingDetail = () => {
             <h4>VEHICLE STATS</h4>
             <ul className="stats-list">
               <li><Calendar size={16} /> <span><b>Year:</b> {vehicle.year}</span></li>
-              <li><Gauge size={16} /> <span><b>Mileage:</b> {vehicle.mileage?.toLocaleString() || '0'} mi</span></li>
-              <li><MapPin size={16} /> <span><b>Location:</b> {vehicle.location || 'Nationwide'}</span></li>
-              <li><ShieldCheck size={16} /> <span><b>VIN:</b> {vehicle.vin || 'Not Provided'}</span></li>
+              <li><Gauge size={16} /> <span><b>Mileage:</b> {vehicle.miles?.toLocaleString() || '0'} mi</span></li>
+              <li><MapPin size={16} /> <span><b>Location:</b> {vehicle.location || vehicle.city + ', ' + vehicle.state || 'Nationwide'}</span></li>
+              <li><ShieldCheck size={16} /> <span><b>VIN:</b> {vehicle.vin || vehicle.specs?.vin || 'Not Provided'}</span></li>
             </ul>
           </div>
 
           <div className='action-box card'>
-            <div className="price-tag">${vehicle.price?.toLocaleString() || 'TBD'}</div>
-            <button className='btn-buy' onClick={() => alert('Feature coming soon!')}>BUY NOW</button>
-            <button className='btn-offer' onClick={() => alert('Feature coming soon!')}>MAKE OFFER</button>
+            <div className="price-tag">${vehicle.price?.toLocaleString() || vehicle.msrp?.toLocaleString() || 'TBD'}</div>
+            <button className='btn-buy' onClick={() => alert('Contact seller feature coming soon!')}>
+              CONTACT SELLER
+            </button>
+            <button className='btn-offer' onClick={() => alert('Make offer feature coming soon!')}>
+              MAKE OFFER
+            </button>
           </div>
 
           <div className='seller-info card'>
             <h4>SELLER INFORMATION</h4>
-            <p><b>Seller:</b> {vehicle.seller_name || 'Verified Member'}</p>
-            <p><b>Rating:</b> ⭐⭐⭐⭐⭐ (4.9)</p>
+            <p><b>Seller:</b> {vehicle.seller?.name || vehicle.dealer_name || 'Verified Member'}</p>
+            <p><b>Type:</b> {vehicle.seller?.type || 'Dealer'}</p>
           </div>
         </aside>
       </div>
