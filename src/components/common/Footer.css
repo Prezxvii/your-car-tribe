@@ -109,3 +109,59 @@
   opacity: 1; /* Only lights up when you hover over it */
   color: var(--primary-blue) !important;
 }
+
+/* --- FOOTER MOBILE ONLY --- */
+@media (max-width: 768px) {
+  .main-footer {
+    padding: 50px 0 25px;
+  }
+
+  .footer-container {
+    grid-template-columns: 1fr;
+    gap: 30px;
+    padding: 0 20px;
+    text-align: center;
+  }
+
+  .footer-brand p {
+    margin-bottom: 20px;
+  }
+
+  .newsletter {
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px;
+  }
+
+  .newsletter input {
+    text-align: center;
+  }
+
+  .newsletter button {
+    width: 100%;
+  }
+
+  .footer-links {
+    text-align: center;
+  }
+
+  .footer-links h4 {
+    margin-bottom: 15px;
+  }
+
+  .footer-links a {
+    font-size: 0.9rem;
+  }
+
+  .footer-bottom-content {
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+    padding: 0 20px;
+  }
+
+  .social-icons {
+    justify-content: center;
+    margin-top: 10px;
+  }
+}

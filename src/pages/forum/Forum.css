@@ -49,6 +49,7 @@
   }
   
   .sidebar-menu { list-style: none; padding: 0; margin: 0; }
+  
   .sidebar-menu li {
     padding: 14px 18px;
     border-radius: 14px;
@@ -111,7 +112,12 @@
     box-shadow: 0 2px 15px rgba(0, 0, 0, 0.02);
   }
   
-  .question-header { display: flex; gap: 12px; align-items: center; margin-bottom: 18px; }
+  .question-header {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 18px;
+  }
   
   .question-tag {
     background: #ebf4ff;
@@ -123,7 +129,12 @@
     text-transform: uppercase;
   }
   
-  .post-time { margin-left: auto; font-size: 0.85rem; color: var(--text-muted); font-weight: 600; }
+  .post-time {
+    margin-left: auto;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 600;
+  }
   
   .question-view h2 {
     font-size: 1.8rem;
@@ -132,9 +143,13 @@
     margin-bottom: 15px;
   }
   
-  .question-view p { color: #475569; line-height: 1.7; font-size: 1.05rem; }
+  .question-view p {
+    color: #475569;
+    line-height: 1.7;
+    font-size: 1.05rem;
+  }
   
-  /* --- 5. ADMIN TOOLS (FIXES SCREENSHOT 1) --- */
+  /* --- 5. ADMIN TOOLS --- */
   .admin-input-section {
     background: #fffbeb;
     border: 2px dashed var(--admin-gold);
@@ -163,7 +178,11 @@
     box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.1);
   }
   
-  .admin-actions { display: flex; justify-content: flex-end; gap: 12px; }
+  .admin-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+  }
   
   .btn-admin-submit {
     background: var(--admin-gold);
@@ -180,9 +199,12 @@
     transition: 0.2s;
   }
   
-  .btn-admin-submit:hover { background: #d97706; transform: translateY(-2px); }
+  .btn-admin-submit:hover {
+    background: #d97706;
+    transform: translateY(-2px);
+  }
   
-  /* --- 6. MODAL SYSTEM (FIXES SCREENSHOT 2) --- */
+  /* --- 6. MODAL SYSTEM --- */
   .modal-overlay {
     position: fixed;
     inset: 0;
@@ -212,7 +234,11 @@
     margin-bottom: 30px;
   }
   
-  .modal-card form { display: flex; flex-direction: column; gap: 20px; }
+  .modal-card form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
   
   .form-row {
     display: grid;
@@ -220,8 +246,8 @@
     gap: 15px;
   }
   
-  .modal-card input, 
-  .modal-card select, 
+  .modal-card input,
+  .modal-card select,
   .modal-card textarea {
     width: 100%;
     padding: 16px 20px;
@@ -233,7 +259,7 @@
     box-sizing: border-box;
   }
   
-  .modal-card input:focus, 
+  .modal-card input:focus,
   .modal-card textarea:focus,
   .modal-card select:focus {
     outline: none;
@@ -241,7 +267,10 @@
     background: var(--white);
   }
   
-  .modal-card textarea { height: 160px; resize: none; }
+  .modal-card textarea {
+    height: 160px;
+    resize: none;
+  }
   
   /* --- 7. BUTTONS & STATS --- */
   .btn-add-question {
@@ -268,7 +297,11 @@
     justify-content: space-between;
   }
   
-  .post-stats { display: flex; gap: 12px; }
+  .post-stats {
+    display: flex;
+    gap: 12px;
+  }
+  
   .post-stats button {
     background: #f8fafc;
     border: 1px solid #edf2f7;
@@ -301,104 +334,74 @@
     margin-bottom: 10px;
     text-transform: uppercase;
   }
-
+  
   /* --- FORUM MOBILE OVERRIDES --- */
-@media (max-width: 900px) {
-  .forum-container {
-    display: flex;
-    flex-direction: column;
-    padding: 15px;
-  }
-
-  .forum-sidebar {
-    width: 100%;
-    position: sticky;
-    top: 70px;
-    z-index: 10;
-    background: var(--bg-light);
-    padding: 10px 0;
-    margin-bottom: 10px;
-  }
-
-  /* Transform vertical menu into horizontal scrollable chips */
-  .sidebar-menu {
-    display: flex;
-    overflow-x: auto;
-    gap: 10px;
-    padding: 5px 0 15px;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none; /* Hide scrollbar Firefox */
-  }
-
-  .sidebar-menu::-webkit-scrollbar { display: none; } /* Hide scrollbar Chrome */
-
-  .sidebar-menu li {
-    flex: 0 0 auto;
-    padding: 10px 20px;
-    background: white;
-    border: 1px solid #e2e8f0;
-    border-radius: 50px;
-    font-size: 0.85rem;
-    font-weight: 700;
-  }
-
-  .sidebar-menu li.active {
-    background: var(--primary-blue);
-    color: white;
-    border-color: var(--primary-blue);
-  }
-
-  .sidebar-section, .sidebar-label {
-    display: none; /* Hide labels to save vertical space */
-  }
-
-  .btn-add-question {
-    width: 100%;
-    margin-bottom: 15px;
-  }
-
-  .question-view {
-    margin-bottom: 20px;
-    padding: 15px;
-  }
-
-  .post-footer {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 15px;
-  }
-}
-
-/* --- For iPhones and Small Phones --- */
-@media (max-width: 480px) {
-  .home-hero-section {
-    padding: 20px;
-    height: auto;
-    text-align: center;
-  }
-
-  .home-main-layout {
-    display: flex;
-    flex-direction: column; /* Stacks the sidebar below the feed */
-  }
-
-  .home-content-grid, .listing-grid {
-    grid-template-columns: 1fr !important; /* Forces cards into a single column */
-  }
-
-  .hero-cta-group {
-    flex-direction: column;
-    gap: 10px;
-  }
-}
-
-/* --- For iPads and Tablets --- */
-@media (max-width: 1024px) {
-  .home-dashboard-inner {
-    flex-direction: column;
+  @media (max-width: 900px) {
+    .forum-container {
+      display: flex;
+      flex-direction: column;
+      padding: 15px;
+    }
+  
+    .forum-sidebar {
+      width: 100%;
+      position: sticky;
+      top: 70px;
+      z-index: 10;
+      background: var(--bg-soft); /* ✅ fixed (was --bg-light) */
+      padding: 10px 0;
+      margin-bottom: 10px;
+      border-radius: 18px;
+    }
+  
+    /* Transform vertical menu into horizontal scrollable chips */
+    .sidebar-menu {
+      display: flex;
+      overflow-x: auto;
+      gap: 10px;
+      padding: 5px 10px 15px;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+  
+    .sidebar-menu::-webkit-scrollbar { display: none; }
+  
+    .sidebar-menu li {
+      flex: 0 0 auto;
+      padding: 10px 20px;
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 50px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin-bottom: 0;
+    }
+  
+    .sidebar-menu li.active {
+      background: var(--primary-blue);
+      color: white;
+      border-color: var(--primary-blue);
+    }
+  
+    .sidebar-section,
+    .sidebar-label {
+      display: none;
+    }
+  
+    .btn-add-question {
+      width: 100%;
+      margin-bottom: 15px;
+    }
+  
+    .question-view {
+      margin-bottom: 20px;
+      padding: 15px;
+    }
+  
+    .post-footer {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 15px;
+    }
   }
   
-  .listing-grid {
-    grid-template-columns: 1fr 1fr; /* 2 columns for tablets */
-  }
-}

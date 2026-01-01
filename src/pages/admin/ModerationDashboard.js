@@ -16,6 +16,9 @@ const ModerationDashboard = () => {
   const [currentView, setCurrentView] = useState('overview');
   const [searchQuery, setSearchQuery] = useState("");
 
+  // ✅ MOBILE MENU
+  const [menuOpen, setMenuOpen] = useState(false);
+
   // Data states
   const [users, setUsers] = useState([]);
   const [posts, setPosts] = useState([]);
@@ -38,7 +41,37 @@ const ModerationDashboard = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     setIsAuthenticated(false);
+    setMenuOpen(false);
   }, []);
+
+  // ✅ Close drawer when view changes (nice on mobile)
+  const safeSetView = useCallback((view) => {
+    setCurrentView(view);
+    setMenuOpen(false);
+  }, []);
+
+  // ✅ ESC closes drawer + modal
+  useEffect(() => {
+    const onKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setMenuOpen(false);
+        setSelectedUser(null);
+        setSelectedFAQ(null);
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, []);
+
+  // ✅ Lock body scroll when drawer open
+  useEffect(() => {
+    if (!menuOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [menuOpen]);
 
   // Fetch all data
   const fetchAllData = useCallback(async () => {
@@ -265,16 +298,30 @@ const ModerationDashboard = () => {
 
   return (
     <div className="admin-container">
-      <aside className="admin-sidebar">
+      {/* ✅ BACKDROP (mobile only via CSS) */}
+      <AnimatePresence>
+        {menuOpen && (
+          <motion.div
+            className="admin-mobile-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setMenuOpen(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      <aside className={`admin-sidebar ${menuOpen ? 'open' : ''}`}>
         <div className="admin-logo">
           <ShieldAlert className="text-red" />
           <span>TRIBE MOD</span>
         </div>
+
         <nav className="admin-nav">
           <p className="nav-label">Main</p>
           <button
             className={`nav-item ${currentView === 'overview' ? 'active' : ''}`}
-            onClick={() => setCurrentView('overview')}
+            onClick={() => safeSetView('overview')}
           >
             <BarChart3 size={18} /> Overview
           </button>
@@ -282,31 +329,35 @@ const ModerationDashboard = () => {
           <p className="nav-label">Management</p>
           <button
             className={`nav-item ${currentView === 'users' ? 'active' : ''}`}
-            onClick={() => setCurrentView('users')}
+            onClick={() => safeSetView('users')}
           >
             <ShieldCheck size={18} /> Users ({users.length})
           </button>
+
           <button
             className={`nav-item ${currentView === 'posts' ? 'active' : ''}`}
-            onClick={() => setCurrentView('posts')}
+            onClick={() => safeSetView('posts')}
           >
             <MessageSquare size={18} /> Forum Posts ({posts.length})
           </button>
+
           <button
             className={`nav-item ${currentView === 'replies' ? 'active' : ''}`}
-            onClick={() => setCurrentView('replies')}
+            onClick={() => safeSetView('replies')}
           >
             <MessageSquare size={18} /> Replies ({replies.length})
           </button>
+
           <button
             className={`nav-item ${currentView === 'listings' ? 'active' : ''}`}
-            onClick={() => setCurrentView('listings')}
+            onClick={() => safeSetView('listings')}
           >
             <Package size={18} /> Listings ({listings.length})
           </button>
+
           <button
             className={`nav-item ${currentView === 'faqs' ? 'active' : ''}`}
-            onClick={() => setCurrentView('faqs')}
+            onClick={() => safeSetView('faqs')}
           >
             <HelpCircle size={18} /> FAQs ({stats.unansweredQuestions || 0} new)
           </button>
@@ -319,7 +370,19 @@ const ModerationDashboard = () => {
 
       <main className="admin-main">
         <header className="admin-header">
+          {/* ✅ Mobile menu button (hidden on desktop by CSS) */}
+          <button
+            type="button"
+            className="admin-mobile-menu-btn"
+            onClick={() => setMenuOpen(true)}
+            aria-label="Open menu"
+          >
+            <ShieldAlert size={18} />
+            <span>Menu</span>
+          </button>
+
           <h1>{currentView.toUpperCase()}</h1>
+
           <div className="admin-search">
             <Search size={18} />
             <input
@@ -683,3 +746,4 @@ const ModerationDashboard = () => {
 };
 
 export default ModerationDashboard;
+

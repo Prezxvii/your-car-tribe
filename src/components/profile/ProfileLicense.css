@@ -1,4 +1,5 @@
-.license-card {
+/* Compact / Simple License Variant (scoped so it won't override the official one) */
+.license-compact .license-card {
   background: #fff;
   border: 2px solid #1a1a1a;
   border-radius: 4px; /* Sharper corners for a card feel */
@@ -7,7 +8,7 @@
   box-shadow: 10px 10px 0px rgba(0, 0, 0, 0.05); /* Modern offset shadow */
 }
 
-.license-header {
+.license-compact .license-header {
   display: flex;
   justify-content: space-between;
   border-bottom: 2px solid #1a1a1a;
@@ -15,18 +16,18 @@
   margin-bottom: 15px;
 }
 
-.license-header h2 {
+.license-compact .license-header h2 {
   font-size: 0.9rem;
   font-weight: 900;
   margin: 0;
 }
 
-.profile-main-info {
+.license-compact .profile-main-info {
   display: flex;
   gap: 20px;
 }
 
-.profile-pic-box {
+.license-compact .profile-pic-box {
   width: 120px;
   height: 140px;
   border: 1px solid #000;
@@ -38,16 +39,22 @@
   background: #fafafa;
 }
 
-.info-fields .field { margin-bottom: 10px; }
-.info-fields label { font-size: 0.7rem; font-weight: 800; display: block; }
-.info-fields span { font-size: 0.9rem; }
+.license-compact .info-fields .field { margin-bottom: 10px; }
+.license-compact .info-fields label { font-size: 0.7rem; font-weight: 800; display: block; }
+.license-compact .info-fields span { font-size: 0.9rem; }
 
-.know-whats-box {
+.license-compact .know-whats-box {
   margin-top: 15px;
   border: 1px solid #000;
   padding: 10px;
   background: #fdfdfd;
 }
 
-.knowledge-list { list-style: none; padding: 0; margin: 5px 0 0 0; }
-.knowledge-list li { font-size: 0.75rem; font-family: monospace; display: flex; align-items: center; gap: 5px; }
+.license-compact .knowledge-list { list-style: none; padding: 0; margin: 5px 0 0 0; }
+.license-compact .knowledge-list li {
+  font-size: 0.75rem;
+  font-family: monospace;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}

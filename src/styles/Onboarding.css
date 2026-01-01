@@ -1,3 +1,15 @@
+/* ======================================================
+   GLOBAL SAFETY (prevents iPhone horizontal scroll)
+====================================================== */
+html, body {
+  width: 100%;
+  overflow-x: hidden;
+}
+
+* {
+  box-sizing: border-box;
+}
+
 /* --- GLOBAL CONTAINER --- */
 .onboarding-container {
   display: flex;
@@ -8,10 +20,11 @@
   padding: 20px;
 }
 
+/* ✅ Allow the card to shrink naturally on small screens */
 .onboarding-card {
   width: 100%;
-  max-width: 520px; /* Slightly widened for better form breathing room */
-  min-height: 640px; /* Ensures consistent height across steps */
+  max-width: 520px;
+  min-height: 640px; /* desktop baseline */
   padding: 50px 40px;
   background: white;
   border-radius: 35px;
@@ -103,7 +116,7 @@
 .form-inputs {
   display: flex;
   flex-direction: column;
-  gap: 15px; /* Consistent spacing between inputs */
+  gap: 15px;
   animation: fadeIn 0.4s ease-out;
 }
 
@@ -128,6 +141,8 @@
 .input-with-icon {
   position: relative;
   width: 100%;
+  display: flex;
+  align-items: center;
 }
 
 .input-icon {
@@ -144,7 +159,8 @@
   padding-left: 50px !important;
 }
 
-.onboard-input:focus + .input-icon {
+/* ✅ FIX: Your icon is NOT the next sibling of input, so this is the correct selector */
+.input-with-icon:focus-within .input-icon {
   color: var(--primary-blue);
 }
 
@@ -197,6 +213,7 @@
   cursor: pointer;
   transition: all 0.2s ease;
   background: #f8fafc;
+  user-select: none;
 }
 
 .interest-tile:hover {
@@ -213,7 +230,7 @@
 
 /* --- NAVIGATION BUTTONS --- */
 .btn-next-circle {
-  align-self: flex-end; /* Push to the right */
+  align-self: flex-end;
   background: #1a1a1a;
   color: white;
   border: none;
@@ -234,7 +251,8 @@
   box-shadow: 0 10px 20px rgba(0, 102, 255, 0.3);
 }
 
-.btn-continue, .btn-enter {
+.btn-continue,
+.btn-enter {
   width: 100%;
   padding: 20px;
   background: var(--primary-blue);
@@ -244,10 +262,11 @@
   font-weight: 800;
   font-size: 1rem;
   cursor: pointer;
-  transition: transform 0.2s;
+  transition: transform 0.2s, filter 0.2s;
 }
 
-.btn-continue:hover {
+.btn-continue:hover,
+.btn-enter:hover {
   filter: brightness(1.1);
 }
 
@@ -302,6 +321,7 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* --- Login Error + Spinner --- */
 .login-error-msg {
   background: #fff5f5;
   color: #e53e3e;
@@ -327,4 +347,76 @@
 .btn-login:disabled {
   opacity: 0.7;
   cursor: not-allowed;
+}
+
+/* ======================================================
+   MOBILE OPTIMIZATION
+====================================================== */
+@media (max-width: 768px) {
+  .onboarding-container {
+    padding: 14px;
+    align-items: flex-start; /* ✅ helps on short screens */
+  }
+
+  .onboarding-card {
+    max-width: 100%;
+    min-height: auto;          /* ✅ remove forced height */
+    padding: 28px 18px;        /* ✅ less padding */
+    border-radius: 24px;
+  }
+
+  .welcome-title {
+    font-size: 2.4rem;
+    margin-top: 12px;
+    letter-spacing: -1px;
+  }
+
+  .welcome-subtitle {
+    font-size: 1rem;
+    margin-bottom: 28px;
+  }
+
+  .step-header {
+    margin-bottom: 18px;
+    letter-spacing: 3px;
+  }
+
+  .btn-setup {
+    padding: 18px;
+    border-radius: 16px;
+  }
+
+  .btn-next-circle {
+    width: 54px;
+    height: 54px;
+  }
+
+  .btn-continue,
+  .btn-enter {
+    padding: 18px;
+    border-radius: 14px;
+  }
+
+  .onboarding-progress {
+    margin-top: 22px;
+  }
+}
+
+@media (max-width: 420px) {
+  .interests-grid {
+    grid-template-columns: 1fr; /* ✅ easier tapping on small phones */
+  }
+
+  .interest-tile {
+    padding: 14px;
+  }
+
+  .success-title {
+    font-size: 2rem;
+  }
+
+  .success-desc {
+    font-size: 1rem;
+    margin-bottom: 30px;
+  }
 }

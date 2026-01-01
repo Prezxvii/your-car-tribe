@@ -11,14 +11,14 @@
   background-size: cover;
   background-position: center;
   position: relative;
-  margin-top: -80px; 
+  margin-top: -80px;
 }
 
 .hero-overlay {
   background: linear-gradient(
-    to bottom, 
-    rgba(0,0,0,0.2) 0%, 
-    rgba(0,0,0,0.4) 50%, 
+    to bottom,
+    rgba(0,0,0,0.2) 0%,
+    rgba(0,0,0,0.4) 50%,
     rgba(0,0,0,0.8) 100%
   );
   height: 100%;
@@ -60,36 +60,151 @@
   border: 1px solid rgba(255,255,255,0.2);
 }
 
+/* --- SEARCH BAR LAYOUT (ONE AUTHORITATIVE VERSION) --- */
 .hero-search-container {
+  display: flex;
   background: white;
-  padding: 10px;
-  border-radius: 60px;
+  padding: 8px;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 900px;
+  margin: 40px auto 0 auto;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+  gap: 8px;
+  align-items: center;
+}
+
+/* Main Car Search Section */
+.search-main {
+  flex: 2;
   display: flex;
   align-items: center;
-  width: 100%;
-  max-width: 650px;
-  margin: 40px auto;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  padding: 0 15px;
+  border-right: 1px solid #e2e8f0;
+  position: relative; /* for icon positioning */
 }
 
-.hero-search-container input {
+.search-main input {
   border: none;
-  padding: 12px 25px;
-  flex: 1;
-  font-size: 1.1rem;
   outline: none;
-  border-radius: 50px;
-  color: #1a202c;
+  width: 100%;
+  padding: 12px;
+  font-size: 1rem;
 }
 
+/* (Optional) if you add className="search-icon" to Search icon */
+.search-main .search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  pointer-events: none;
+  font-size: 18px;
+}
+
+.search-main input {
+  padding-left: 42px; /* room for icon */
+}
+
+/* Location Controls Group */
+.search-location {
+  flex: 1.5;
+  display: flex;
+  gap: 10px;
+  padding: 0 10px;
+}
+
+/* ZIP container */
+.location-input {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f1f5f9;
+  padding: 10px 18px;
+  border-radius: 14px;
+  border: 2px solid transparent;
+  transition: all 0.2s ease;
+  min-width: 160px;
+  box-sizing: border-box;
+}
+
+.location-input:focus-within {
+  border-color: #0066ff;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.15);
+}
+
+.zip-input-field {
+  background: transparent;
+  border: none;
+  outline: none;
+  width: 100%;
+  min-width: 120px;
+  box-sizing: border-box;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #1a202c;
+  font-family: 'Roboto Mono', monospace;
+  text-align: center;
+}
+
+.zip-input-field::placeholder {
+  color: #94a3b8;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+.location-input.invalid {
+  border-color: #ef4444;
+  background: #fef2f2;
+}
+
+.location-input.invalid .zip-input-field {
+  color: #b91c1c;
+}
+
+.radius-select {
+  display: flex;
+  align-items: center;
+  background: #f7fafc;
+  padding: 8px 12px;
+  border-radius: 12px;
+  gap: 8px;
+  flex: 1;
+}
+
+.radius-select select {
+  background: transparent;
+  border: none;
+  outline: none;
+  font-weight: 600;
+  color: #0066ff;
+  cursor: pointer;
+}
+
+.location-input svg,
+.radius-select svg {
+  color: #0066ff;
+  flex-shrink: 0;
+}
+
+.location-input:not(:focus-within) svg,
+.radius-select:not(:focus-within) svg {
+  color: #3b82f6;
+}
+
+/* Button */
 .hero-search-btn {
-  background: var(--primary-blue);
+  background: #0066ff;
   color: white;
   border: none;
-  padding: 14px 32px;
-  border-radius: 50px;
-  font-weight: 800;
+  padding: 12px 24px;
+  border-radius: 14px;
+  font-weight: 700;
   cursor: pointer;
+  white-space: nowrap;
   transition: background 0.3s ease;
 }
 
@@ -122,19 +237,6 @@
 }
 
 /* --- FILTER CONTROLS --- */
-.filter-section {
-  display: flex;
-  align-items: center;
-}
-
-.filter-info {
-  display: flex;
-  align-items: center;
-  gap: 24px;
-  font-size: 0.9rem;
-  color: #4a5568;
-}
-
 .filter-dropdown-container {
   position: relative;
 }
@@ -153,7 +255,8 @@
   color: #2d3748;
 }
 
-.filter-btn.active, .filter-btn:hover {
+.filter-btn.active,
+.filter-btn:hover {
   border-color: var(--primary-blue);
   color: var(--primary-blue);
   box-shadow: 0 4px 12px rgba(0, 102, 255, 0.08);
@@ -185,125 +288,32 @@
   color: white;
 }
 
-/* --- LISTING GRID --- */
+/* --- LISTING GRID (FIXED FOR MOBILE OVERFLOW) --- */
 .listing-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* was 360px */
   gap: 40px;
   min-height: 400px;
 }
 
-/* --- VIEW MORE BUTTON --- */
-.view-more-container {
-  display: flex;
-  justify-content: center;
-  margin: 60px 0 100px 0;
-}
-
-.btn-view-more {
-  background: white;
-  border: 2px solid var(--primary-blue);
-  color: var(--primary-blue);
-  padding: 16px 45px;
-  border-radius: 50px;
-  font-weight: 800;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-.btn-view-more:hover {
-  background: var(--primary-blue);
-  color: white;
-  transform: translateY(-3px);
-  box-shadow: 0 12px 24px rgba(0, 102, 255, 0.2);
-}
-
-/* --- FAQ SECTION --- */
-.market-faq {
-  max-width: 900px;
-  margin: 0 auto 100px auto;
-  padding: 60px;
-  background: #f8fafc;
-  border-radius: 40px;
-  border: 1px solid #edf2f7;
-}
-
-.faq-header {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 15px;
-  margin-bottom: 40px;
-}
-
-.faq-header h2 {
-  font-size: 2.2rem;
-  font-weight: 900;
-  color: #1a202c;
-  margin: 0;
-}
-
-.faq-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.faq-item {
-  background: white;
-  border-radius: 20px;
-  border: 1px solid #e2e8f0;
-  overflow: hidden;
-  transition: all 0.3s ease;
-}
-
-.faq-item.active {
-  border-color: var(--primary-blue);
-  box-shadow: 0 10px 30px rgba(0, 102, 255, 0.05);
-}
-
-.faq-question {
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 24px 30px;
-  background: none;
-  border: none;
-  font-weight: 700;
-  font-size: 1.15rem;
-  color: #1a202c;
-  cursor: pointer;
-  text-align: left;
-}
-
-.faq-answer {
-  padding: 0 30px 24px 30px;
-  color: #718096;
-  line-height: 1.7;
-  font-size: 1rem;
-}
-
-.text-blue {
-  color: var(--primary-blue);
-}
-
 /* --- CAR CARD DETAILS --- */
+.card-wrapper-rel {
+  position: relative;
+}
+
 .listing-card-container {
   position: relative;
 }
 
 .listing-card {
-  background: white;
+  background: linear-gradient(145deg, #ffffff 0%, #fcfdfe 100%);
   border-radius: 28px;
   overflow: hidden;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
   border: 1px solid rgba(0, 0, 0, 0.05);
-  height: 100%;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(145deg, #ffffff 0%, #fcfdfe 100%);
+  height: auto; /* IMPORTANT: mobile safari + flex safety */
 }
 
 .card-image-wrapper {
@@ -316,8 +326,10 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
 }
 
+/* Badges */
 .badge-no-reserve {
   position: absolute;
   top: 20px;
@@ -344,6 +356,23 @@
   font-size: 0.7rem;
   font-weight: 800;
   border: 1px solid rgba(255,255,255,0.3);
+}
+
+.distance-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  color: #3b82f6;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  z-index: 2;
 }
 
 .btn-favorite {
@@ -393,9 +422,11 @@
   letter-spacing: -1px;
 }
 
+/* Footer (ONE authoritative version) */
 .card-footer {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   border-top: 1px solid #f1f4f8;
   padding-top: 20px;
   margin-top: auto;
@@ -410,114 +441,27 @@
   gap: 8px;
 }
 
-/* --- NO RESULTS STATE --- */
-.no-results {
-  grid-column: 1 / -1;
-  text-align: center;
-  padding: 100px 0;
-  color: #a0aec0;
-}
-
-.no-results h3 {
-  font-size: 1.5rem;
-  margin-bottom: 20px;
-}
-
-.no-results button {
-  background: #edf2f7;
-  border: none;
-  padding: 12px 25px;
-  border-radius: 12px;
-  font-weight: 700;
-  cursor: pointer;
-  color: #4a5568;
-}
-
-/* Source Tags */
-.origin-tag {
+/* --- ORIGIN LABEL (ONE authoritative version) --- */
+.origin-label {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: 15px;
+  right: 15px;
   z-index: 10;
-  padding: 4px 10px;
-  border-radius: 4px;
-  font-size: 0.65rem;
-  font-weight: 900;
-  text-transform: uppercase;
-  color: white;
-}
-
-.bring-a-trailer { background: #000; border: 1px solid #ffd700; } /* Black & Gold */
-.cars-&-bids { background: #ff5a5f; } /* Their signature Red */
-.autotempest { background: #2b6cb0; } 
-
-/* Source Badges in Search Bar */
-.source-badges {
-  display: flex;
-  gap: 8px;
-  margin-left: 15px;
-}
-
-.source-badges span {
   font-size: 10px;
-  padding: 2px 6px;
-  border-radius: 4px;
-  background: #f1f5f9;
-  color: #64748b;
-  border: 1px solid #e2e8f0;
-}
-
-/* FB Bridge Card */
-.fb-search-card {
-  background: #ebf8ff;
-  border: 2px dashed #3182ce;
-  border-radius: 12px;
-  padding: 30px;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
-
-.fb-btn {
-  background: #1877F2;
-  color: white;
-  text-decoration: none;
-  padding: 10px 20px;
-  border-radius: 8px;
-  font-weight: 700;
-  margin-top: 15px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-} 
-
-/* Platform Origin Tags */
-.card-rel-wrapper {
-  position: relative;
-}
-
-.origin-tag {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  z-index: 5;
-  padding: 4px 10px;
-  border-radius: 4px;
-  font-size: 0.65rem;
   font-weight: 900;
   text-transform: uppercase;
-  color: #fff;
-  letter-spacing: 0.5px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  padding: 4px 10px;
+  border-radius: 4px;
+  color: white;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
 }
 
-.bring-a-trailer { background: #000; border: 1px solid #eab308; color: #eab308; }
-.cars-&-bids { background: #ff5a5f; }
+/* If your className is literally "cars-&-bids", CSS needs escaping */
+.cars-\&-bids { background: #ff5a5f; }
+.bring-a-trailer { background: #000; color: #ffd700; border: 1px solid #ffd700; }
 .autotempest { background: #1e40af; }
 
-/* FB Bridge Card */
+/* --- FB BRIDGE CARD (ONE authoritative version) --- */
 .fb-bridge-card {
   background: #f0f7ff;
   border: 2px dashed #1877f2;
@@ -561,7 +505,7 @@
 
 .fb-link-btn:hover { background: #1664d4; }
 
-/* Loading State */
+/* --- LOADING STATE --- */
 .market-loading-state {
   display: flex;
   flex-direction: column;
@@ -582,201 +526,6 @@
   to { transform: rotate(360deg); }
 }
 
-/* Source Labels on Cards */
-.card-wrapper-rel {
-  position: relative;
-}
-
-.origin-label {
-  position: absolute;
-  top: 15px;
-  right: 15px;
-  z-index: 10;
-  font-size: 10px;
-  font-weight: 900;
-  text-transform: uppercase;
-  padding: 4px 10px;
-  border-radius: 4px;
-  color: white;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-}
-
-.bring-a-trailer { background: #000; color: #ffd700; border: 1px solid #ffd700; }
-.cars-&-bids { background: #ff5a5f; }
-.autotempest { background: #1e40af; }
-
-/* FB Bridge Card styling */
-.fb-bridge-card {
-  background: #f0f4f8;
-  border: 2px dashed #1877f2;
-  border-radius: 12px;
-  padding: 2rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-}
-
-.fb-circle {
-  width: 40px;
-  height: 40px;
-  background: #1877f2;
-  color: white;
-  border-radius: 50%;
-  font-weight: 900;
-  font-size: 1.5rem;
-  margin-bottom: 1rem;
-}
-
-.fb-btn {
-  background: #1877f2;
-  color: white;
-  padding: 8px 16px;
-  border-radius: 6px;
-  text-decoration: none;
-  font-weight: 700;
-  margin-top: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-/* Marketplace.css */
-.distance-badge {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  background: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(4px);
-  color: #3b82f6; /* A bright blue */
-  padding: 4px 8px;
-  border-radius: 6px;
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  border: 1px solid rgba(59, 130, 246, 0.3);
-  z-index: 2;
-}
-
-.card-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.footer-item {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 13px;
-  color: #a0aec0;
-}
-
-/* --- SEARCH BAR LAYOUT --- */
-.hero-search-container {
-  display: flex;
-  background: white;
-  padding: 8px;
-  border-radius: 20px;
-  width: 100%;
-  max-width: 900px;
-  margin: 0 auto;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-  gap: 8px;
-  align-items: center;
-}
-
-/* Main Car Search Section */
-.search-main {
-  flex: 2;
-  display: flex;
-  align-items: center;
-  padding: 0 15px;
-  border-right: 1px solid #e2e8f0;
-}
-
-.search-main input {
-  border: none;
-  outline: none;
-  width: 100%;
-  padding: 12px;
-  font-size: 1rem;
-}
-
-/* Location Controls Group */
-.search-location {
-  flex: 1.5;
-  display: flex;
-  gap: 10px;
-  padding: 0 10px;
-}
-
-.location-input, .radius-select {
-  display: flex;
-  align-items: center;
-  background: #f7fafc;
-  padding: 8px 12px;
-  border-radius: 12px;
-  gap: 8px;
-}
-
-.location-input input {
-  background: transparent;
-  border: none;
-  outline: none;
-  width: 60px;
-  font-weight: 600;
-  color: #2d3748;
-}
-
-.radius-select select {
-  background: transparent;
-  border: none;
-  outline: none;
-  font-weight: 600;
-  color: #0066ff;
-  cursor: pointer;
-}
-
-/* --- BUTTON STYLING --- */
-.hero-search-btn {
-  background: #0066ff;
-  color: white;
-  border: none;
-  padding: 12px 24px;
-  border-radius: 14px;
-  font-weight: 700;
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-/* --- ADAPTIVE LABELS & BADGES --- */
-.location-badge {
-  background: rgba(0, 102, 255, 0.1);
-  color: #0066ff;
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  margin-bottom: 8px;
-  display: inline-block;
-}
-
-.verified-pill {
-  background: #10b981;
-  color: white;
-  padding: 2px 8px;
-  border-radius: 6px;
-  font-size: 0.7rem;
-  font-weight: 800;
-}
-
 /* --- NO RESULTS STATE --- */
 .no-results {
   grid-column: 1 / -1;
@@ -787,387 +536,169 @@
   border-radius: 24px;
 }
 
-/* --- MOBILE RESPONSIVENESS --- */
+.no-results h3 {
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+}
+
+.no-results button,
+.btn-outline-blue {
+  background: #edf2f7;
+  border: none;
+  padding: 12px 25px;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  color: #4a5568;
+}
+
+/* --- VIEW MORE BUTTON --- */
+.view-more-container {
+  display: flex;
+  justify-content: center;
+  margin: 60px 0 100px 0;
+}
+
+.btn-view-more {
+  background: white;
+  border: 2px solid var(--primary-blue);
+  color: var(--primary-blue);
+  padding: 16px 45px;
+  border-radius: 50px;
+  font-weight: 800;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.btn-view-more:hover {
+  background: var(--primary-blue);
+  color: white;
+  transform: translateY(-3px);
+  box-shadow: 0 12px 24px rgba(0, 102, 255, 0.2);
+}
+
+/* ======================================================
+   RESPONSIVE LAYOUT (CLEAN BREAKPOINTS)
+====================================================== */
+
+/* TABLET */
+@media (max-width: 1024px) {
+  .marketplace-container {
+    padding: 50px 24px;
+  }
+
+  .listing-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 22px;
+  }
+}
+
+/* MOBILE */
 @media (max-width: 768px) {
+  .market-hero {
+    height: auto;
+    padding: 120px 18px 50px;
+    border-radius: 0 0 40px 40px;
+  }
+
+  .hero-content h1 {
+    font-size: 2.3rem;
+    letter-spacing: -1px;
+  }
+
   .hero-search-container {
     flex-direction: column;
     border-radius: 24px;
-    padding: 16px;
+    padding: 14px;
+    gap: 10px;
+    width: 100%;
+    max-width: 520px;
   }
 
   .search-main {
     border-right: none;
     border-bottom: 1px solid #e2e8f0;
     width: 100%;
-    padding-bottom: 10px;
+    padding: 10px 12px 12px 12px;
   }
 
   .search-location {
     width: 100%;
-    justify-content: space-between;
+    padding: 0;
+    gap: 10px;
   }
 
-  .location-input, .radius-select {
+  .location-input,
+  .radius-select {
     flex: 1;
+  }
+
+  .location-input {
+    min-width: 0;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .zip-input-field {
+    min-width: 120px;
+    font-size: 1.15rem;
   }
 
   .hero-search-btn {
     width: 100%;
     padding: 16px;
-  }
-}
-
-/* Container for the ZIP part */
-.location-input {
-  display: flex;
-  align-items: center;
-  background: #f1f5f9; /* Slightly darker for better contrast */
-  padding: 8px 16px;
-  border-radius: 12px;
-  gap: 10px;
-  border: 2px solid transparent;
-  transition: border-color 0.2s;
-}
-
-/* Focus state so the user knows they are typing there */
-.location-input:focus-within {
-  border-color: #0066ff;
-  background: white;
-}
-
-/* Specific styling for the ZIP numbers */
-.zip-input-field {
-  background: transparent;
-  border: none;
-  outline: none;
-  width: 75px; /* Widened slightly */
-  
-  /* Readability Features */
-  font-size: 1.1rem; /* Larger text */
-  font-weight: 700; /* Bolder numbers */
-  letter-spacing: 1px; /* Spacing between numbers */
-  color: #1a202c; /* Deep black for high contrast */
-  font-family: 'Roboto Mono', monospace; /* Monospaced keeps numbers aligned */
-}
-
-/* Placeholder visibility */
-.zip-input-field::placeholder {
-  color: #a0aec0;
-  font-weight: 400;
-  letter-spacing: 0;
-}
-
-
-
-/* ======================================================
-   SEARCH ICON – LEFT INSIDE MAIN INPUT (OVERRIDE ONLY)
-====================================================== */
-
-/* Make main search relative so icon can be positioned */
-.search-main {
-  position: relative;
-}
-
-/* Search icon positioning */
-.search-main .search-icon {
-  position: absolute;
-  left: 14px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #94a3b8; /* neutral grey */
-  pointer-events: none;
-  font-size: 18px;
-}
-
-/* Push text right so it doesn't overlap the icon */
-.search-main input {
-  padding-left: 42px !important;
-}
-
-/* ======================================================
-   ZIP CODE INPUT – FINAL CLEAN VERSION
-====================================================== */
-
-/* ZIP container */
-.location-input {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-
-  background: #f1f5f9;
-  padding: 10px 18px;
-  border-radius: 14px;
-
-  border: 2px solid transparent;
-  transition: all 0.2s ease;
-
-  /* 🔑 space guarantee */
-  min-width: 160px;
-  box-sizing: border-box;
-}
-
-/* Focus state */
-.location-input:focus-within {
-  border-color: #0066ff;
-  background: #ffffff;
-  box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.15);
-}
-
-/* ZIP input */
-.zip-input-field {
-  background: transparent;
-  border: none;
-  outline: none;
-
-  /* 🔑 prevents clipping */
-  width: 100%;
-  min-width: 120px;
-  box-sizing: border-box;
-
-  /* Typography */
-  font-size: 1.15rem;
-  font-weight: 700;
-  letter-spacing: 0.08em; /* reduced to prevent overflow */
-  color: #1a202c;
-  font-family: 'Roboto Mono', monospace;
-
-  text-align: center;
-}
-
-/* Placeholder */
-.zip-input-field::placeholder {
-  color: #94a3b8;
-  font-weight: 500;
-  letter-spacing: 0;
-}
-
-/* Invalid ZIP (optional JS hook) */
-.location-input.invalid {
-  border-color: #ef4444;
-  background: #fef2f2;
-}
-
-.location-input.invalid .zip-input-field {
-  color: #b91c1c;
-}
-
-/* ===============================
-   MOBILE FIXES
-=============================== */
-@media (max-width: 768px) {
-  .location-input {
-    width: 100%;
-    min-width: 100%;
-    justify-content: center;
-  }
-
-  .zip-input-field {
-    min-width: 140px;
-    font-size: 1.2rem;
-  }
-}
-
-/* ===============================
-   LOCATION ICON COLOR FIX
-=============================== */
-
-/* MapPin + Navigation icons */
-.location-input svg,
-.radius-select svg {
-  color: #0066ff;          /* primary blue */
-  flex-shrink: 0;
-}
-
-/* Slightly muted when not focused */
-.location-input:not(:focus-within) svg,
-.radius-select:not(:focus-within) svg {
-  color: #3b82f6;          /* soft blue */
-}
-
-
-/* --- MARKETPLACE MOBILE OVERRIDES --- */
-@media (max-width: 900px) {
-  .market-hero {
-    height: auto;
-    padding: 120px 20px 60px;
-    border-radius: 0 0 40px 40px;
-  }
-
-  .hero-search-container {
-    flex-direction: column;
-    padding: 10px;
-    gap: 0;
-    background: white;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-  }
-
-  .search-main, .search-location {
-    width: 100%;
-    border-right: none !important;
-    padding: 15px;
-  }
-
-  .search-main { border-bottom: 1px solid #f0f0f0; }
-
-  .search-location {
-    flex-direction: row; /* Keep Zip and Radius side-by-side */
-    gap: 10px;
-  }
-
-  .hero-search-btn {
-    width: 100%;
-    border-radius: 15px;
-    margin-top: 10px;
+    border-radius: 16px;
   }
 
   .feed-header {
     flex-direction: column;
     align-items: flex-start;
-    gap: 20px;
+    gap: 16px;
   }
 
+  /* MOBILE GRID */
   .listing-grid {
-    grid-template-columns: 1fr !important; /* Force single column */
-    gap: 20px;
-  }
-}
-
-/* --- LISTING CARD MOBILE OPTIMIZATION --- */
-@media (max-width: 900px) {
-  /* Ensure the card takes full width and removes desktop fixed heights */
-  .card-wrapper-rel {
-    width: 100%;
-    margin-bottom: 10px;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 12px 4px;
   }
 
+  /* MOBILE CARD TUNING */
   .listing-card {
-    border-radius: 24px;
-    overflow: hidden;
-    background: #ffffff;
-    border: 1px solid #f0f0f0;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    border-radius: 20px;
   }
 
-  /* Make the car image larger and more of a "hero" on mobile */
-  .card-image-container {
-    height: 240px !important; /* Fixed height for consistency */
-    position: relative;
+  .card-image-wrapper {
+    height: 220px;
   }
 
-  /* Scale up badges (Price/Year) for better readability */
-  .card-badge-top {
-    top: 15px;
-    left: 15px;
-    padding: 8px 14px;
-    font-size: 0.9rem;
-    font-weight: 800;
-  }
-
-  /* Card Content Padding */
   .card-content {
-    padding: 20px;
+    padding: 16px;
   }
 
-  .card-title-row h3 {
-    font-size: 1.3rem;
-    margin-bottom: 5px;
+  .card-title {
+    font-size: 1.15rem;
   }
 
-  /* Info Grid (Specs like mileage, transmission) */
-  .card-specs-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr); /* 2x2 grid on mobile */
-    gap: 12px;
-    margin: 15px 0;
-  }
-
-  .spec-item {
-    font-size: 0.85rem;
-    padding: 10px;
-    background: #f8fafc;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  /* Action Buttons (The "View" or "Contact" buttons) */
-  .card-footer {
-    padding-top: 15px;
-    border-top: 1px solid #f1f5f9;
-    display: flex;
-    gap: 10px;
-  }
-
-  .btn-view-details {
-    flex: 2; /* Main action is bigger */
-    height: 50px;
-    font-size: 1rem;
-    border-radius: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  .card-price {
+    font-size: 1.4rem;
+    margin: 10px 0 16px;
   }
 
   .btn-favorite {
-    flex: 1;
-    height: 50px;
-    border-radius: 14px;
-    background: #f1f5f9;
-  }
-
-  /* Price Tag Highlight */
-  .card-price-mobile {
-    font-size: 1.4rem;
-    font-weight: 900;
-    color: var(--primary-blue);
-    margin-top: 5px;
+    width: 48px;
+    height: 48px;
   }
 }
 
-/* Small phones adjustment */
+/* SMALL PHONES */
 @media (max-width: 400px) {
-  .card-image-container {
-    height: 200px !important;
-  }
-  
-  .card-title-row h3 {
-    font-size: 1.1rem;
-  }
-}
-
-/* --- For iPhones and Small Phones --- */
-@media (max-width: 480px) {
-  .home-hero-section {
-    padding: 20px;
-    height: auto;
-    text-align: center;
+  .card-image-wrapper {
+    height: 200px;
   }
 
-  .home-main-layout {
-    display: flex;
-    flex-direction: column; /* Stacks the sidebar below the feed */
-  }
-
-  .home-content-grid, .listing-grid {
-    grid-template-columns: 1fr !important; /* Forces cards into a single column */
-  }
-
-  .hero-cta-group {
-    flex-direction: column;
-    gap: 10px;
-  }
-}
-
-/* --- For iPads and Tablets --- */
-@media (max-width: 1024px) {
-  .home-dashboard-inner {
-    flex-direction: column;
-  }
-  
-  .listing-grid {
-    grid-template-columns: 1fr 1fr; /* 2 columns for tablets */
+  .card-title {
+    font-size: 1.05rem;
   }
 }
