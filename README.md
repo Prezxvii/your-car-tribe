@@ -8,7 +8,7 @@
 ![Render](https://img.shields.io/badge/Backend-Render-purple)
 ![Status](https://img.shields.io/badge/Status-Production%20Ready-success)
 
-YourCarTRIBE is a full-stack community platform built for automotive enthusiasts. Whether you are into JDM, Euro, or Muscle cars, or you enjoy track days and local meets, the platform connects drivers with experts, events, and each other in one centralized experience.
+YourCarTRIBE is a full-stack community platform built for automotive enthusiasts. Whether you are into JDM, Euro, or Muscle cars, or you enjoy track days and local meets, the platform connects drivers with experts, events, and each other in one centralized experience.  https://your-car-tribe-mai9.vercel.app
 
 ---
 
