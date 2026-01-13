@@ -1,70 +1,100 @@
-# Getting Started with Create React App
+# YourCarTRIBE
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+![React](https://img.shields.io/badge/React-18-blue)
+![Node.js](https://img.shields.io/badge/Node.js-Express-green)
+![MongoDB](https://img.shields.io/badge/Database-MongoDB-brightgreen)
+![JWT](https://img.shields.io/badge/Auth-JWT-orange)
+![Vercel](https://img.shields.io/badge/Frontend-Vercel-black)
+![Render](https://img.shields.io/badge/Backend-Render-purple)
+![Status](https://img.shields.io/badge/Status-Production%20Ready-success)
 
-## Available Scripts
+YourCarTRIBE is a full-stack community platform built for automotive enthusiasts. Whether you are into JDM, Euro, or Muscle cars, or you enjoy track days and local meets, the platform connects drivers with experts, events, and each other in one centralized experience.
 
-In the project directory, you can run:
+---
 
-### `npm start`
+## Features
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### Enthusiast Onboarding
+- Multi-step onboarding flow to capture driving experience, vehicle interests, and community preferences
+- Tribe selection (JDM, Euro, Muscle) to personalize feeds and recommendations
+- Persistent authentication state across sessions
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+---
 
-### `npm test`
+### Homepage
+- Fully responsive layout across mobile, tablet, and desktop
+- Fixed hamburger menu behavior at all breakpoints
+- Authentication-aware navigation:
+  - Logged-out users see Join Tribe / Sign In
+  - Logged-in users see Welcome {user} and Sign Out
+- Navigation label updated from Marketplace to Experts
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+---
 
-### `npm run build`
+### License / Driver Profile
+- Working photo upload with preview support
+- Editable Know-Whats section
+- Removed non-functional Driver Settings icon
+- Driver Settings separated into clear categories:
+  - Vehicle Types: JDM, Euro, Muscle
+  - Events: Track Days, Cars and Coffee, Night Drives
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+---
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### Marketplace & Experts
+- Expert directory for connecting with mechanics and specialists
+- Vehicle and parts listings
+- Improved proximity dropdown with custom styling
+- Added listing fields:
+  - Transmission Type
+  - Listing Title
+- Seller description template that auto-populates from listing data
+- Testimonials section showcasing recommended sellers and experts
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+---
 
-### `npm run eject`
+### Events
+- Location displayed directly on event thumbnails
+- Support for multiple YouTube links per event
+- Full-size image viewing for uploaded photos
+- Improved Tech Documents section with separated photo previews
+- Highlights text box styled consistently with the rest of the UI
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+---
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### Admin Portal & Security
+- Admin Portal is restricted to admin users only
+- Non-admin users cannot access admin routes
+- Direct URL access is blocked and automatically redirects to the homepage
+- Role-based route protection enforced on both frontend and backend
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+---
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+## Performance & UI
+- Responsive, dark-themed interface optimized for usability
+- Smooth animations using Framer Motion
+- Real-time auth state synchronization using React hooks and localStorage listeners
 
-## Learn More
+---
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## Tech Stack
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+### Frontend
+- React.js
+- Framer Motion
+- Lucide React
+- CSS3 (custom variables, mobile-first)
 
-### Code Splitting
+### Backend
+- Node.js
+- Express
+- MongoDB
+- JWT Authentication
+- CORS configuration for cross-origin deployments
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+---
 
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+## Deployment
+- Frontend deployed on Vercel
+- Backend deployed on Render
+shooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
