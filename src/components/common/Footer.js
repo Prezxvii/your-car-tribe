@@ -1,9 +1,24 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Instagram, Twitter, Facebook, Mail, } from 'lucide-react';
+import { Instagram, Twitter, Facebook, Mail } from 'lucide-react';
 import './Footer.css';
 
 const Footer = () => {
+  // 1. Get user data safely
+  const userString = localStorage.getItem('user');
+  let isAdmin = false;
+
+  // 2. Parse and verify role with safety check
+  // Added check for "undefined" string which causes the crash
+  if (userString && userString !== "undefined" && userString !== "null") {
+    try {
+      const userData = JSON.parse(userString);
+      isAdmin = userData?.role === 'admin';
+    } catch (error) {
+      console.error("Error parsing user data for admin check", error);
+    }
+  }
+
   return (
     <footer className="main-footer">
       <div className="footer-container">
@@ -13,7 +28,7 @@ const Footer = () => {
           <p>The premier destination for the modern car enthusiast.</p>
           <div className="newsletter">
             <input type="email" placeholder="Join the newsletter" />
-            <button><Mail size={18} /></button>
+            <button aria-label="Subscribe"><Mail size={18} /></button>
           </div>
         </div>
 
@@ -38,7 +53,12 @@ const Footer = () => {
         {/* Links: Support */}
         <div className="footer-links">
           <h4>Support</h4>
-          <Link to="/admin-portal" className="admin-link">Admin Portal</Link>
+          
+          {/* Only show Admin Portal link if isAdmin is true */}
+          {isAdmin && (
+            <Link to="/admin-portal" className="admin-link" style={{color: '#ff4d4d', fontWeight: 'bold'}}>Admin Portal</Link>
+          )}
+          
           <Link to="#">Help Center</Link>
           <Link to="#">Contact Us</Link>
           <Link to="#">Privacy Policy</Link>
@@ -48,11 +68,11 @@ const Footer = () => {
 
       <div className="footer-bottom">
         <div className="footer-bottom-content">
-          <p>&copy; 2025 Your Car Tribe. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} Your Car Tribe. All rights reserved.</p>
           <div className="social-icons">
-            <Instagram size={20} />
-            <Twitter size={20} />
-            <Facebook size={20} />
+            <Instagram size={20} style={{cursor: 'pointer'}} />
+            <Twitter size={20} style={{cursor: 'pointer'}} />
+            <Facebook size={20} style={{cursor: 'pointer'}} />
           </div>
         </div>
       </div>

@@ -23,22 +23,27 @@ const LoginPage = () => {
           'Content-Type': 'application/json',
           Accept: 'application/json'
         }
-        // IMPORTANT: only keep withCredentials if your backend uses cookies.
-        // withCredentials: true
       });
 
       if (response.data.token) {
+        // 1. Store the JWT Token
         localStorage.setItem('token', response.data.token);
 
+        // 2. Prepare and Store the User Object
+        // ✅ Ensure this structure matches what checkAuth() in App.js expects
         const userObject = {
-          id: response.data.id,
-          username: response.data.username,
-          role: response.data.role,
-          tribes: response.data.tribes || ['JDM']
+          id: response.data.id || response.data.user?.id,
+          username: response.data.username || response.data.user?.username,
+          fullName: response.data.fullName || response.data.user?.fullName,
+          role: response.data.role || response.data.user?.role || 'user',
+          tribes: response.data.tribes || response.data.user?.tribes || []
         };
 
         localStorage.setItem('user', JSON.stringify(userObject));
-        localStorage.setItem('userName', response.data.username);
+        localStorage.setItem('userName', userObject.fullName || userObject.username);
+
+        // ✅ THE FIX: Manually dispatch storage event for instant UI update
+        window.dispatchEvent(new Event("storage"));
 
         navigate('/');
       }
@@ -63,20 +68,7 @@ const LoginPage = () => {
         </div>
 
         {error && (
-          <div
-            className="login-error-msg"
-            style={{
-              color: '#e53e3e',
-              background: '#fff5f5',
-              padding: '10px',
-              borderRadius: '8px',
-              marginBottom: '15px',
-              fontSize: '0.9rem',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px'
-            }}
-          >
+          <div className="login-error-msg" style={{ color: '#e53e3e', background: '#fff5f5', padding: '10px', borderRadius: '8px', marginBottom: '15px', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <AlertCircle size={16} /> {error}
           </div>
         )}
@@ -111,11 +103,7 @@ const LoginPage = () => {
           </div>
 
           <button type="submit" className="btn-login" disabled={loading}>
-            {loading ? (
-              <Loader2 className="spinner" size={18} />
-            ) : (
-              <>Enter the Tribe <ArrowRight size={18} /></>
-            )}
+            {loading ? <Loader2 className="spinner" size={18} /> : <>{'Enter the Tribe'} <ArrowRight size={18} /></>}
           </button>
         </form>
 

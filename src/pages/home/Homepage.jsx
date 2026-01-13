@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, ChevronRight, LogOut, Newspaper, User } from 'lucide-react';
+import { Users, ChevronRight, Newspaper, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import ProfileLicense from '../../components/profile/ProfileLicense';
 import '../../styles/Home.css';
@@ -48,6 +48,8 @@ const Homepage = () => {
     fetchNews();
   }, []);
 
+  // handleLogout remains here as a helper but is no longer 
+  // triggered by the Hero UI to avoid the "Double Sign Out" issue.
   const handleLogout = () => {
     localStorage.clear();
     setIsLoggedIn(false);
@@ -64,8 +66,8 @@ const Homepage = () => {
 
   const feedContent = [
     { id: 1, type: 'article', tag: 'Technical', title: 'RB26 vs 2JZ: The Final Verdict', author: 'Expert_Spec', interest: 'JDM', desc: 'Exploring the engines that defined a generation.' },
-    { id: 2, type: 'listing', tag: 'Marketplace', title: '1993 Mazda RX-7 FD', price: '$42,000', interest: 'JDM', location: 'Los Angeles, CA' },
-    { id: 4, type: 'listing', tag: 'Marketplace', title: '1969 Mustang Fastback', price: '$55,000', interest: 'Muscle', location: 'Austin, TX' },
+    { id: 2, type: 'listing', tag: 'Experts', title: '1993 Mazda RX-7 FD', price: '$42,000', interest: 'JDM', location: 'Los Angeles, CA' },
+    { id: 4, type: 'listing', tag: 'Experts', title: '1969 Mustang Fastback', price: '$55,000', interest: 'Muscle', location: 'Austin, TX' },
     { id: 5, type: 'article', tag: 'Guide', title: 'Restoring E30 Interiors', author: 'BimmerDude', interest: 'Euro', desc: 'How to source OEM fabric.' },
   ];
 
@@ -74,11 +76,10 @@ const Homepage = () => {
       <section className="home-hero-section">
         <div className="hero-overlay"></div>
 
-        {isLoggedIn && (
-          <div className="sign-out-tab" onClick={handleLogout}>
-            <LogOut size={16} /> <span>Sign Out</span>
-          </div>
-        )}
+        {/* FIX: Removed the "sign-out-tab" div that was here. 
+          The Sign Out action is now handled exclusively by the Navbar 
+          to prevent the "Double Sign Out" buttons in the Hero.
+        */}
 
         <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} className="hero-text-block">
           <span className="welcome-badge">Welcome back, {userName || 'Enthusiast'}</span>
@@ -88,7 +89,8 @@ const Homepage = () => {
             connecting the right people and a space to meet. <strong>Welcome!</strong>
           </p>
           <div className="hero-cta-group">
-            <button className="btn-primary-glow" onClick={() => navigate('/marketplace')}>Marketplace</button>
+            {/* Rebranded to Experts to match client request */}
+            <button className="btn-primary-glow" onClick={() => navigate('/marketplace')}>Experts</button>
             <button className="btn-outline-white" onClick={() => navigate('/events')}>Find a Meet</button>
           </div>
         </motion.div>

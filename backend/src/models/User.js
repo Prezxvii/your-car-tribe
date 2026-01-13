@@ -5,16 +5,24 @@ const userSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  // Fields from onboarding screens
+  
+  // --- FIELDS FROM ONBOARDING & LICENSE ---
   fullName: { type: String },           // "Name to a Face" screen
+  personalName: { type: String, default: 'Verified Member' }, // Displayed on License
   bio: { type: String },                // "Short Bio" field
-  profilePhoto: { type: String },       // "Upload Photo" field
+  profilePhoto: { type: String },       // Stores Base64 or URL (License Avatar)
   currentCar: { type: String },         // "Current Car / Project" screen
   mechanicalExperience: { type: String }, // "Mechanical Experience" screen
-  tribes: [{ type: String }],           // "The Tribes" selection array
-  role: { type: String, enum: ['user', 'admin'], default: 'user' },
   
-  // Admin moderation fields
+  // --- DYNAMIC ARRAYS FOR LICENSE & PREFERENCES ---
+  tribes: [{ type: String }],           // Holds Vehicle Kinds & Event Interests
+  knowWhats: { 
+    type: [String], 
+    default: ["Active Contributor", "Tribe Member"] // Editable expertise
+  },
+
+  // --- ACCESS & MODERATION ---
+  role: { type: String, enum: ['user', 'admin'], default: 'user' },
   banned: { type: Boolean, default: false },
   banReason: { type: String },
   bannedAt: { type: Date },
@@ -25,13 +33,12 @@ const userSchema = new mongoose.Schema({
 });
 
 // 1. Password hashing before saving 
-// FIXED: Remove next() parameter and call - async functions don't need it
 userSchema.pre('save', async function() {
   if (!this.isModified('password')) return;
   this.password = await bcrypt.hash(this.password, 10);
 });
 
-// 2. Added Helper Method: Compare password for Login
+// 2. Helper Method: Compare password for Login
 userSchema.methods.comparePassword = async function(candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };

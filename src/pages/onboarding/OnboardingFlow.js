@@ -65,9 +65,26 @@ const OnboardingFlow = () => {
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' }
       });
 
+      // ✅ Check for success (assuming your backend returns token and user object)
       if (response.status === 201 || response.status === 200) {
+        const { token, user } = response.data;
+
+        // 1. Store the items required by your App/Navbar checkAuth logic
+        localStorage.setItem('token', token);
+        localStorage.setItem('user', JSON.stringify(user || {
+          username: formData.username,
+          fullName: formData.fullName,
+          role: 'user' 
+        }));
+        
+        // Helper storage items
         localStorage.setItem('userTribes', JSON.stringify(formData.tribes));
-        localStorage.setItem('userName', formData.fullName);
+        localStorage.setItem('userName', formData.fullName || formData.username);
+
+        // 2. ✅ CRITICAL: Dispatch a storage event manually
+        // This notifies the listener in App.js/Navbar.js to run checkAuth() immediately
+        window.dispatchEvent(new Event("storage"));
+
         nextStep();
       }
     } catch (err) {
@@ -198,7 +215,7 @@ const OnboardingFlow = () => {
               <CheckCircle size={100} color="#0066ff" />
             </div>
             <h1 className="success-title">YOU'RE ALL SET!</h1>
-            <p className="success-desc">Welcome, {formData.fullName}. Your personalized feed is ready.</p>
+            <p className="success-desc">Welcome, {formData.username || formData.fullName}. Your personalized feed is ready.</p>
             <button className="btn-enter" onClick={() => navigate('/')}>ENTER THE TRIBE</button>
           </div>
         )}

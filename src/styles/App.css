@@ -20,7 +20,7 @@ body {
   background-color: var(--bg-light);
   color: var(--text-main);
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden; /* Prevent horizontal scroll on mobile */
+  overflow-x: hidden; 
 }
 
 /* --- THE GLOSSY STICKY NAVBAR --- */
@@ -51,7 +51,7 @@ body {
   font-size: 1.6rem;
   font-weight: 900;
   text-decoration: none;
-  color: #000000 !important; /* Force visible black */
+  color: #000000 !important; 
   letter-spacing: -1px;
 }
 
@@ -69,7 +69,7 @@ body {
 
 .nav-links a {
   text-decoration: none;
-  color: #1a1a1a !important; /* Fix for the invisible/white link issue */
+  color: #1a1a1a !important; 
   font-weight: 600;
   font-size: 0.95rem;
   padding: 8px 12px;
@@ -81,7 +81,7 @@ body {
   transform: translateY(-1px);
 }
 
-/* --- DESKTOP ACTIONS (Sign In / Join) --- */
+/* --- DESKTOP ACTIONS (Sign In / Welcome State) --- */
 .nav-actions {
   flex: 0 0 auto;
   display: flex;
@@ -96,9 +96,16 @@ body {
   gap: 20px;
 }
 
+.welcome-text {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-right: 5px;
+}
+
 .nav-login-link {
   text-decoration: none;
-  color: #1a1a1a !important; /* Visible black for Sign In */
+  color: #1a1a1a !important; 
   font-weight: 700;
   font-size: 0.9rem;
   transition: color 0.3s ease;
@@ -129,31 +136,52 @@ body {
   filter: brightness(1.05);
 }
 
-/* --- RESPONSIVE VISIBILITY LOGIC --- */
+/* Styled Logout for Desktop */
+.nav-logout-inline {
+  background: #fff0f0; 
+  border: 1px solid #ffebeb;
+  color: #ff4444 !important;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
 
-/* Desktop (Screens wider than 768px) */
-@media (min-width: 769px) {
+.nav-logout-inline:hover {
+  background: #ff4444;
+  color: white !important;
+}
+
+/* --- UPDATED RESPONSIVE VISIBILITY LOGIC --- */
+
+/* Desktop: Screens wider than 1024px */
+@media (min-width: 1025px) {
   .desktop-only {
     display: flex !important;
   }
   .mobile-only {
-    display: none !important; /* Hide hamburger on desktop */
+    display: none !important; 
   }
 }
 
-/* Mobile (Screens 768px and narrower) */
-@media (max-width: 768px) {
+/* Tablet & Mobile: Trigger at 1024px to cover iPads/Small Laptops */
+@media (max-width: 1024px) {
   .desktop-only {
-    display: none !important; /* Hide standard links and auth buttons */
+    display: none !important; 
   }
   .mobile-only {
-    display: flex !important; /* Show hamburger only on mobile */
+    display: flex !important; 
   }
   .nav-container {
     padding: 0 20px;
   }
   .logo {
-    font-size: 1.3rem;
+    font-size: 1.4rem;
   }
 }
 
@@ -167,6 +195,22 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* Mobile Logout - Moved up as requested */
+.mobile-logout-btn {
+  width: 100%;
+  margin-top: 15px; 
+  padding: 14px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  color: #ff4444;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
 }
 
 /* --- CONTENT AREA --- */

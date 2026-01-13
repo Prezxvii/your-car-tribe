@@ -2,7 +2,13 @@
    YOURCAR TRIBE - OFFICIAL PROFILE LICENSE STYLING
    ========================================================================== */
 
-   .license-card {
+   .profile-page-wrapper {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 20px;
+  }
+  
+  .license-card {
     width: 100%;
     max-width: 650px;
     background: #fff;
@@ -12,6 +18,7 @@
     overflow: hidden;
     background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
     box-shadow: 15px 15px 0px rgba(0, 0, 0, 0.08);
+    margin: 0 auto;
   }
   
   /* Official Watermark Background */
@@ -45,7 +52,7 @@
     font-size: 1.2rem;
     letter-spacing: 2px;
     font-weight: 900;
-    color: #0066ff; /* Your Branding Blue */
+    color: #0066ff;
   }
   
   .license-id-number {
@@ -77,11 +84,6 @@
     cursor: pointer;
     transition: all 0.2s ease;
     flex-shrink: 0;
-  }
-  
-  .profile-pic-box:hover {
-    border-color: #0066ff;
-    background-color: #e2e8f0;
   }
   
   .profile-pic-box img {
@@ -130,7 +132,7 @@
     text-transform: uppercase;
     color: #1a1a1a;
     line-height: 1.1;
-    word-break: break-word; /* ✅ prevents overflow on long usernames */
+    word-break: break-word;
   }
   
   .interest-tags {
@@ -192,45 +194,100 @@
     background: white;
     padding: 40px;
     border: 2px solid #1a1a1a;
-    border-radius: 20px; /* Softer container vs the sharp license */
+    border-radius: 20px; 
     margin-top: 50px;
   }
   
   .settings-header {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    gap: 12px;
     margin-bottom: 30px;
     border-bottom: 2px solid #f1f5f9;
     padding-bottom: 20px;
-    gap: 12px;
-    flex-wrap: wrap;
   }
   
-  .btn-logout-minimal {
-    background: #fee2e2;
-    color: #ef4444;
-    border: none;
-    padding: 10px 18px;
-    border-radius: 12px;
+  .blue-gear-icon {
+    color: #0066ff;
+  }
+  
+  /* --- NEW: CATEGORIZED SETTINGS GROUPS --- */
+  .settings-group {
+    margin-bottom: 30px;
+  }
+  
+  .group-label {
+    display: block;
     font-weight: 800;
     font-size: 0.85rem;
-    cursor: pointer;
+    text-transform: uppercase;
+    color: #1a1a1a;
+    margin-bottom: 15px;
+    letter-spacing: 0.5px;
+  }
+  
+  .settings-divider {
+    border: none;
+    border-top: 1px solid #e2e8f0;
+    margin: 30px 0;
+  }
+  
+  /* --- NEW: KNOW-WHATS EDITOR STYLES --- */
+  .know-whats-edit-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 15px;
+  }
+  
+  .know-what-tag {
+    background: #1a1a1a;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
     display: flex;
     align-items: center;
     gap: 8px;
-    transition: 0.2s;
   }
   
-  .btn-logout-minimal:hover {
-    background: #fecaca;
+  .know-what-tag svg {
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+  
+  .know-what-tag svg:hover {
+    color: #ff4444;
+  }
+  
+  .add-know-what {
+    display: flex;
+    gap: 10px;
+    max-width: 300px;
+  }
+  
+  .add-know-what input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    outline: none;
+  }
+  
+  .add-know-what button {
+    background: #0066ff;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
   }
   
   .tribes-selection-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
     gap: 12px;
-    margin-bottom: 40px;
   }
   
   .tribe-pill {
@@ -243,6 +300,10 @@
     cursor: pointer;
     text-align: center;
     transition: 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
   }
   
   .tribe-pill.active {
@@ -262,6 +323,9 @@
     letter-spacing: 0.5px;
     cursor: pointer;
     transition: 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
   }
   
   .btn-save-settings:hover {
@@ -269,8 +333,139 @@
     transform: translateY(-2px);
   }
   
+  .status-msg {
+    display: block;
+    margin-top: 10px;
+    font-weight: 700;
+    color: #10b981;
+  }
+
+
+  .status-stats-bar {
+    display: flex;
+    justify-content: space-around;
+    padding: 20px;
+    margin-top: 20px;
+    background: white;
+    border-radius: 16px;
+  }
+  
+  .stat-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  .stat-value {
+    display: block;
+    font-weight: 900;
+    font-size: 1.2rem;
+    color: #1a1a1a;
+    line-height: 1;
+  }
+  
+  .stat-label {
+    font-size: 0.75rem;
+    color: #64748b;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+  
+  .stat-divider {
+    width: 1px;
+    background: #e2e8f0;
+  }
+  
+  .manage-event-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background: #f8fafc;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    border: 1px solid #e2e8f0;
+  }
+  
+  .manage-event-info {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .manage-event-info strong {
+    font-size: 0.95rem;
+  }
+  
+  .manage-event-info span {
+    font-size: 0.8rem;
+    color: #64748b;
+  }
+  
+  .manage-event-actions {
+    display: flex;
+    gap: 8px;
+  }
+  
+  .icon-btn {
+    padding: 8px;
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+    background: white;
+    cursor: pointer;
+    color: #475569;
+  }
+  
+  .icon-btn.delete:hover {
+    background: #fee2e2;
+    color: #ef4444;
+    border-color: #fecaca;
+  }
+  
+  .mb-20 { margin-bottom: 20px; }
+
+  .clickable-license-label {
+    position: relative;
+    display: block;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+  }
+  
+  .clickable-license-label:hover {
+    transform: scale(1.01);
+  }
+  
+  .avatar-edit-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 102, 255, 0.5); /* Blue tint */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    color: white;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    border-radius: 20px; /* Match License Card radius */
+    z-index: 5;
+  }
+  
+  .clickable-license-label:hover .avatar-edit-overlay {
+    opacity: 1;
+  }
+  
+  .avatar-edit-overlay span {
+    font-weight: 900;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+  }
+  
   /* ======================================================
-     ✅ MOBILE OVERRIDES (LICENSE + SETTINGS)
+     ✅ MOBILE OVERRIDES
   ====================================================== */
   @media (max-width: 768px) {
     .license-card {
@@ -280,26 +475,8 @@
       box-shadow: 8px 8px 0px rgba(0, 0, 0, 0.06);
     }
   
-    /* Smaller watermark so it doesn’t look messy on phones */
-    .license-card::after {
-      font-size: 3.2rem;
-    }
+    .license-card::after { font-size: 3.2rem; }
   
-    .license-header {
-      margin-bottom: 16px;
-      padding-bottom: 10px;
-    }
-  
-    .license-header h2 {
-      font-size: 0.95rem;
-      letter-spacing: 1.5px;
-    }
-  
-    .license-id-number {
-      font-size: 0.8rem;
-    }
-  
-    /* Stack photo + info cleanly */
     .profile-main-info {
       flex-direction: column;
       gap: 14px;
@@ -308,65 +485,9 @@
     .profile-pic-box {
       width: 100%;
       height: 210px;
-      border-radius: 12px;
-    }
-  
-    .info-fields span {
-      font-size: 1.05rem;
-    }
-  
-    .tag {
-      font-size: 0.65rem;
-      padding: 4px 10px;
-    }
-  
-    .know-whats-box {
-      padding: 16px;
-    }
-  
-    .knowledge-list li {
-      font-size: 0.85rem;
-    }
-  
-    /* Settings card mobile */
-    .settings-card {
-      padding: 18px;
-      margin-top: 24px;
-      border-radius: 16px;
     }
   
     .tribes-selection-grid {
       grid-template-columns: repeat(2, 1fr);
-      margin-bottom: 22px;
-    }
-  
-    .tribe-pill {
-      padding: 12px;
-      font-size: 0.85rem;
-      border-radius: 12px;
-    }
-  
-    .btn-save-settings {
-      width: 100%;
-      padding: 14px 18px;
-    }
-  
-    .btn-logout-minimal {
-      padding: 10px 14px;
     }
   }
-  
-  @media (max-width: 420px) {
-    .license-card::after {
-      font-size: 2.6rem;
-    }
-  
-    .tribes-selection-grid {
-      grid-template-columns: 1fr;
-    }
-  
-    .profile-pic-box {
-      height: 190px;
-    }
-  }
-  

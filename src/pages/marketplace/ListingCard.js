@@ -1,19 +1,18 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { MapPin, Gauge, Heart } from 'lucide-react';
+import { MapPin, Gauge, Heart, ExternalLink, Zap } from 'lucide-react';
 
 const ListingCard = ({ car }) => {
   const [isFavorited, setIsFavorited] = useState(false);
 
   const formatPrice = (price) => {
-    if (!price || price === 0) return "Inquire for Price";
+    if (!price || price === 0) return "Inquire";
     return new Intl.NumberFormat('en-US', { 
       style: 'currency', currency: 'USD', maximumFractionDigits: 0 
     }).format(price);
   };
 
-  // Helper to format the origin class for CSS (e.g., "Bring a Trailer" -> "bring-a-trailer")
   const getOriginClass = (origin) => {
     return origin ? origin.toLowerCase().replace(/\s+/g, '-') : '';
   };
@@ -22,44 +21,44 @@ const ListingCard = ({ car }) => {
     <motion.div
       className="listing-card-container"
       initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.4 }}
     >
-      {/* Favorite Button */}
-      <motion.button 
-        className={`btn-favorite ${isFavorited ? 'active' : ''}`}
-        onClick={(e) => {
-          e.preventDefault();
-          setIsFavorited(!isFavorited);
-        }}
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.8 }}
-      >
-        <Heart 
-          size={20} 
-          fill={isFavorited ? "#ff4757" : "none"} 
-          stroke={isFavorited ? "#ff4757" : "white"}
-          strokeWidth={2.5}
-        />
-      </motion.button>
-
-      <Link to={`/listing/${car.id}`} className="listing-card-link">
-        <motion.div className="listing-card" whileHover={{ y: -5 }}>
+      <Link to={`/listing/${car.id || car._id}`} className="listing-card-link">
+        <div className="listing-card">
+          
           <div className="card-image-wrapper">
-            {/* Source Label (BaT, Cars & Bids, etc) */}
+            {/* 1. Origin Label (Top Right) */}
             {car.origin && (
               <span className={`origin-label ${getOriginClass(car.origin)}`}>
                 {car.origin}
               </span>
             )}
 
-            {/* No Reserve Badge */}
+            {/* 2. No Reserve Badge (Top Left) */}
             {car.isNoReserve && (
               <span className="badge-no-reserve">NO RESERVE</span>
             )}
 
+            {/* 3. Favorite Button (Floating) */}
+            <button 
+              className={`btn-favorite ${isFavorited ? 'active' : ''}`}
+              onClick={(e) => {
+                e.preventDefault(); // Stop navigation to detail page
+                setIsFavorited(!isFavorited);
+              }}
+            >
+              <Heart 
+                size={20} 
+                fill={isFavorited ? "#ff4757" : "rgba(0,0,0,0.3)"} 
+                stroke={isFavorited ? "#ff4757" : "white"}
+                strokeWidth={2.5}
+              />
+            </button>
+
             <img 
-              src={car.imageUrl} 
+              src={car.imageUrl || car.image} 
               alt={`${car.make} ${car.model}`}
               loading="lazy"
               onError={(e) => {
@@ -67,13 +66,15 @@ const ListingCard = ({ car }) => {
               }}
             />
             
-            <span className="tag-category">{car.tag}</span>
-            
-            {car.distance && (
-              <span className="distance-badge">
-                {car.distance} miles
-              </span>
-            )}
+            {/* 4. Category Tag & Distance */}
+            <div className="card-image-overlay-bottom">
+              <span className="tag-category">{car.tag || 'Enthusiast'}</span>
+              {car.distance && (
+                <span className="distance-badge">
+                   <MapPin size={10} /> {Math.round(car.distance)} mi
+                </span>
+              )}
+            </div>
           </div>
 
           <div className="card-content">
@@ -85,18 +86,23 @@ const ListingCard = ({ car }) => {
             
             <div className="card-footer">
               <div className="footer-item">
-                <MapPin size={14} />
+                <Zap size={14} className="blue-icon" />
                 <span className="location-text" title={car.location}>
-                  {car.location}
+                  {car.location || 'Nationwide'}
                 </span>
               </div>
               <div className="footer-item">
-                <Gauge size={14} />
-                <span>{car.miles || car.mileage}</span>
+                <Gauge size={14} className="blue-icon" />
+                <span>{car.miles || car.mileage || 'TMU'}</span>
               </div>
             </div>
+
+            {/* Expert View CTA */}
+            <div className="view-listing-link">
+              View Expert Details <ExternalLink size={14} />
+            </div>
           </div>
-        </motion.div>
+        </div>
       </Link>
     </motion.div>
   );

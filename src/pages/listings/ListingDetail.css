@@ -401,6 +401,207 @@
   color: var(--primary-blue);
 }
 
+/* --- RECOMMENDATIONS SECTION --- */
+.recommendations-section {
+  margin-top: 30px;
+  border-top: 1px solid #eee;
+  padding-top: 24px !important;
+}
+
+/* Tightens the header so it feels like a cohesive card unit */
+.recommendations-section .section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 0 4px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Fixes the "shifting star" - ensures icon and text baseline match */
+.header-left h3 {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  font-size: 1.1rem;
+  line-height: 1;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.header-left svg {
+  margin-bottom: 1px; /* Optical alignment fix */
+}
+
+/* --- CLEANED UP ADD REVIEW BUTTON --- */
+.btn-add-review {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: white;
+  border: 1.5px solid var(--primary-blue, #0066ff);
+  color: var(--primary-blue, #0066ff);
+  padding: 8px 14px;
+  border-radius: 4px;
+  font-weight: 800;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn-add-review:hover {
+  background: var(--primary-blue, #0066ff);
+  color: white;
+}
+
+/* --- INLINE REVIEW FORM (The Technical Log) --- */
+.review-form-inline {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 25px;
+}
+
+.rating-input {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
+  font-weight: 800;
+  font-size: 0.85rem;
+  color: #475569;
+}
+
+.review-form-inline textarea {
+  width: 100%;
+  min-height: 100px;
+  padding: 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-family: inherit;
+  margin-bottom: 15px;
+  resize: vertical;
+  font-size: 0.95rem;
+}
+
+.review-form-inline button[type="submit"] {
+  background: #1a1a1a;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.review-form-inline button[type="submit"]:hover {
+  background: #334155;
+}
+
+/* --- RECOMMENDATION CARDS --- */
+.rec-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+.rec-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  padding: 20px;
+  border-radius: 8px;
+  transition: transform 0.2s ease;
+}
+
+.rec-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.rec-avatar {
+  width: 32px;
+  height: 32px;
+  background: #1a1a1a;
+  color: white;
+  border-radius: 4px; /* Brutalist square-ish look */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 0.85rem;
+}
+
+.rec-meta {
+  flex: 1;
+}
+
+.rec-meta strong {
+  display: block;
+  font-size: 0.9rem;
+  color: #1a1a1a;
+}
+
+.rec-meta span {
+  font-size: 0.7rem;
+  color: var(--primary-blue, #0066ff);
+  text-transform: uppercase;
+  font-weight: 800;
+}
+
+.rec-stars {
+  display: flex;
+  gap: 2px;
+}
+
+.rec-card p {
+  color: #475569;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  font-style: italic;
+  margin: 0;
+  padding-left: 4px;
+  border-left: 2px solid #f1f5f9;
+}
+
+/* --- PLACEHOLDERS --- */
+.no-reviews {
+  text-align: center;
+  color: #94a3b8;
+  padding: 40px 0;
+  font-size: 0.9rem;
+  font-style: italic;
+  border: 1px dashed #e2e8f0;
+  border-radius: 8px;
+}
+
+/* --- TECHNICAL Dossier Helpers --- */
+.highlight-spec {
+  color: var(--primary-blue, #0066ff) !important;
+  font-weight: 900 !important;
+}
+
+.vin-text {
+  font-family: 'Monaco', 'Consolas', monospace;
+  background: #f1f5f9;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 0.85rem;
+}
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
