@@ -1,51 +1,50 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Menu, X, Car, Users, User, LogOut, Wrench } from 'lucide-react';
+import { Menu, X, Car, Users, User, LogOut, Wrench, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import './Navbar.css';
+import '../styles/Navbar.css'; 
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [userName, setUserName] = useState('');
-  const navigate = useNavigate();
-  
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('token'));
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    const checkAuth = () => {
-      const token = localStorage.getItem('token');
-      const userData = localStorage.getItem('user');
-      
-      setIsLoggedIn(!!token);
-
-      // ✅ Added safety check for "undefined" or null strings
-      if (token && userData && userData !== "undefined" && userData !== "null") {
-        try {
-          const user = JSON.parse(userData);
-          // ✅ PRIORITY: username (Pablo) -> fullName (Pablo Moore) -> fallback
-          const nameToDisplay = user.username || user.fullName || 'Tribesman';
-          setUserName(nameToDisplay);
-        } catch (e) {
-          console.error("Auth parsing error in Navbar:", e);
-          setUserName('Tribesman');
-        }
-      } else {
-        setUserName('');
-      }
-    };
-
-    // Initial check
-    checkAuth();
-
-    // ✅ Listen for both cross-tab changes and manual dispatches (Onboarding)
-    window.addEventListener('storage', checkAuth);
-    return () => window.removeEventListener('storage', checkAuth);
+  const checkAuth = useCallback(() => {
+    const token = localStorage.getItem('token');
+    const userData = localStorage.getItem('user');
+    setIsLoggedIn(!!token);
+    if (token && userData && userData !== "undefined" && userData !== "null") {
+      try {
+        const user = JSON.parse(userData);
+        setUserName(user.username || user.fullName || 'Tribesman');
+      } catch (e) { setUserName('Tribesman'); }
+    } else { setUserName(''); }
   }, []);
 
+  useEffect(() => {
+    checkAuth();
+    
+    // ✅ FIX: Auto-close menu if user expands screen to desktop
+    const handleResize = () => {
+      if (window.innerWidth > 1024) setIsOpen(false);
+    };
+
+    window.addEventListener('storage', checkAuth);
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('storage', checkAuth);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [checkAuth]);
+
   const navLinks = [
+    { name: 'Home', path: '/', icon: <Car size={18} /> },
     { name: 'Experts', path: '/marketplace', icon: <Wrench size={18} /> },
     { name: 'Forum', path: '/forum', icon: <Users size={18} /> },
+    { name: 'Mechanics', path: '/mechanics', icon: <Wrench size={18} /> },
     { name: 'Events', path: '/events', icon: <Car size={18} /> },
+    { name: 'Sell', path: '/sell', icon: <Car size={18} /> },
   ];
 
   const closeMenu = () => setIsOpen(false);
@@ -56,7 +55,6 @@ const Navbar = () => {
     setUserName('');
     closeMenu();
     navigate('/login');
-    // ✅ Ensure other components know the user logged out
     window.dispatchEvent(new Event("storage"));
   };
 
@@ -67,39 +65,32 @@ const Navbar = () => {
           YourCar<span>TRIBE</span>
         </Link>
 
-        {/* --- DESKTOP NAVIGATION --- */}
         <div className="nav-desktop">
           {navLinks.map((link) => (
-            <Link key={link.name} to={link.path} className="nav-item">
-              {link.name}
-            </Link>
+            <Link key={link.name} to={link.path} className="nav-item">{link.name}</Link>
           ))}
-          
+        </div>
+
+        <div className="nav-actions">
           {isLoggedIn ? (
-            <div className="nav-auth-group">
+            <div className="nav-auth-group desktop-only">
               <span className="welcome-msg">Welcome, {userName}</span>
-              <Link to="/profile" className="nav-profile-btn" title="My Garage">
-                <User size={20} />
-              </Link>
-              <button onClick={handleLogout} className="nav-logout-inline" title="Sign Out">
-                <LogOut size={18} />
-              </button>
+              <Link to="/profile" className="nav-profile-btn"><User size={20} /></Link>
+              <button onClick={handleLogout} className="nav-logout-inline"><LogOut size={18} /></button>
             </div>
           ) : (
-            <div className="nav-guest-group">
+            <div className="nav-guest-group desktop-only">
               <Link to="/login" className="nav-login-link">Sign In</Link>
               <Link to="/onboarding" className="nav-join-btn">Join the Tribe</Link>
             </div>
           )}
-        </div>
 
-        {/* --- MOBILE ICON --- */}
-        <button className="hamburger" onClick={() => setIsOpen(!isOpen)}>
-          {isOpen ? <X size={28} /> : <Menu size={28} />}
-        </button>
+          <button className="hamburger" onClick={() => setIsOpen(!isOpen)}>
+            {isOpen ? <X size={28} /> : <Menu size={28} />}
+          </button>
+        </div>
       </div>
 
-      {/* --- MOBILE DRAWER --- */}
       <AnimatePresence>
         {isOpen && (
           <>
@@ -111,42 +102,40 @@ const Navbar = () => {
               onClick={closeMenu}
             />
             <motion.div 
-              className="mobile-menu"
+              className="mobile-drawer"
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
             >
-              <div className="mobile-menu-content">
-                <div className="mobile-menu-header">
-                   {isLoggedIn ? `Hi, ${userName}` : "Menu"}
-                </div>
+              <div className="drawer-header">
+                 <span>{isLoggedIn ? `Hi, ${userName}` : "Menu"}</span>
+                 <button onClick={closeMenu} className="close-drawer"><X size={24}/></button>
+              </div>
 
-                <p className="menu-section-label">Explore</p>
+              <div className="drawer-body">
+                <p className="section-label">Explore</p>
                 {navLinks.map((link) => (
-                  <Link key={link.name} to={link.path} onClick={closeMenu} className="mobile-link">
-                    {link.icon} {link.name}
+                  <Link key={link.name} to={link.path} onClick={closeMenu} className="drawer-link">
+                    <span className="link-content">{link.icon} {link.name}</span>
+                    <ChevronRight size={16} />
                   </Link>
                 ))}
                 
-                <p className="menu-section-label">Account</p>
+                <p className="section-label">Account</p>
                 {isLoggedIn ? (
-                  <div className="mobile-auth-links">
-                    <Link to="/profile" onClick={closeMenu} className="mobile-link">
-                      <User size={18} /> My Garage
+                  <>
+                    <Link to="/profile" onClick={closeMenu} className="drawer-link">
+                      <span className="link-content"><User size={18} /> My Garage</span>
                     </Link>
-                    <button onClick={handleLogout} className="mobile-link logout-action">
+                    <button onClick={handleLogout} className="drawer-logout">
                       <LogOut size={18} /> Sign Out
                     </button>
-                  </div>
+                  </>
                 ) : (
-                  <div className="mobile-auth-stack">
-                    <Link to="/login" onClick={closeMenu} className="mobile-link login-btn">
-                      Sign In
-                    </Link>
-                    <Link to="/onboarding" onClick={closeMenu} className="mobile-link join-btn">
-                      Join the Tribe
-                    </Link>
+                  <div className="drawer-auth-stack">
+                    <Link to="/login" onClick={closeMenu} className="drawer-signin">Sign In</Link>
+                    <Link to="/onboarding" onClick={closeMenu} className="drawer-join">Join the Tribe</Link>
                   </div>
                 )}
               </div>

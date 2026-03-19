@@ -1,6 +1,11 @@
+// ========================================
+// UPDATED HOMEPAGE WITH FORCED DESCRIPTIONS
+// File: src/pages/Homepage/Homepage.jsx
+// ========================================
+
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, ChevronRight, Newspaper, User } from 'lucide-react';
+import { Users, ChevronRight, Newspaper, User, ExternalLink, Clock, TrendingUp } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import ProfileLicense from '../../components/profile/ProfileLicense';
 import '../../styles/Home.css';
@@ -16,6 +21,7 @@ const Homepage = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [localNews, setLocalNews] = useState([]);
   const [newsLoading, setNewsLoading] = useState(true);
+  const [newsError, setNewsError] = useState(null);
 
   useEffect(() => {
     const savedTribes = localStorage.getItem('userTribes');
@@ -35,11 +41,29 @@ const Homepage = () => {
 
     const fetchNews = async () => {
       try {
+        setNewsLoading(true);
+        setNewsError(null);
         const response = await fetch(`${API_BASE_URL}/api/news/car-news`);
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch news');
+        }
+        
         const data = await response.json();
+        
+        // ✅ DETAILED DEBUG
+        console.log('📰 Full news response:', data);
+        if (data && data.length > 0) {
+          console.log('First article FULL:', data[0]);
+          console.log('Description field:', data[0].description);
+          console.log('Description type:', typeof data[0].description);
+          console.log('Description length:', data[0].description?.length);
+        }
+        
         setLocalNews(data);
       } catch (error) {
         console.error('Error fetching news:', error);
+        setNewsError(error.message);
       } finally {
         setNewsLoading(false);
       }
@@ -48,8 +72,6 @@ const Homepage = () => {
     fetchNews();
   }, []);
 
-  // handleLogout remains here as a helper but is no longer 
-  // triggered by the Hero UI to avoid the "Double Sign Out" issue.
   const handleLogout = () => {
     localStorage.clear();
     setIsLoggedIn(false);
@@ -71,15 +93,50 @@ const Homepage = () => {
     { id: 5, type: 'article', tag: 'Guide', title: 'Restoring E30 Interiors', author: 'BimmerDude', interest: 'Euro', desc: 'How to source OEM fabric.' },
   ];
 
+  // Fallback image
+  const getArticleImage = (article) => {
+    return article.urlToImage || article.image || article.imageUrl || 
+           'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=400&h=250&fit=crop';
+  };
+
+  // ✅ AGGRESSIVE description getter - will ALWAYS return something
+  const getArticleDescription = (article) => {
+    console.log('Getting description for:', article.title);
+    console.log('Article object:', article);
+    
+    // Try all possible fields
+    const desc = article.description || 
+                 article.summary || 
+                 article.excerpt || 
+                 article.content || 
+                 article.desc ||
+                 article.text ||
+                 '';
+    
+    console.log('Found description:', desc);
+    
+    if (desc && desc.trim().length > 0) {
+      // Clean and return
+      return desc
+        .replace(/\[.*?\]/g, '') // Remove [+123 chars]
+        .replace(/<[^>]*>/g, '')  // Remove HTML tags
+        .trim();
+    }
+    
+    return 'Click to read this automotive news story and stay updated on the latest industry developments.';
+  };
+
+  // Truncate
+  const truncateDescription = (text, maxLength = 120) => {
+    if (!text) return '';
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength).trim() + '...';
+  };
+
   return (
     <div className="home-container">
       <section className="home-hero-section">
         <div className="hero-overlay"></div>
-
-        {/* FIX: Removed the "sign-out-tab" div that was here. 
-          The Sign Out action is now handled exclusively by the Navbar 
-          to prevent the "Double Sign Out" buttons in the Hero.
-        */}
 
         <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} className="hero-text-block">
           <span className="welcome-badge">Welcome back, {userName || 'Enthusiast'}</span>
@@ -89,7 +146,6 @@ const Homepage = () => {
             connecting the right people and a space to meet. <strong>Welcome!</strong>
           </p>
           <div className="hero-cta-group">
-            {/* Rebranded to Experts to match client request */}
             <button className="btn-primary-glow" onClick={() => navigate('/marketplace')}>Experts</button>
             <button className="btn-outline-white" onClick={() => navigate('/events')}>Find a Meet</button>
           </div>
@@ -136,9 +192,9 @@ const Homepage = () => {
           </div>
 
           <div className="home-content-grid">
-            <AnimatePresence mode="wait">
+            <AnimatePresence>
               {feedContent.filter(item => item.interest === activeTab).map((item) => (
-                <motion.div key={item.id} layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={`content-card ${item.type}`}>
+                <motion.div key={item.id} layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className={`content-card ${item.type}`}>
                   <span className="content-badge">{item.tag}</span>
                   <h3>{item.title}</h3>
                   {item.type === 'listing'
@@ -157,24 +213,92 @@ const Homepage = () => {
           <div className="news-header">
             <Newspaper size={20} />
             <h3>NYC Car News</h3>
+            <TrendingUp size={16} className="trending-icon" />
           </div>
 
-          <div className="news-list">
+          <div className="news-grid">
             {newsLoading ? (
-              <p>Loading news...</p>
-            ) : (
-              localNews.map((article, idx) => (
-                <div key={idx} className="news-item" onClick={() => window.open(article.url, '_blank')}>
-                  <h4>{article.title}</h4>
-                  <div className="news-meta">
-                    <span>{article.source?.name}</span> • <span>{new Date(article.publishedAt).toLocaleDateString()}</span>
+              <>
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="news-card-skeleton">
+                    <div className="skeleton-image"></div>
+                    <div className="skeleton-content">
+                      <div className="skeleton-title"></div>
+                      <div className="skeleton-description"></div>
+                      <div className="skeleton-description" style={{ width: '80%' }}></div>
+                      <div className="skeleton-meta"></div>
+                    </div>
                   </div>
-                </div>
-              ))
+                ))}
+              </>
+            ) : newsError ? (
+              <div className="news-error">
+                <p>Unable to load news</p>
+                <button onClick={() => window.location.reload()}>Retry</button>
+              </div>
+            ) : localNews.length === 0 ? (
+              <div className="news-empty">
+                <Newspaper size={40} />
+                <p>No news available</p>
+              </div>
+            ) : (
+              localNews.slice(0, 6).map((article, idx) => {
+                const description = getArticleDescription(article);
+                const displayDescription = truncateDescription(description);
+                
+                return (
+                  <motion.div
+                    key={`${article.url}-${idx}`}
+                    className="news-card"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: idx * 0.1 }}
+                    onClick={() => window.open(article.url, '_blank')}
+                  >
+                    <div className="news-image-wrapper">
+                      <img 
+                        src={getArticleImage(article)} 
+                        alt={article.title}
+                        onError={(e) => {
+                          e.target.src = 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=400&h=250&fit=crop';
+                        }}
+                      />
+                      <div className="news-overlay">
+                        <ExternalLink size={18} />
+                      </div>
+                    </div>
+                    
+                    <div className="news-content">
+                      <h4>{article.title}</h4>
+                      
+                      {/* ✅ ALWAYS SHOW DESCRIPTION */}
+                      <p className="news-description">
+                        {displayDescription}
+                      </p>
+                      
+                      <div className="news-meta">
+                        <span className="news-source">
+                          {article.source?.name || article.source || 'Source'}
+                        </span>
+                        <span className="news-divider">•</span>
+                        <span className="news-date">
+                          <Clock size={12} />
+                          {new Date(article.publishedAt || article.date || Date.now()).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric'
+                          })}
+                        </span>
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })
             )}
           </div>
 
-          <button className="view-all-news">Stay Updated</button>
+          <button className="view-all-news" onClick={() => navigate('/news')}>
+            Stay Updated
+          </button>
         </aside>
       </div>
 

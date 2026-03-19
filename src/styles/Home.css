@@ -25,18 +25,14 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-
   background: #0a0a0a;
   background-image: url('https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=2070&auto=format&fit=crop');
   background-size: cover;
   background-position: center;
-
   border-radius: 0 0 60px 60px;
   overflow: hidden;
   color: white;
   margin-bottom: 60px;
-
-  /* ✅ mobile padding safety */
   padding: 0 20px;
 }
 
@@ -53,20 +49,16 @@ html, body {
   top: 30px;
   right: 40px;
   z-index: 10;
-
   display: flex;
   align-items: center;
   gap: 8px;
-
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(12px);
   padding: 12px 24px;
   border-radius: 50px;
-
   color: white;
   font-weight: 800;
   font-size: 0.85rem;
-
   cursor: pointer;
   border: 1px solid rgba(255,255,255,0.2);
   transition: all 0.3s ease;
@@ -263,37 +255,6 @@ html, body {
   color: var(--primary-blue);
 }
 
-/* --- NEWS SIDEBAR BUTTON --- */
-.view-all-news {
-  width: 100%;
-  margin-top: 20px;
-  padding: 14px 24px;
-  background: var(--primary-blue);
-  color: white;
-  border: none;
-  border-radius: 12px;
-  font-weight: 800;
-  font-size: 0.9rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 12px rgba(0, 102, 255, 0.2);
-}
-
-.view-all-news:hover {
-  background: #0052cc;
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(0, 102, 255, 0.35);
-}
-
-.view-all-news:active {
-  transform: translateY(0);
-}
-
 /* --- VALUE BANNER --- */
 .value-banner {
   background: #1a1a1a;
@@ -460,9 +421,388 @@ html, body {
   transform: translateY(0);
 }
 
-/* ======================================================
-   RESPONSIVE (CLEAN + COMPLETE)
-====================================================== */
+/* ========================================
+   COMPLETELY REDESIGNED NEWS SECTION
+   Replace your entire news section CSS with this
+======================================== */
+
+/* News Sidebar Container */
+.home-news-sidebar {
+  background: white;
+  border-radius: 24px;
+  padding: 24px;
+  border: 1px solid #e2e8f0;
+  position: sticky;
+  top: 20px;
+  max-height: calc(100vh - 40px);
+  display: flex;
+  flex-direction: column;
+}
+
+/* News Header */
+.news-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #f1f5f9;
+}
+
+.news-header h3 {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #1e293b;
+  flex: 1;
+}
+
+.trending-icon {
+  color: #10b981;
+  animation: pulse-news 2s ease-in-out infinite;
+}
+
+@keyframes pulse-news {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* News Grid */
+.news-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow-y: auto;
+  padding-right: 8px;
+  margin-bottom: 20px;
+  flex: 1;
+}
+
+.news-grid::-webkit-scrollbar {
+  width: 6px;
+}
+
+.news-grid::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 10px;
+}
+
+.news-grid::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+
+/* ✅ REDESIGNED NEWS CARD - VERTICAL LAYOUT */
+.news-card {
+  background: white;
+  border: 2px solid #e2e8f0;
+  border-radius: 16px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.news-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 102, 255, 0.15);
+  border-color: #0066ff;
+}
+
+/* News Image - Smaller */
+.news-image-wrapper {
+  position: relative;
+  width: 100%;
+  height: 140px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.news-image-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.news-card:hover .news-image-wrapper img {
+  transform: scale(1.05);
+}
+
+/* Overlay Icon */
+.news-overlay {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  padding: 8px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: scale(0.8);
+  transition: all 0.3s ease;
+}
+
+.news-card:hover .news-overlay {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.news-overlay svg {
+  color: #0066ff;
+}
+
+/* ✅ NEWS CONTENT - MORE SPACE FOR DESCRIPTION */
+.news-content {
+  padding: 16px;
+  background: white;
+}
+
+/* Title - Smaller to make room */
+.news-content h4 {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1.3;
+  margin-bottom: 10px;
+  transition: color 0.2s;
+}
+
+.news-card:hover .news-content h4 {
+  color: #0066ff;
+}
+
+/* ✅ DESCRIPTION - LARGE, VISIBLE, GUARANTEED */
+.news-description {
+  /* Typography */
+  font-size: 0.8rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: #64748b;
+  line-height: 1.4;
+  
+  /* Spacing */
+  margin: 0 0 12px 0;
+  padding: 0;
+  
+  /* Display */
+  display: block;
+  width: 100%;
+  min-height: 3em;
+  
+  /* Visibility - FORCE IT */
+  opacity: 1;
+  visibility: visible;
+  
+  /* Text handling */
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
+}
+
+/* Meta Info */
+.news-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.7rem;
+  color: #94a3b8;
+  padding-top: 8px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.news-source {
+  font-weight: 600;
+  color: #64748b;
+}
+
+.news-divider {
+  color: #cbd5e1;
+}
+
+.news-date {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Loading Skeleton */
+.news-card-skeleton {
+  background: white;
+  border: 2px solid #e2e8f0;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.skeleton-image {
+  width: 100%;
+  height: 140px;
+  background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.skeleton-content {
+  padding: 16px;
+}
+
+.skeleton-title {
+  height: 14px;
+  background: #e2e8f0;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  width: 90%;
+}
+
+.skeleton-description {
+  height: 10px;
+  background: #e2e8f0;
+  border-radius: 4px;
+  margin-bottom: 6px;
+  width: 100%;
+}
+
+.skeleton-description:nth-child(3) {
+  width: 95%;
+}
+
+.skeleton-description:nth-child(4) {
+  width: 80%;
+  margin-bottom: 12px;
+}
+
+.skeleton-meta {
+  height: 10px;
+  width: 50%;
+  background: #e2e8f0;
+  border-radius: 4px;
+}
+
+/* Error State */
+.news-error {
+  text-align: center;
+  padding: 40px 20px;
+  color: #94a3b8;
+}
+
+.news-error p {
+  margin-bottom: 16px;
+  font-weight: 600;
+}
+
+.news-error button {
+  background: #0066ff;
+  color: white;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.news-error button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 102, 255, 0.3);
+}
+
+/* Empty State */
+.news-empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: #94a3b8;
+}
+
+.news-empty svg {
+  margin-bottom: 12px;
+  opacity: 0.3;
+}
+
+.news-empty p {
+  font-weight: 600;
+}
+
+/* View All Button */
+.view-all-news {
+  width: 100%;
+  margin-top: auto;
+  padding: 14px 24px;
+  background: #0066ff;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: 800;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 102, 255, 0.2);
+}
+
+.view-all-news:hover {
+  background: #0052cc;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 102, 255, 0.35);
+}
+
+/* ========================================
+   RESPONSIVE
+======================================== */
+
+@media (max-width: 1100px) {
+  .home-news-sidebar {
+    position: relative;
+    top: 0;
+    max-height: none;
+  }
+
+  .news-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .news-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .news-image-wrapper {
+    height: 160px;
+  }
+}
+
+@media (max-width: 480px) {
+  .news-image-wrapper {
+    height: 140px;
+  }
+
+  .news-content {
+    padding: 12px;
+  }
+
+  .news-content h4 {
+    font-size: 0.85rem;
+  }
+
+  .news-description {
+    font-size: 0.75rem;
+  }
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+======================================== */
 
 /* Large tablets */
 @media (max-width: 1100px) {
@@ -492,6 +832,19 @@ html, body {
     flex-direction: column;
     text-align: center;
   }
+
+  .home-news-sidebar {
+    position: relative;
+    top: 0;
+    max-height: none;
+  }
+
+  .news-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    overflow-y: visible;
+  }
 }
 
 /* Tablets / Small laptops */
@@ -515,10 +868,30 @@ html, body {
     margin: 0 auto;
   }
 
-  /* ✅ prevents license overflow */
   .license-preview-container {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Tablets */
+@media (max-width: 768px) {
+  .news-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .news-image-wrapper {
+    height: 180px;
+  }
+
+  .home-news-sidebar {
+    border-radius: 20px;
+    padding: 20px;
+  }
+  
+  .news-description {
+    -webkit-line-clamp: 2 !important;
+    font-size: 0.8rem !important;
   }
 }
 
@@ -552,7 +925,6 @@ html, body {
     padding: 16px 18px;
   }
 
-  /* ✅ prevent cards from overflowing on iPhone */
   .home-content-grid {
     grid-template-columns: 1fr !important;
   }
@@ -578,5 +950,26 @@ html, body {
 
   .home-dashboard-section {
     padding: 50px 16px;
+  }
+
+  .news-header h3 {
+    font-size: 1.1rem;
+  }
+
+  .news-content h4 {
+    font-size: 0.9rem;
+  }
+
+  .news-description {
+    font-size: 0.8rem !important;
+    -webkit-line-clamp: 2 !important;
+  }
+
+  .news-image-wrapper {
+    height: 150px;
+  }
+
+  .news-content {
+    padding: 14px;
   }
 }
