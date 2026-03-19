@@ -14,7 +14,7 @@ import {
   Zap,
   Star,
   Plus,
-  ExternalLink
+ 
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';

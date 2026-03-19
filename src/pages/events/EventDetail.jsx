@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  MapPin, Navigation, Clock, Share2, Check, Calendar, 
-  ChevronLeft, Trophy, ExternalLink, Youtube, X, Maximize2,
-  Info // Added this to fix your ESLint error
+  MapPin, Check, Calendar, 
+  ChevronLeft, Trophy, Youtube, X, Maximize2,
+  Info 
 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -34,7 +34,8 @@ const EventDetail = () => {
 
   const getYoutubeEmbedUrl = (url) => {
     if (!url) return null;
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    // Removed unnecessary backslashes before &, ?, and # to satisfy ESLint
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
     const match = url.match(regExp);
     return (match && match[2].length === 11) ? `https://www.youtube.com/embed/${match[2]}` : null;
   };
@@ -44,8 +45,6 @@ const EventDetail = () => {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="event-detail-container">
-      
-      {/* FULL SIZE LIGHTBOX */}
       <AnimatePresence>
         {isLightboxOpen && (
           <motion.div 
@@ -65,16 +64,13 @@ const EventDetail = () => {
         <button className="back-btn-glossy" onClick={() => navigate('/events')}>
           <ChevronLeft size={18} /> Back to Meets
         </button>
-        
         <div className="event-hero-banner" onClick={() => setIsLightboxOpen(true)}>
           <img src={event.image} alt="Event Hero" className="hero-img" />
           <div className="hero-overlay-dark"></div>
-          
           <div className="hero-zoom-hint">
              <Maximize2 size={20} />
              <span>Click to Expand</span>
           </div>
-
           <div className="hero-content-text">
             <motion.span initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="event-pill-accent">
               Confirmed {event.type}
@@ -92,7 +88,6 @@ const EventDetail = () => {
 
       <div className="event-grid-layout">
         <div className="event-main-column">
-          
           <section className="detail-card-section">
             <div className="section-title">
               <Trophy size={20} className="text-blue" />
@@ -128,7 +123,7 @@ const EventDetail = () => {
 
           <section className="detail-card-section">
             <div className="section-title">
-              <Info size={20} className="text-blue" /> {/* Fixed 'Info' error here */}
+              <Info size={20} className="text-blue" />
               <h2>Description</h2>
             </div>
             <p className="description-text">{event.description}</p>
@@ -153,7 +148,6 @@ const EventDetail = () => {
                 </div>
               </div>
             </div>
-
             <button 
               className={`btn-action-primary full-width ${hasRSVPd ? 'success-btn' : ''}`}
               onClick={() => setHasRSVPd(!hasRSVPd)}

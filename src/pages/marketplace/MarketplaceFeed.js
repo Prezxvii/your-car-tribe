@@ -9,7 +9,7 @@ import {
   Navigation,
   Search,
   Car,
-  X
+
 } from 'lucide-react';
 import ListingCard from './ListingCard';
 import './Marketplace.css';

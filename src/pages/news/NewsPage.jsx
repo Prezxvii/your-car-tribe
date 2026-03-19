@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Newspaper, ExternalLink, Clock, TrendingUp, Filter, Search, Calendar, ArrowUpRight } from 'lucide-react';
+import { Newspaper, Clock, TrendingUp, Filter, Search, Calendar, ArrowUpRight } from 'lucide-react';
 import { API_BASE_URL } from '../../config/api';
 import '../../styles/News.css';
 

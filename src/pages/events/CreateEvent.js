@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   MapPin, Calendar, Camera, Info, Save, ChevronLeft, 
-  Users, Upload, Youtube, Plus, X, ListChecks 
+   Upload, Youtube, Plus, X, ListChecks 
 } from 'lucide-react';
 import axios from 'axios';
 import confetti from 'canvas-confetti';

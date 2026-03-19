@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Upload, Youtube, Plus, X, Info, Loader2, FileText, Car, MapPin, DollarSign, Gauge, Wrench, Sparkles } from 'lucide-react';
+import { Upload, Plus, X, Loader2, Car, MapPin, DollarSign, Gauge, Wrench, Sparkles } from 'lucide-react';
 import heic2any from "heic2any";
 import axios from 'axios';
 import './ListingForm.css';
