@@ -1,5 +1,5 @@
 /* ==========================================================================
-   YOURCAR TRIBE - COMPLETE FORUM STYLESHEET (FIXED & FULL)
+   YOURCAR TRIBE - COMPLETE FORUM STYLESHEET
    ========================================================================== */
 
    :root {
@@ -19,9 +19,9 @@
   .forum-container {
     display: flex;
     max-width: 1300px;
-    margin: 40px auto;
+    margin: 0 auto;
     gap: 30px;
-    padding: 0 20px;
+    padding: 120px 20px 80px; /* 120px = 80px navbar + 40px breathing room */
     align-items: flex-start;
     min-height: 100vh;
   }
@@ -287,6 +287,13 @@
     align-items: center;
     justify-content: center;
     gap: 12px;
+    transition: all 0.25s ease;
+  }
+  
+  .btn-add-question:hover {
+    background: #0052cc;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 102, 255, 0.25);
   }
   
   .post-footer {
@@ -313,6 +320,12 @@
     font-weight: 800;
     color: #64748b;
     cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .post-stats button:hover {
+    border-color: var(--primary-blue);
+    color: var(--primary-blue);
   }
   
   /* --- 8. OFFICIAL ANSWER BOX --- */
@@ -338,9 +351,8 @@
   /* --- FORUM MOBILE OVERRIDES --- */
   @media (max-width: 900px) {
     .forum-container {
-      display: flex;
       flex-direction: column;
-      padding: 15px;
+      padding: 100px 15px 60px; /* reduced top on mobile since less navbar height */
     }
   
     .forum-sidebar {
@@ -348,13 +360,12 @@
       position: sticky;
       top: 70px;
       z-index: 10;
-      background: var(--bg-soft); /* ✅ fixed (was --bg-light) */
+      background: var(--bg-soft);
       padding: 10px 0;
       margin-bottom: 10px;
       border-radius: 18px;
     }
   
-    /* Transform vertical menu into horizontal scrollable chips */
     .sidebar-menu {
       display: flex;
       overflow-x: auto;
@@ -404,4 +415,3 @@
       gap: 15px;
     }
   }
-  

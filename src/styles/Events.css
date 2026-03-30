@@ -17,7 +17,7 @@ html, body {
 .event-detail-container {
   max-width: 1250px;
   margin: 0 auto;
-  padding: 40px 20px 100px;
+  padding: 120px 20px 100px;
 }
 
 /* ======================================================
@@ -907,4 +907,54 @@ html, body {
   .time-input {
     width: 100%;
   }
+}
+
+/* ── Button fixes ── */
+.event-actions .btn-primary {
+  background: #0066ff;
+  color: white;
+  padding: 14px 24px;
+  border: none;
+  border-radius: 14px;
+  font-weight: 800;
+  font-size: 0.95rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  box-shadow: 0 8px 20px rgba(0, 102, 255, 0.25);
+  transition: all 0.25s ease;
+}
+.event-actions .btn-primary:hover {
+  background: #0052cc;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 25px rgba(0, 102, 255, 0.35);
+}
+.event-actions .btn-primary.joined {
+  background: #10b981;
+  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.25);
+}
+.event-actions .btn-outline {
+  background: #ffffff;
+  color: #1a1a1a;
+  padding: 14px 24px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 14px;
+  font-weight: 800;
+  font-size: 0.95rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  transition: all 0.25s ease;
+}
+.event-actions .btn-outline:hover {
+  border-color: #0066ff;
+  color: #0066ff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
 }

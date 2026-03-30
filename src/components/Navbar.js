@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Menu, X, Car, Users, User, LogOut, Wrench, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import '../styles/Navbar.css'; 
+import '../styles/Navbar.css';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -24,8 +24,7 @@ const Navbar = () => {
 
   useEffect(() => {
     checkAuth();
-    
-    // ✅ FIX: Auto-close menu if user expands screen to desktop
+
     const handleResize = () => {
       if (window.innerWidth > 1024) setIsOpen(false);
     };
@@ -39,12 +38,12 @@ const Navbar = () => {
   }, [checkAuth]);
 
   const navLinks = [
-    { name: 'Home', path: '/', icon: <Car size={18} /> },
-    { name: 'Experts', path: '/marketplace', icon: <Wrench size={18} /> },
-    { name: 'Forum', path: '/forum', icon: <Users size={18} /> },
-    { name: 'Mechanics', path: '/mechanics', icon: <Wrench size={18} /> },
-    { name: 'Events', path: '/events', icon: <Car size={18} /> },
-    { name: 'Sell', path: '/sell', icon: <Car size={18} /> },
+    { name: 'Home',      path: '/',           icon: <Car size={18} /> },
+    { name: 'Experts',   path: '/marketplace', icon: <Wrench size={18} /> },
+    { name: 'Forum',     path: '/forum',       icon: <Users size={18} /> },
+    { name: 'Mechanics', path: '/mechanics',   icon: <Wrench size={18} /> },
+    { name: 'Events',    path: '/events',      icon: <Car size={18} /> },
+    { name: 'Sell',      path: '/sell',        icon: <Car size={18} /> },
   ];
 
   const closeMenu = () => setIsOpen(false);
@@ -61,47 +60,63 @@ const Navbar = () => {
   return (
     <nav className="navbar">
       <div className="nav-container">
+
+        {/* LOGO */}
         <Link to="/" className="nav-logo" onClick={closeMenu}>
           YourCar<span>TRIBE</span>
         </Link>
 
+        {/* DESKTOP CENTER LINKS */}
         <div className="nav-desktop">
           {navLinks.map((link) => (
-            <Link key={link.name} to={link.path} className="nav-item">{link.name}</Link>
+            <Link key={link.name} to={link.path} className="nav-item">
+              {link.name}
+            </Link>
           ))}
         </div>
 
+        {/* RIGHT SIDE ACTIONS */}
         <div className="nav-actions">
+
+          {/* LOGGED IN STATE */}
           {isLoggedIn ? (
-            <div className="nav-auth-group desktop-only">
+            <div className="nav-auth-group">
               <span className="welcome-msg">Welcome, {userName}</span>
-              <Link to="/profile" className="nav-profile-btn"><User size={20} /></Link>
-              <button onClick={handleLogout} className="nav-logout-inline"><LogOut size={18} /></button>
+              <Link to="/profile" className="nav-profile-btn">
+                <User size={20} />
+              </Link>
+              <button onClick={handleLogout} className="nav-logout-inline">
+                <LogOut size={18} />
+              </button>
             </div>
           ) : (
-            <div className="nav-guest-group desktop-only">
+            /* GUEST STATE */
+            <div className="nav-guest-group">
               <Link to="/login" className="nav-login-link">Sign In</Link>
               <Link to="/onboarding" className="nav-join-btn">Join the Tribe</Link>
             </div>
           )}
 
+          {/* HAMBURGER */}
           <button className="hamburger" onClick={() => setIsOpen(!isOpen)}>
             {isOpen ? <X size={28} /> : <Menu size={28} />}
           </button>
+
         </div>
       </div>
 
+      {/* MOBILE DRAWER */}
       <AnimatePresence>
         {isOpen && (
           <>
-            <motion.div 
+            <motion.div
               className="menu-backdrop"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={closeMenu}
             />
-            <motion.div 
+            <motion.div
               className="mobile-drawer"
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
@@ -109,8 +124,10 @@ const Navbar = () => {
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
             >
               <div className="drawer-header">
-                 <span>{isLoggedIn ? `Hi, ${userName}` : "Menu"}</span>
-                 <button onClick={closeMenu} className="close-drawer"><X size={24}/></button>
+                <span>{isLoggedIn ? `Hi, ${userName}` : "Menu"}</span>
+                <button onClick={closeMenu} className="close-drawer">
+                  <X size={24} />
+                </button>
               </div>
 
               <div className="drawer-body">
@@ -121,12 +138,13 @@ const Navbar = () => {
                     <ChevronRight size={16} />
                   </Link>
                 ))}
-                
+
                 <p className="section-label">Account</p>
                 {isLoggedIn ? (
                   <>
                     <Link to="/profile" onClick={closeMenu} className="drawer-link">
                       <span className="link-content"><User size={18} /> My Garage</span>
+                      <ChevronRight size={16} />
                     </Link>
                     <button onClick={handleLogout} className="drawer-logout">
                       <LogOut size={18} /> Sign Out
