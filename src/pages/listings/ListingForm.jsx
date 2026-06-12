@@ -178,7 +178,7 @@ Seller Description:
 
             <select name="tribe" className="styled-select" value={formData.tribe} onChange={handleInputChange}>
               <option value="OTHER">Select Tribe Category</option>
-              <option value="EURO">Euro</option>
+              <option value="EURO">Euro</option>  
               <option value="JDM">JDM</option>
               <option value="MUSCLE">Muscle</option>
               <option value="4X4">4x4 / Off-Road</option>

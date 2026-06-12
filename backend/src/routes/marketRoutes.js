@@ -12,92 +12,82 @@ const upload = multer({
 // --- VEHICLE FORM SUBMISSION ENDPOINT ---
 router.post('/submit', upload.array('photos'), async (req, res) => {
   try {
-    console.log('----------------------------------------------------');
-    console.log('Processing incoming vehicle creation payload...');
-    
-    if (!req.body) {
-      console.log('Warning: Request body looks empty.');
-    }
-    
-    const { 
-      year, make, model, price, miles, location, 
-      description, titleStatus, tag, highlights, specs 
+    const {
+      year, make, model, price, miles, location,
+      description, titleStatus, tag, highlights, specs
     } = req.body;
 
-    console.log(`Target vehicle details identified: ${year} ${make} ${model}`);
-
-    // Safely parse incoming data payloads
     let parsedHighlights = [];
     let parsedSpecs = {};
-    
-    if (highlights) {
-      try {
-        parsedHighlights = typeof highlights === 'string' ? JSON.parse(highlights) : highlights;
-      } catch (e) {
-        console.error("Failed to parse highlights payload:", e.message);
-      }
-    }
-    
-    if (specs) {
-      try {
-        parsedSpecs = typeof specs === 'string' ? JSON.parse(specs) : specs;
-      } catch (e) {
-        console.error("Failed to parse specs payload:", e.message);
-      }
-    }
 
-    // Clean formatting characters out of numbers
-    const cleanPrice = typeof price === 'string' ? price.replace(/[^0-9.]/g, '') : price;
-    const cleanMiles = typeof miles === 'string' ? miles.replace(/[^0-9]/g, '') : miles;
+    try {
+      parsedHighlights = highlights
+        ? (Array.isArray(highlights) ? highlights : JSON.parse(highlights))
+        : [];
+    } catch (e) { console.error('highlights parse error:', e.message); }
 
-    const parsedPrice = parseFloat(cleanPrice) || 0;
-    const parsedMiles = parseInt(cleanMiles, 10) || 0;
+    try {
+      parsedSpecs = specs
+        ? (typeof specs === 'object' && !Array.isArray(specs) ? specs : JSON.parse(specs))
+        : {};
+    } catch (e) { console.error('specs parse error:', e.message); }
 
-    // Process image array structures
-    const photoUrls = req.files && req.files.length > 0 
-      ? req.files.map((file, index) => `https://placehold.co/600x400?text=Vehicle+Photo+${index + 1}`) 
-      : ['https://placehold.co/600x400?text=No+Images+Uploaded'];
+    // FIX 1: year must be a number, with a numeric fallback
+    const parsedYear = parseInt(String(year).replace(/[^0-9]/g, ''), 10) || new Date().getFullYear();
 
-    // Construct the schema listing payload document instance safely
+    const parsedPrice = parseFloat(String(price).replace(/[^0-9.]/g, '')) || 0;
+
+    // FIX 2: miles stays a string (matches schema), just strip formatting
+    const cleanMiles = String(miles).replace(/[^0-9]/g, '') || '0';
+
+    const photoUrls = req.files?.length > 0
+      ? req.files.map((f, i) => `https://placehold.co/600x400?text=Photo+${i + 1}`)
+      : ['https://placehold.co/600x400?text=No+Image'];
+
     const listingPayload = {
-      year: year || 'Unknown Year',
-      make: make || 'Unknown Make',
-      model: model || 'Unknown Model',
-      price: parsedPrice,
-      miles: parsedMiles,
-      location: location || 'Not Specified',
+      year:        parsedYear,
+      make:        make        || 'Unknown',
+      model:       model       || 'Unknown',
+      price:       parsedPrice,
+      miles:       cleanMiles,          // ← string, matches schema
+      location:    location    || 'Not Specified',
       description: description || '',
       titleStatus: titleStatus || 'Clean',
-      tag: tag || 'OTHER',
-      highlights: parsedHighlights,
-      specs: parsedSpecs,
-      images: photoUrls,
-      status: 'active'
+      tag:         tag         || 'OTHER',
+      highlights:  parsedHighlights,
+      specs:       parsedSpecs,
+      images:      photoUrls,
+      status:      'active',
     };
 
-    // Use safe fallbacks for authorization checking blocks
+    // FIX 3: seller must be an object matching the schema shape
     if (req.user) {
-      listingPayload.seller = req.user.id || req.user._id || null;
+      listingPayload.seller = {
+        name:     req.user.username || req.user.name || 'Unknown',
+        id:       req.user._id || req.user.id || null,
+        avatar:   req.user.avatar || '',
+        verified: req.user.verified || false,
+      };
     }
 
     const newListing = new Listing(listingPayload);
     await newListing.save();
-    
-    console.log('Database operation completed successfully: Document Saved.');
-    console.log('----------------------------------------------------');
-    
-    return res.status(201).json({ 
-      success: true, 
-      message: 'Vehicle listing successfully created',
+
+    return res.status(201).json({
+      success: true,
+      message: 'Listing created',
       listing: newListing
     });
 
   } catch (error) {
-    console.error('CRITICAL SUBMISSION ERROR DETECTED:', error);
-    return res.status(500).json({ 
-      error: 'Internal server error processing listing submission',
-      details: error.message 
-    });
+    console.error('SUBMIT ERROR:', error.name, '-', error.message);
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({ error: 'Validation failed', details: error.message });
+    }
+    if (error.name === 'CastError') {
+      return res.status(400).json({ error: 'Invalid field type', details: error.message });
+    }
+    return res.status(500).json({ error: 'Server error', details: error.message });
   }
 });
 
