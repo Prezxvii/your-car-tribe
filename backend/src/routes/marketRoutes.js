@@ -11,7 +11,7 @@ const upload = multer({
 });
 
 // --- VEHICLE FORM SUBMISSION ENDPOINT ---
-router.post('/submit', protect, upload.array('photos'), async (req, res) => {
+router.post('/submit', upload.array('photos'), protect, async (req, res) => {
   try {
     const {
       year, make, model, price, miles, location,
