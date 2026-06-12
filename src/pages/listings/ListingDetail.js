@@ -1,21 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import {
-  CheckCircle,
-  MessageSquare,
-  ChevronLeft,
-  MapPin,
-  ShieldCheck,
-  X,
-  Send,
-  Gauge,
-  Loader2,
-  Info,
-  Zap,
-  Star,
-  Plus,
- 
-} from 'lucide-react';
+import {CheckCircle, MessageSquare,ChevronLeft,MapPin,ShieldCheck,X,Send,Gauge,Loader2,Info,Zap,Star,Plus,} from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 import ProfileLicense from '../../components/profile/ProfileLicense';
