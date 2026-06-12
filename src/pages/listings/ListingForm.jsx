@@ -9,7 +9,7 @@ import { API_BASE_URL } from '../../config/api';
 const ListingForm = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [isDragging, setIsDragging] = useState(false); // Tracks drag-and-drop state
+  const [isDragging, setIsDragging] = useState(false);
   const [previews, setPreviews] = useState([]);
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [highlights, setHighlights] = useState(['']);
@@ -47,7 +47,6 @@ Seller Description:
     setFormData(prev => ({ ...prev, description: template }));
   };
 
-  // Process and validate raw files from either input selections or drops
   const processFiles = async (files) => {
     setLoading(true);
     try {
@@ -71,13 +70,11 @@ Seller Description:
     }
   };
 
-  // Standard File Input Change Handler
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
     if (files.length > 0) processFiles(files);
   };
 
-  // --- DRAG AND DROP HANDLERS ---
   const handleDragOver = (e) => {
     e.preventDefault();
     setIsDragging(true);
@@ -90,16 +87,11 @@ Seller Description:
   const handleDrop = (e) => {
     e.preventDefault();
     setIsDragging(false);
-    
     const files = Array.from(e.dataTransfer.files);
-    // Filter to ensure dropped items are supported formats
     const imageFiles = files.filter(file => 
       file.type.startsWith('image/') || file.name.toLowerCase().endsWith('.heic')
     );
-
-    if (imageFiles.length > 0) {
-      processFiles(imageFiles);
-    }
+    if (imageFiles.length > 0) processFiles(imageFiles);
   };
 
   const removeImage = (index) => {
@@ -114,14 +106,14 @@ Seller Description:
     setHighlights(newHighlights);
   };
 
+  // ORDER-DEPENDENT FORM SUBMISSION REGEX PAYLOAD
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     
-    // Create the FormData object container
     const data = new FormData();
     
-    // 1. ALWAYS APPEND TEXT FIELDS FIRST: This allows the backend to process fields predictably
+    // 1. Text strings must be appended first
     Object.keys(formData).forEach((key) => {
       if (key === 'tribe') {
         data.append('tag', formData[key]);
@@ -130,7 +122,6 @@ Seller Description:
       }
     });
     
-    // Append stringified arrays and complex specification object blocks
     data.append('highlights', JSON.stringify(highlights.filter((h) => h.trim() !== '')));
     
     const specs = { 
@@ -141,7 +132,7 @@ Seller Description:
     };
     data.append('specs', JSON.stringify(specs));
 
-    // 2. ALWAYS APPEND BINARY FILES LAST: Multer looks for files at the end of the multipart streams
+    // 2. Binary files must be appended last
     selectedFiles.forEach((file) => {
       data.append('photos', file);
     });
@@ -172,7 +163,6 @@ Seller Description:
       </div>
 
       <form className="sell-form" onSubmit={handleSubmit}>
-        {/* SECTION 1: BASICS */}
         <section className="form-section card">
           <div className="section-title-box"><Car size={20} color="#0066ff" /><h3>1. Vehicle Basics</h3></div>
           <div className="input-grid">
@@ -210,7 +200,6 @@ Seller Description:
           </div>
         </section>
 
-        {/* SECTION 2: MEDIA WITH DRAG & DROP */}
         <section className="form-section card">
           <div className="section-title-box"><Upload size={20} color="#0066ff" /><h3>2. Media</h3></div>
           <div className="upload-area">
@@ -222,7 +211,7 @@ Seller Description:
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
             >
-              <Upload size={32} className={isDragging ? 'bounce-icon' : ''} />
+              <Upload size={32} />
               <p>{loading ? 'Processing...' : isDragging ? 'Drop your photos here!' : 'Upload or Drag Photos'}</p>
               <span>Supports JPG, PNG, and HEIC formats</span>
             </label>
@@ -237,27 +226,26 @@ Seller Description:
           </div>
         </section>
 
-        {/* SECTION 3: TECHNICAL SPECS */}
         <section className="form-section card">
           <div className="section-title-box"><Wrench size={20} color="#0066ff" /><h3>3. Technical Specs</h3></div>
-          <div className="input-grid spec-inputs">
+          <div className="input-grid">
             <input name="engine" type="text" placeholder="Engine" value={formData.engine} onChange={handleInputChange} />
             <input name="transmission" type="text" placeholder="Transmission (e.g. 6-Speed Manual)" value={formData.transmission} onChange={handleInputChange} />
             <input name="drivetrain" type="text" placeholder="Drivetrain" value={formData.drivetrain} onChange={handleInputChange} />
             <input name="vin" type="text" placeholder="VIN" value={formData.vin} onChange={handleInputChange} />
           </div>
 
-          <div className="highlights-header">
+          <div style={{ display: 'flex', justifyContent: 'between', alignItems: 'center', marginTop: '20px' }}>
             <p className="sub-label">Highlights / Modifications</p>
             <button type="button" className="btn-add" onClick={addHighlight}><Plus size={14} /> Add</button>
           </div>
-          <div className="highlights-list">
+          <div>
             {highlights.map((h, i) => (
-              <input key={i} type="text" value={h} onChange={(e) => updateHighlight(i, e.target.value)} placeholder="e.g. Coilovers" />
+              <input key={i} type="text" style={{ marginBottom: '10px' }} className="input-grid input" value={h} onChange={(e) => updateHighlight(i, e.target.value)} placeholder="e.g. Coilovers" />
             ))}
           </div>
 
-          <div className="description-toolbar">
+          <div style={{ display: 'flex', justifyContent: 'between', alignItems: 'center', marginTop: '20px' }}>
             <label className="sub-label">Vehicle Description</label>
             <button type="button" className="btn-template-magic" onClick={generateTemplate}>
               <Sparkles size={14} /> Use Tribe Template
