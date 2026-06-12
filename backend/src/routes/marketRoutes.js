@@ -47,6 +47,14 @@ router.post('/submit', upload.array('photos'), async (req, res) => {
       }
     }
 
+    // Sanitize values to strip out commas, text, spaces, or currency symbols ($) before casting
+    const cleanPrice = typeof price === 'string' ? price.replace(/[^0-9.]/g, '') : price;
+    const cleanMiles = typeof miles === 'string' ? miles.replace(/[^0-9]/g, '') : miles;
+
+    const parsedPrice = parseFloat(cleanPrice) || 0;
+    const parsedMiles = parseInt(cleanMiles, 10) || 0;
+
+    console.log(`Sanitized values calculated -> Price: ${parsedPrice}, Mileage: ${parsedMiles}`);
     console.log(`Total image files intercepted by server: ${req.files ? req.files.length : 0}`);
 
     // Process file attachments if your server connects to cloud storage (e.g., Cloudinary, AWS S3)
@@ -54,25 +62,33 @@ router.post('/submit', upload.array('photos'), async (req, res) => {
       ? req.files.map((file, index) => `https://placehold.co/600x400?text=Vehicle+Photo+${index + 1}`) 
       : ['https://placehold.co/600x400?text=No+Images+Uploaded'];
 
-    // Construct the database record document instance
-    const newListing = new Listing({
-      year,
-      make,
-      model,
-      price: parseFloat(price) || 0,
-      miles: parseInt(miles) || 0,
-      location,
-      description,
-      titleStatus,
+    // Safely build out the data structure payload object
+    const listingPayload = {
+      year: year || 'Unknown Year',
+      make: make || 'Unknown Make',
+      model: model || 'Unknown Model',
+      price: parsedPrice,
+      miles: parsedMiles,
+      location: location || 'Not Specified',
+      description: description || '',
+      titleStatus: titleStatus || 'Clean',
       tag: tag || 'OTHER',
       highlights: parsedHighlights,
       specs: parsedSpecs,
       images: photoUrls,
-      seller: req.user ? req.user.id : null, // Uses auth middleware context if present
       status: 'active'
-    });
+    };
 
+    // Safely verify if req.user context properties are accessible via auth middleware pipelines
+    if (req.user && req.user.id) {
+      listingPayload.seller = req.user.id;
+    } else if (req.user && req.user._id) {
+      listingPayload.seller = req.user._id;
+    }
+
+    const newListing = new Listing(listingPayload);
     await newListing.save();
+    
     console.log('Database operation completed successfully: Document Saved.');
     console.log('----------------------------------------------------');
     
@@ -83,8 +99,13 @@ router.post('/submit', upload.array('photos'), async (req, res) => {
     });
 
   } catch (error) {
-    console.error('CRITICAL SUBMISSION ERROR:', error.message);
-    return res.status(500).json({ error: 'Internal server error processing listing submission' });
+    console.error('CRITICAL SUBMISSION ERROR DETECTED:', error);
+    
+    // Returning error message explicitly down to frontend console networks for accurate alerting
+    return res.status(500).json({ 
+      error: 'Internal server error processing listing submission',
+      details: error.message 
+    });
   }
 });
 
