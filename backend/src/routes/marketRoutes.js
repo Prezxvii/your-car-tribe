@@ -4,20 +4,19 @@ const multer = require('multer');
 const { getMarketCheckListings, getSingleListing } = require('../services/marketCheckService');
 const Listing = require('../models/Listing'); 
 
-// Set up basic in-memory file storage for multer to catch multipart form data
+// Basic in-memory file storage configuration
 const upload = multer({ 
-  limits: { fileSize: 50 * 1024 * 1024 } // 50MB limit matching server configs
+  limits: { fileSize: 50 * 1024 * 1024 } 
 });
 
-// --- NEW ROUTE: Handle Vehicle Submission Form ---
-// Express automatically prefixes this to resolve to /api/market/submit
+// --- VEHICLE FORM SUBMISSION ENDPOINT ---
 router.post('/submit', upload.array('photos'), async (req, res) => {
   try {
     console.log('----------------------------------------------------');
     console.log('Processing incoming vehicle creation payload...');
     
-    if (!req.body || Object.keys(req.body).length === 0) {
-      console.log('Warning: Request body looks empty or unparsed.');
+    if (!req.body) {
+      console.log('Warning: Request body looks empty.');
     }
     
     const { 
@@ -27,13 +26,13 @@ router.post('/submit', upload.array('photos'), async (req, res) => {
 
     console.log(`Target vehicle details identified: ${year} ${make} ${model}`);
 
-    // Parse the stringified JSON blocks sent from the FormData object securely
+    // Safely parse incoming data payloads
     let parsedHighlights = [];
     let parsedSpecs = {};
     
     if (highlights) {
       try {
-        parsedHighlights = JSON.parse(highlights);
+        parsedHighlights = typeof highlights === 'string' ? JSON.parse(highlights) : highlights;
       } catch (e) {
         console.error("Failed to parse highlights payload:", e.message);
       }
@@ -41,28 +40,25 @@ router.post('/submit', upload.array('photos'), async (req, res) => {
     
     if (specs) {
       try {
-        parsedSpecs = JSON.parse(specs);
+        parsedSpecs = typeof specs === 'string' ? JSON.parse(specs) : specs;
       } catch (e) {
         console.error("Failed to parse specs payload:", e.message);
       }
     }
 
-    // Sanitize values to strip out commas, text, spaces, or currency symbols ($) before casting
+    // Clean formatting characters out of numbers
     const cleanPrice = typeof price === 'string' ? price.replace(/[^0-9.]/g, '') : price;
     const cleanMiles = typeof miles === 'string' ? miles.replace(/[^0-9]/g, '') : miles;
 
     const parsedPrice = parseFloat(cleanPrice) || 0;
     const parsedMiles = parseInt(cleanMiles, 10) || 0;
 
-    console.log(`Sanitized values calculated -> Price: ${parsedPrice}, Mileage: ${parsedMiles}`);
-    console.log(`Total image files intercepted by server: ${req.files ? req.files.length : 0}`);
-
-    // Process file attachments if your server connects to cloud storage (e.g., Cloudinary, AWS S3)
+    // Process image array structures
     const photoUrls = req.files && req.files.length > 0 
       ? req.files.map((file, index) => `https://placehold.co/600x400?text=Vehicle+Photo+${index + 1}`) 
       : ['https://placehold.co/600x400?text=No+Images+Uploaded'];
 
-    // Safely build out the data structure payload object
+    // Construct the schema listing payload document instance safely
     const listingPayload = {
       year: year || 'Unknown Year',
       make: make || 'Unknown Make',
@@ -79,11 +75,9 @@ router.post('/submit', upload.array('photos'), async (req, res) => {
       status: 'active'
     };
 
-    // Safely verify if req.user context properties are accessible via auth middleware pipelines
-    if (req.user && req.user.id) {
-      listingPayload.seller = req.user.id;
-    } else if (req.user && req.user._id) {
-      listingPayload.seller = req.user._id;
+    // Use safe fallbacks for authorization checking blocks
+    if (req.user) {
+      listingPayload.seller = req.user.id || req.user._id || null;
     }
 
     const newListing = new Listing(listingPayload);
@@ -100,8 +94,6 @@ router.post('/submit', upload.array('photos'), async (req, res) => {
 
   } catch (error) {
     console.error('CRITICAL SUBMISSION ERROR DETECTED:', error);
-    
-    // Returning error message explicitly down to frontend console networks for accurate alerting
     return res.status(500).json({ 
       error: 'Internal server error processing listing submission',
       details: error.message 
@@ -113,7 +105,6 @@ router.post('/submit', upload.array('photos'), async (req, res) => {
 router.get('/test-api', async (req, res) => {
   try {
     console.log('Testing MarketCheck API connection...');
-    
     if (!process.env.MARKETCHECK_API_KEY) {
       return res.status(500).json({ 
         status: 'error',
@@ -138,12 +129,7 @@ router.get('/test-api', async (req, res) => {
       sampleListingCount: testResponse.data.num_found || 0
     });
   } catch (error) {
-    res.status(500).json({
-      status: 'error',
-      message: error.message,
-      apiKeyConfigured: !!process.env.MARKETCHECK_API_KEY,
-      errorDetails: error.response?.data || 'No response from API'
-    });
+    res.status(500).json({ status: 'error', message: error.message });
   }
 });
 
@@ -151,7 +137,6 @@ router.get('/test-api', async (req, res) => {
 router.get('/all', async (req, res) => {
   try {
     const { search, zip, radius } = req.query;
-    
     let externalListings = [];
     let internalListings = [];
     
@@ -169,7 +154,6 @@ router.get('/all', async (req, res) => {
     
     res.json([...internalListings, ...externalListings]);
   } catch (error) {
-    console.error("Route Error (All):", error.message);
     res.json([]);
   }
 });
@@ -178,51 +162,29 @@ router.get('/all', async (req, res) => {
 router.get('/listing/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    console.log(`With ID: ${id}`);
-    
     let listing = null;
     
     if (id.startsWith('mc-')) {
-      console.log("Detected MarketCheck ID, calling external API...");
-      
       try {
         listing = await getSingleListing(id);
-        console.log("MarketCheck listing retrieved:", listing ? "Success" : "Not found");
       } catch (mcError) {
-        console.error("MarketCheck API Error:", mcError.message);
-        return res.status(503).json({ 
-          message: "External dealer network temporarily unavailable",
-          error: mcError.message 
-        });
+        return res.status(503).json({ message: "External network unavailable", error: mcError.message });
       }
     } else {
-      console.log("Detected MongoDB ID, querying internal DB...");
-      
       if (id.match(/^[0-9a-fA-F]{24}$/)) {
         listing = await Listing.findById(id);
-        console.log("Internal listing retrieved:", listing ? "Success" : "Not found");
       } else {
-        console.log("Invalid MongoDB ID format");
         return res.status(400).json({ message: "Invalid listing ID format" });
       }
     }
     
     if (!listing) {
-      console.log("Listing not found in either source");
-      return res.status(404).json({ 
-        message: "Vehicle not found in Tribe or Dealer networks" 
-      });
+      return res.status(404).json({ message: "Vehicle not found" });
     }
     
-    console.log("Returning listing data");
     res.json(listing);
-    
   } catch (error) {
-    console.error("Backend Listing Error:", error.message);
-    res.status(500).json({ 
-      message: "Error retrieving vehicle details",
-      error: error.message 
-    });
+    res.status(500).json({ message: "Error retrieving details", error: error.message });
   }
 });
 
