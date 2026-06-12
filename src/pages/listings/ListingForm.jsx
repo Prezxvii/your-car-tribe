@@ -139,6 +139,9 @@ Seller Description:
 
     try {
       const token = localStorage.getItem('token');
+
+      console.log('Token being sent:', token);
+
       await axios.post(`${API_BASE_URL}/api/market/submit`, data, {
         headers: { 
           'Content-Type': 'multipart/form-data', 
@@ -154,6 +157,8 @@ Seller Description:
       setLoading(false); 
     }
   };
+
+  
 
   return (
     <div className="sell-container">

@@ -3,6 +3,7 @@ const router = express.Router();
 const multer = require('multer');
 const { getMarketCheckListings, getSingleListing } = require('../services/marketCheckService');
 const Listing = require('../models/Listing'); 
+const { protect } = require('../middleware/authMiddleware');
 
 // Basic in-memory file storage configuration
 const upload = multer({ 
@@ -10,7 +11,7 @@ const upload = multer({
 });
 
 // --- VEHICLE FORM SUBMISSION ENDPOINT ---
-router.post('/submit', upload.array('photos'), async (req, res) => {
+router.post('/submit', protect, upload.array('photos'), async (req, res) => {
   try {
     const {
       year, make, model, price, miles, location,
@@ -64,7 +65,7 @@ router.post('/submit', upload.array('photos'), async (req, res) => {
     if (req.user) {
       listingPayload.seller = {
         name:     req.user.username || req.user.name || 'Unknown',
-        id:       req.user._id || req.user.id || null,
+        id:       req.user._id,
         avatar:   req.user.avatar || '',
         verified: req.user.verified || false,
       };
