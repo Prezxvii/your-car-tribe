@@ -57,15 +57,10 @@ const listingSchema = new mongoose.Schema({
 });
 
 // Auto-calculate average rating
-listingSchema.pre('save', function(next) {
-  try {
-    if (this.reviews && this.reviews.length > 0) {
-      const total = this.reviews.reduce((acc, item) => item.rating + acc, 0);
-      this.averageRating = parseFloat((total / this.reviews.length).toFixed(1));
-    }
-    next();
-  } catch(err) {
-    next(err);
+listingSchema.pre('save', async function() {
+  if (this.reviews && this.reviews.length > 0) {
+    const total = this.reviews.reduce((acc, item) => item.rating + acc, 0);
+    this.averageRating = parseFloat((total / this.reviews.length).toFixed(1));
   }
 });
 module.exports = mongoose.model('Listing', listingSchema);
