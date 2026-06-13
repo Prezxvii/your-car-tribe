@@ -1,14 +1,31 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const cloudinary = require('cloudinary').v2;
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const { getMarketCheckListings, getSingleListing } = require('../services/marketCheckService');
 const Listing = require('../models/Listing');
 
-const upload = multer({ 
-  limits: { fileSize: 50 * 1024 * 1024 } 
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: 'dwgf82ubk',
+  api_key: '676816716634948',
+  api_secret: 'gO6qa6n7sE7NyBh0UofJ9rZrUzc'
 });
+
+// Configure multer to upload directly to Cloudinary
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'your-car-tribe',
+    allowed_formats: ['jpg', 'jpeg', 'png', 'heic'],
+    transformation: [{ width: 1200, height: 800, crop: 'limit', quality: 'auto' }]
+  }
+});
+
+const upload = multer({ storage });
 
 router.post('/submit', upload.array('photos'), async (req, res) => {
   try {
@@ -33,10 +50,8 @@ router.post('/submit', upload.array('photos'), async (req, res) => {
     }
 
     console.log('user verified:', currentUser._id);
-    console.log('body keys:', Object.keys(req.body || {}));
 
     const { year, make, model, price, miles, location, description, titleStatus, tag, highlights, specs } = req.body;
-    console.log('STEP 1: destructured body');
 
     let parsedHighlights = [];
     let parsedSpecs = {};
@@ -46,24 +61,23 @@ router.post('/submit', upload.array('photos'), async (req, res) => {
         ? (Array.isArray(highlights) ? highlights : JSON.parse(highlights))
         : [];
     } catch (e) { console.error('highlights parse error:', e.message); }
-    console.log('STEP 2: parsed highlights');
 
     try {
       parsedSpecs = specs
         ? (typeof specs === 'object' && !Array.isArray(specs) ? specs : JSON.parse(specs))
         : {};
     } catch (e) { console.error('specs parse error:', e.message); }
-    console.log('STEP 3: parsed specs');
 
     const parsedYear = parseInt(String(year).replace(/[^0-9]/g, ''), 10) || new Date().getFullYear();
     const parsedPrice = parseFloat(String(price).replace(/[^0-9.]/g, '')) || 0;
     const cleanMiles = String(miles).replace(/[^0-9]/g, '') || '0';
-    console.log('STEP 4: parsed numbers');
 
+    // Real Cloudinary URLs from uploaded files
     const photoUrls = req.files?.length > 0
-      ? req.files.map((f, i) => `https://placehold.co/600x400?text=Photo+${i + 1}`)
+      ? req.files.map(f => f.path)
       : ['https://placehold.co/600x400?text=No+Image'];
-    console.log('STEP 5: photo urls');
+
+    console.log('Photos uploaded to Cloudinary:', photoUrls);
 
     const listingPayload = {
       year:        parsedYear,
@@ -86,12 +100,10 @@ router.post('/submit', upload.array('photos'), async (req, res) => {
         verified: currentUser.verified || false,
       }
     };
-    console.log('STEP 6: built payload');
 
     const newListing = new Listing(listingPayload);
-    console.log('STEP 7: created listing instance');
-
     await newListing.save();
+
     console.log('=== LISTING SAVED SUCCESSFULLY ===');
 
     return res.status(201).json({
