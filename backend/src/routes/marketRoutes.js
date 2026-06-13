@@ -2,21 +2,20 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const { getMarketCheckListings, getSingleListing } = require('../services/marketCheckService');
-const Listing = require('../models/Listing'); 
+const Listing = require('../models/Listing');
 const { protect } = require('../middleware/authMiddleware');
 
-// Basic in-memory file storage configuration
 const upload = multer({ 
   limits: { fileSize: 50 * 1024 * 1024 } 
 });
 
-// --- VEHICLE FORM SUBMISSION ENDPOINT ---
 router.post('/submit', upload.array('photos'), protect, async (req, res) => {
   try {
-    const {
-      year, make, model, price, miles, location,
-      description, titleStatus, tag, highlights, specs
-    } = req.body;
+    console.log('=== SUBMIT REACHED ===');
+    console.log('user:', req.user?._id);
+    console.log('body keys:', Object.keys(req.body || {}));
+
+    const { year, make, model, price, miles, location, description, titleStatus, tag, highlights, specs } = req.body;
 
     let parsedHighlights = [];
     let parsedSpecs = {};
@@ -33,12 +32,8 @@ router.post('/submit', upload.array('photos'), protect, async (req, res) => {
         : {};
     } catch (e) { console.error('specs parse error:', e.message); }
 
-    // FIX 1: year must be a number, with a numeric fallback
     const parsedYear = parseInt(String(year).replace(/[^0-9]/g, ''), 10) || new Date().getFullYear();
-
     const parsedPrice = parseFloat(String(price).replace(/[^0-9.]/g, '')) || 0;
-
-    // FIX 2: miles stays a string (matches schema), just strip formatting
     const cleanMiles = String(miles).replace(/[^0-9]/g, '') || '0';
 
     const photoUrls = req.files?.length > 0
@@ -50,7 +45,7 @@ router.post('/submit', upload.array('photos'), protect, async (req, res) => {
       make:        make        || 'Unknown',
       model:       model       || 'Unknown',
       price:       parsedPrice,
-      miles:       cleanMiles,          // ← string, matches schema
+      miles:       cleanMiles,
       location:    location    || 'Not Specified',
       description: description || '',
       titleStatus: titleStatus || 'Clean',
@@ -61,7 +56,6 @@ router.post('/submit', upload.array('photos'), protect, async (req, res) => {
       status:      'active',
     };
 
-    // FIX 3: seller must be an object matching the schema shape
     if (req.user) {
       listingPayload.seller = {
         name:     req.user.username || req.user.name || 'Unknown',
@@ -73,6 +67,8 @@ router.post('/submit', upload.array('photos'), protect, async (req, res) => {
 
     const newListing = new Listing(listingPayload);
     await newListing.save();
+
+    console.log('=== LISTING SAVED SUCCESSFULLY ===');
 
     return res.status(201).json({
       success: true,
@@ -92,27 +88,16 @@ router.post('/submit', upload.array('photos'), protect, async (req, res) => {
   }
 });
 
-// --- TEST ENDPOINT: Check MarketCheck API Connection ---
 router.get('/test-api', async (req, res) => {
   try {
-    console.log('Testing MarketCheck API connection...');
     if (!process.env.MARKETCHECK_API_KEY) {
-      return res.status(500).json({ 
-        status: 'error',
-        message: 'MARKETCHECK_API_KEY not found in environment variables' 
-      });
+      return res.status(500).json({ status: 'error', message: 'MARKETCHECK_API_KEY not found' });
     }
-    
     const axios = require('axios');
     const testResponse = await axios.get('https://api.marketcheck.com/v2/search/car/active', {
-      params: {
-        api_key: process.env.MARKETCHECK_API_KEY,
-        rows: 1,
-        car_type: 'used'
-      },
+      params: { api_key: process.env.MARKETCHECK_API_KEY, rows: 1, car_type: 'used' },
       timeout: 10000
     });
-    
     res.json({
       status: 'success',
       message: 'MarketCheck API is working',
@@ -124,37 +109,31 @@ router.get('/test-api', async (req, res) => {
   }
 });
 
-// --- GET ALL ---
 router.get('/all', async (req, res) => {
   try {
     const { search, zip, radius } = req.query;
     let externalListings = [];
     let internalListings = [];
-    
     try {
       externalListings = await getMarketCheckListings(search, zip, radius);
     } catch (extError) {
       console.error("External API Error:", extError.message);
     }
-    
     try {
       internalListings = await Listing.find({ status: 'active' });
     } catch (intError) {
       console.error("Internal DB Error:", intError.message);
     }
-    
     res.json([...internalListings, ...externalListings]);
   } catch (error) {
     res.json([]);
   }
 });
 
-// --- GET SINGLE LISTING ---
 router.get('/listing/:id', async (req, res) => {
   try {
     const { id } = req.params;
     let listing = null;
-    
     if (id.startsWith('mc-')) {
       try {
         listing = await getSingleListing(id);
@@ -168,11 +147,9 @@ router.get('/listing/:id', async (req, res) => {
         return res.status(400).json({ message: "Invalid listing ID format" });
       }
     }
-    
     if (!listing) {
       return res.status(404).json({ message: "Vehicle not found" });
     }
-    
     res.json(listing);
   } catch (error) {
     res.status(500).json({ message: "Error retrieving details", error: error.message });
