@@ -58,7 +58,7 @@ const ListingCard = ({ car }) => {
             </button>
 
             <img 
-              src={car.imageUrl || car.image} 
+              src={car.images?.[0] || car.media?.photo_links?.[0] || car.imageUrl || car.image} 
               alt={`${car.make} ${car.model}`}
               loading="lazy"
               onError={(e) => {
