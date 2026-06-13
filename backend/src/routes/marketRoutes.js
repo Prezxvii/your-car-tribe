@@ -14,7 +14,6 @@ router.post('/submit', upload.array('photos'), async (req, res) => {
   try {
     console.log('=== SUBMIT REACHED ===');
 
-    // Manually verify token
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return res.status(401).json({ error: 'No token provided' });
@@ -26,7 +25,6 @@ router.post('/submit', upload.array('photos'), async (req, res) => {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       currentUser = await User.findById(decoded.id).select('-password');
     } catch (tokenErr) {
-      console.error('Token error:', tokenErr.message);
       return res.status(401).json({ error: 'Invalid or expired token' });
     }
 
@@ -37,10 +35,8 @@ router.post('/submit', upload.array('photos'), async (req, res) => {
     console.log('user verified:', currentUser._id);
     console.log('body keys:', Object.keys(req.body || {}));
 
-    const {
-      year, make, model, price, miles, location,
-      description, titleStatus, tag, highlights, specs
-    } = req.body;
+    const { year, make, model, price, miles, location, description, titleStatus, tag, highlights, specs } = req.body;
+    console.log('STEP 1: destructured body');
 
     let parsedHighlights = [];
     let parsedSpecs = {};
@@ -50,20 +46,24 @@ router.post('/submit', upload.array('photos'), async (req, res) => {
         ? (Array.isArray(highlights) ? highlights : JSON.parse(highlights))
         : [];
     } catch (e) { console.error('highlights parse error:', e.message); }
+    console.log('STEP 2: parsed highlights');
 
     try {
       parsedSpecs = specs
         ? (typeof specs === 'object' && !Array.isArray(specs) ? specs : JSON.parse(specs))
         : {};
     } catch (e) { console.error('specs parse error:', e.message); }
+    console.log('STEP 3: parsed specs');
 
     const parsedYear = parseInt(String(year).replace(/[^0-9]/g, ''), 10) || new Date().getFullYear();
     const parsedPrice = parseFloat(String(price).replace(/[^0-9.]/g, '')) || 0;
     const cleanMiles = String(miles).replace(/[^0-9]/g, '') || '0';
+    console.log('STEP 4: parsed numbers');
 
     const photoUrls = req.files?.length > 0
       ? req.files.map((f, i) => `https://placehold.co/600x400?text=Photo+${i + 1}`)
       : ['https://placehold.co/600x400?text=No+Image'];
+    console.log('STEP 5: photo urls');
 
     const listingPayload = {
       year:        parsedYear,
@@ -86,10 +86,12 @@ router.post('/submit', upload.array('photos'), async (req, res) => {
         verified: currentUser.verified || false,
       }
     };
+    console.log('STEP 6: built payload');
 
     const newListing = new Listing(listingPayload);
-    await newListing.save();
+    console.log('STEP 7: created listing instance');
 
+    await newListing.save();
     console.log('=== LISTING SAVED SUCCESSFULLY ===');
 
     return res.status(201).json({
@@ -100,6 +102,7 @@ router.post('/submit', upload.array('photos'), async (req, res) => {
 
   } catch (error) {
     console.error('SUBMIT ERROR:', error.name, '-', error.message);
+    console.error('STACK:', error.stack);
     if (error.name === 'ValidationError') {
       return res.status(400).json({ error: 'Validation failed', details: error.message });
     }
@@ -107,27 +110,6 @@ router.post('/submit', upload.array('photos'), async (req, res) => {
       return res.status(400).json({ error: 'Invalid field type', details: error.message });
     }
     return res.status(500).json({ error: 'Server error', details: error.message });
-  }
-});
-
-router.get('/test-api', async (req, res) => {
-  try {
-    if (!process.env.MARKETCHECK_API_KEY) {
-      return res.status(500).json({ status: 'error', message: 'MARKETCHECK_API_KEY not found' });
-    }
-    const axios = require('axios');
-    const testResponse = await axios.get('https://api.marketcheck.com/v2/search/car/active', {
-      params: { api_key: process.env.MARKETCHECK_API_KEY, rows: 1, car_type: 'used' },
-      timeout: 10000
-    });
-    res.json({
-      status: 'success',
-      message: 'MarketCheck API is working',
-      apiKeyPrefix: process.env.MARKETCHECK_API_KEY.substring(0, 8) + '...',
-      sampleListingCount: testResponse.data.num_found || 0
-    });
-  } catch (error) {
-    res.status(500).json({ status: 'error', message: error.message });
   }
 });
 
