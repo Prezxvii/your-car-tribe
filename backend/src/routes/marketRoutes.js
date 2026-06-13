@@ -10,6 +10,10 @@ const upload = multer({
 });
 
 router.post('/submit', upload.array('photos'), protect, async (req, res) => {
+  const next = (err) => {
+    console.error('NEXT CALLED WITH:', err);
+    return res.status(500).json({ error: 'Middleware error', details: err?.message });
+  };
   try {
     console.log('=== SUBMIT REACHED ===');
     console.log('user:', req.user?._id);
