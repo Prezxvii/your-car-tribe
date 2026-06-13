@@ -1,25 +1,46 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
+const jwt = require('jsonwebtoken');
+const User = require('../models/User');
 const { getMarketCheckListings, getSingleListing } = require('../services/marketCheckService');
 const Listing = require('../models/Listing');
-const { protect } = require('../middleware/authMiddleware');
 
 const upload = multer({ 
   limits: { fileSize: 50 * 1024 * 1024 } 
 });
 
-router.post('/submit', upload.array('photos'), protect, async (req, res) => {
-  const next = (err) => {
-    console.error('NEXT CALLED WITH:', err);
-    return res.status(500).json({ error: 'Middleware error', details: err?.message });
-  };
+router.post('/submit', upload.array('photos'), async (req, res) => {
   try {
     console.log('=== SUBMIT REACHED ===');
-    console.log('user:', req.user?._id);
+
+    // Manually verify token
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'No token provided' });
+    }
+
+    const token = authHeader.split(' ')[1];
+    let currentUser;
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      currentUser = await User.findById(decoded.id).select('-password');
+    } catch (tokenErr) {
+      console.error('Token error:', tokenErr.message);
+      return res.status(401).json({ error: 'Invalid or expired token' });
+    }
+
+    if (!currentUser) {
+      return res.status(401).json({ error: 'User not found' });
+    }
+
+    console.log('user verified:', currentUser._id);
     console.log('body keys:', Object.keys(req.body || {}));
 
-    const { year, make, model, price, miles, location, description, titleStatus, tag, highlights, specs } = req.body;
+    const {
+      year, make, model, price, miles, location,
+      description, titleStatus, tag, highlights, specs
+    } = req.body;
 
     let parsedHighlights = [];
     let parsedSpecs = {};
@@ -58,16 +79,13 @@ router.post('/submit', upload.array('photos'), protect, async (req, res) => {
       specs:       parsedSpecs,
       images:      photoUrls,
       status:      'active',
+      seller: {
+        name:     currentUser.username || currentUser.name || 'Unknown',
+        id:       currentUser._id,
+        avatar:   currentUser.avatar || '',
+        verified: currentUser.verified || false,
+      }
     };
-
-    if (req.user) {
-      listingPayload.seller = {
-        name:     req.user.username || req.user.name || 'Unknown',
-        id:       req.user._id,
-        avatar:   req.user.avatar || '',
-        verified: req.user.verified || false,
-      };
-    }
 
     const newListing = new Listing(listingPayload);
     await newListing.save();
