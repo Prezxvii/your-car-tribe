@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Newspaper, Clock, TrendingUp, Filter, Search, Calendar, ArrowUpRight } from 'lucide-react';
@@ -13,7 +12,8 @@ const NewsPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
 
-  const categories = ['all', 'electric', 'luxury', 'racing', 'tech', 'industry'];
+  // Categories optimized strictly for automotive segments
+  const categories = ['all', 'electric', 'luxury', 'racing', 'tech', 'industry', 'ny-local'];
 
   useEffect(() => {
     const fetchNews = async () => {
@@ -26,9 +26,17 @@ const NewsPage = () => {
         }
         
         const data = await response.json();
-        console.log(`✅ Fetched ${data.length} articles`); // Debug log
-        setNews(data);
-        setFilteredNews(data);
+        
+        // Strictly ensure only car-related content passes onto the client state
+        const carKeywords = ['car', 'auto', 'vehicle', 'motor', 'ev', 'suv', 'truck', 'sedan', 'automotive', 'speed', 'drive'];
+        const strictlyCars = data.filter(article => {
+          const content = `${article.title} ${article.description || ''}`.toLowerCase();
+          return carKeywords.some(keyword => content.includes(keyword));
+        });
+
+        console.log(`✅ Fetched & strict-filtered ${strictlyCars.length} automotive articles`); 
+        setNews(strictlyCars);
+        setFilteredNews(strictlyCars);
       } catch (error) {
         console.error('Error fetching news:', error);
         setError(error.message);
@@ -52,10 +60,13 @@ const NewsPage = () => {
       );
     }
 
-    // Category filter (basic keyword matching)
+    // Category filter (including handling for regional NY tracking keywords)
     if (selectedCategory !== 'all') {
       filtered = filtered.filter(article => {
-        const content = `${article.title} ${article.description}`.toLowerCase();
+        const content = `${article.title} ${article.description || ''}`.toLowerCase();
+        if (selectedCategory === 'ny-local') {
+          return content.includes('new york') || content.includes('ny') || content.includes('nyc');
+        }
         return content.includes(selectedCategory);
       });
     }
@@ -108,7 +119,7 @@ const NewsPage = () => {
 
   return (
     <div className="news-page">
-      {/* Hero Header */}
+      {/* Hero Header - Contextualized to NY */}
       <section className="news-hero">
         <div className="news-hero-content">
           <motion.div
@@ -118,10 +129,10 @@ const NewsPage = () => {
           >
             <div className="hero-badge">
               <Newspaper size={18} />
-              <span>LATEST UPDATES</span>
+              <span>NY METRO AUTOMOTIVE NEWS</span>
             </div>
-            <h1>Automotive News</h1>
-            <p>Stay updated with the latest news, trends, and developments in the automotive world</p>
+            <h1>Automotive Feed</h1>
+            <p>The latest vehicle launches, automotive trends, and local car updates across New York</p>
           </motion.div>
         </div>
       </section>
@@ -133,7 +144,7 @@ const NewsPage = () => {
             <Search size={20} />
             <input
               type="text"
-              placeholder="Search articles..."
+              placeholder="Search automotive articles..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -155,7 +166,7 @@ const NewsPage = () => {
                 className={`filter-btn ${selectedCategory === category ? 'active' : ''}`}
                 onClick={() => setSelectedCategory(category)}
               >
-                {category.charAt(0).toUpperCase() + category.slice(1)}
+                {category === 'ny-local' ? 'NY Local' : category.charAt(0).toUpperCase() + category.slice(1)}
               </button>
             ))}
           </div>
@@ -170,7 +181,6 @@ const NewsPage = () => {
       <section className="news-content-section">
         <div className="news-container">
           {loading ? (
-            // Loading State - 20 skeletons
             <div className="news-grid">
               {[...Array(20)].map((_, i) => (
                 <div key={i} className="news-article-skeleton">
@@ -187,25 +197,22 @@ const NewsPage = () => {
               ))}
             </div>
           ) : error ? (
-            // Error State
             <div className="news-error-state">
               <Newspaper size={64} />
-              <h3>Unable to load news</h3>
+              <h3>Unable to load automotive news</h3>
               <p>{error}</p>
               <button onClick={() => window.location.reload()}>Try Again</button>
             </div>
           ) : filteredNews.length === 0 ? (
-            // Empty State
             <div className="news-empty-state">
               <Search size={64} />
-              <h3>No articles found</h3>
-              <p>Try adjusting your search or filter</p>
+              <h3>No automotive articles found</h3>
+              <p>Try adjusting your search terms or filters</p>
               <button onClick={() => { setSearchQuery(''); setSelectedCategory('all'); }}>
                 Clear Filters
               </button>
             </div>
           ) : (
-            // News Articles Grid - ALL ARTICLES
             <div className="news-grid">
               {filteredNews.map((article, idx) => (
                 <motion.article
@@ -213,7 +220,7 @@ const NewsPage = () => {
                   className="news-article-card"
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: Math.min(idx * 0.03, 0.6) }} // Faster animation, cap at 0.6s
+                  transition={{ delay: Math.min(idx * 0.03, 0.6) }}
                   onClick={() => window.open(article.url, '_blank')}
                 >
                   <div className="article-image">
@@ -235,7 +242,7 @@ const NewsPage = () => {
 
                   <div className="article-content">
                     <div className="article-source">
-                      {article.source?.name || 'News Source'}
+                      {article.source?.name || 'Automotive Source'}
                     </div>
                     
                     <h2 className="article-title">
@@ -265,21 +272,21 @@ const NewsPage = () => {
           <Newspaper size={24} />
           <div className="stat-info">
             <span className="stat-number">{news.length}</span>
-            <span className="stat-label">Total Articles</span>
+            <span className="stat-label">Car Articles</span>
           </div>
         </div>
         <div className="stat-card">
           <TrendingUp size={24} />
           <div className="stat-info">
             <span className="stat-number">{filteredNews.length}</span>
-            <span className="stat-label">Showing Now</span>
+            <span className="stat-label">Matching Views</span>
           </div>
         </div>
         <div className="stat-card">
           <Calendar size={24} />
           <div className="stat-info">
             <span className="stat-number">24/7</span>
-            <span className="stat-label">Live Updates</span>
+            <span className="stat-label">Tri-State Coverage</span>
           </div>
         </div>
       </section>

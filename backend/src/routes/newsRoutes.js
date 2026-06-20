@@ -5,28 +5,35 @@ const axios = require('axios');
 // ✅ Your API Key
 const NEWS_API_KEY = '46c7224f350846e0b5932cb038f8e6e0';
 
-// ✅ GET car-related news - FORCE 20 ARTICLES
+// ✅ GET car-related news - FORCE 20 ARTICLES WITH NY CONTEXT
 router.get('/car-news', async (req, res) => {
   try {
-    console.log('📰 Fetching news from NewsAPI...');
+    console.log('📰 Fetching localized automotive news from NewsAPI...');
     
-    // Fetch news from NewsAPI with explicit pageSize: 20
+    // Tightened query parameters to explicitly emphasize New York / Tri-State auto context alongside general vehicle updates
     const response = await axios.get('https://newsapi.org/v2/everything', {
       params: {
-        q: 'cars OR automotive OR vehicles OR "car news" OR "auto industry"',
+        q: '(cars OR automotive OR vehicles OR "auto industry") AND ("New York" OR "NYC" OR "Tri-State" OR "Long Island" OR "Westchester" OR global)',
         language: 'en',
         sortBy: 'publishedAt',
-        pageSize: 20, // Request exactly 20
+        pageSize: 40, // Fetch a broader batch so we can safely strip out non-car matches during our strict client-side map filtering
         apiKey: NEWS_API_KEY
       }
     });
 
-    console.log(`✅ NewsAPI returned ${response.data.articles.length} articles`);
+    console.log(`✅ NewsAPI returned ${response.data.articles.length} raw articles`);
 
-    // ✅ Format with GUARANTEED descriptions
+    // Strict validation array to make absolutely sure articles are car-centric
+    const carKeywords = ['car', 'auto', 'vehicle', 'motor', 'ev', 'suv', 'truck', 'sedan', 'automotive', 'speed', 'drive', 'traffic', 'parking', 'highway'];
+
+    // ✅ Format with GUARANTEED descriptions and auto-relevance filtering
     const formattedArticles = response.data.articles
-      .filter(article => article.title && article.url) // Only valid articles
-      .slice(0, 20) // Ensure we only take 20
+      .filter(article => {
+        if (!article.title || !article.url) return false;
+        const textToAnalyze = `${article.title} ${article.description || ''}`.toLowerCase();
+        return carKeywords.some(keyword => textToAnalyze.includes(keyword));
+      })
+      .slice(0, 20) // Ensure we pass exactly 20 down to the UI
       .map(article => {
         // Build description with multiple fallbacks
         let description = '';
@@ -39,7 +46,7 @@ router.get('/car-news', async (req, res) => {
             .trim()
             .substring(0, 150);
         } else {
-          description = 'Read the latest automotive news and industry updates.';
+          description = 'Read the latest automotive news, vehicle developments, and NY regional updates.';
         }
 
         return {
@@ -49,176 +56,176 @@ router.get('/car-news', async (req, res) => {
           urlToImage: article.urlToImage || 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=400&h=250&fit=crop',
           publishedAt: article.publishedAt,
           source: {
-            name: article.source?.name || 'News Source'
+            name: article.source?.name || 'Automotive Source'
           }
         };
       });
 
-    console.log(`✅ Sending ${formattedArticles.length} formatted articles to frontend`);
+    console.log(`✅ Sending ${formattedArticles.length} formatted articles to NY frontend`);
     res.json(formattedArticles);
     
   } catch (error) {
     console.error('❌ Error fetching news:', error.message);
-    console.log('⚠️ Using fallback mock news data (20 articles)');
+    console.log('⚠️ Using localized fallback mock news data (20 articles)');
     
-    // ✅ FALLBACK: 20 mock articles with FULL descriptions
+    // ✅ NEW YORK LOCALIZED FALLBACK: 20 mock articles tailored directly to NY car life
     const mockNews = [
       {
-        title: 'JPJ eBid: CFG, QAB-P number plates up for bidding',
-        description: 'The Road Transport Department (JPJ) is auctioning special vehicle registration numbers including CFG and QAB-P series plates through their online bidding platform. These premium plates are available to the highest bidders.',
-        url: 'https://paultan.org/2024/03/17/jpj-ebid-cfg-qab-p-number-plates',
-        urlToImage: 'https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=400&h=250&fit=crop',
+        title: 'New York Auto Show Showcases Next-Gen Electric Commuters',
+        description: 'Live from the Javits Center, the annual showcase turns its spotlight to practical, long-range EVs designed to tackle the tight infrastructure and daily parking battles of the NYC metro area.',
+        url: 'https://www.autoweek.com/ny-auto-show-ev-highlights',
+        urlToImage: 'https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=400&h=250&fit=crop',
         publishedAt: new Date().toISOString(),
-        source: { name: "Paul Tan's Automotive News" }
+        source: { name: 'NY Auto Press' }
       },
       {
-        title: 'Lotus Eletre 600 receives MY27 upgrades, still RM489k',
-        description: 'The electric SUV gets enhanced features and improved performance for the Malaysian market while maintaining its competitive pricing of RM489,000. New updates include advanced driver assistance systems.',
-        url: 'https://paultan.org/2024/03/17/lotus-eletre-600-my27',
-        urlToImage: 'https://images.unsplash.com/photo-1617814076367-b759c7d7e738?w=400&h=250&fit=crop',
-        publishedAt: new Date(Date.now() - 3600000).toISOString(),
-        source: { name: "Paul Tan's Automotive News" }
-      },
-      {
-        title: 'Feb 2026 Malaysian vehicle sales down by 19% – MAA',
-        description: 'The Malaysian Automotive Association reports a significant decline in vehicle sales for February 2026 compared to the previous year, citing economic factors.',
-        url: 'https://paultan.org/2024/03/17/feb-2026-vehicle-sales-maa',
-        urlToImage: 'https://images.unsplash.com/photo-1619405399517-d7fce0f13302?w=400&h=250&fit=crop',
-        publishedAt: new Date(Date.now() - 7200000).toISOString(),
-        source: { name: 'Malaysian Automotive Association' }
-      },
-      {
-        title: 'PUBG Mobile Reveals New Apollo Automobile Collaboration',
-        description: 'Popular mobile game announces partnership with automotive brand Apollo for exclusive in-game content featuring luxury vehicles and customization options.',
-        url: 'https://bleedingcool.com/games/pubg-mobile-apollo',
-        urlToImage: 'https://images.unsplash.com/photo-1555215695-3004980ad54e?w=400&h=250&fit=crop',
-        publishedAt: new Date(Date.now() - 10800000).toISOString(),
-        source: { name: 'Bleeding Cool News' }
-      },
-      {
-        title: 'First quantum battery prototype enables instantaneous EV charging',
-        description: 'Breakthrough technology from researchers could revolutionize electric vehicle charging, making it as fast as filling up with gas at a traditional fuel station.',
-        url: 'https://notebookcheck.net/quantum-battery-ev-charging',
+        title: 'Tri-State EV Charging Network Plans Dramatic Expansion',
+        description: 'State officials announce hundreds of new high-speed vehicle charging hubs to line the NY State Thruway, Hutch, and I-95, making electric vehicle ownership seamless for commuters.',
+        url: 'https://www.electrek.co/tri-state-charging-expansion',
         urlToImage: 'https://images.unsplash.com/photo-1593941707882-a5bba14938c7?w=400&h=250&fit=crop',
-        publishedAt: new Date(Date.now() - 14400000).toISOString(),
-        source: { name: 'Notebookcheck.net' }
+        publishedAt: new Date(Date.now() - 3600000).toISOString(),
+        source: { name: 'Electrek' }
       },
       {
-        title: 'Tokyo Auto Salon 2026: Custom Builds & Tuning Trends',
-        description: 'Complete coverage from Japan\'s premier automotive aftermarket trade show featuring the latest tuning trends and custom builds.',
-        url: 'https://speedhunters.com/tokyo-auto-salon-2026',
+        title: 'NYC Congestion Pricing Infrastructure Transitions to Auto-Emission Variances',
+        description: 'New updates to traffic monitoring systems indicate special toll credits may be introduced for high-efficiency and zero-emission logistics vehicles traversing Manhattan entry points.',
+        url: 'https://www.caranddriver.com/nyc-congestion-pricing-update',
+        urlToImage: 'https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=400&h=250&fit=crop',
+        publishedAt: new Date(Date.now() - 7200000).toISOString(),
+        source: { name: 'Car and Driver' }
+      },
+      {
+        title: 'The Evolution of New York Car Culture: Underground Meets High-End',
+        description: 'A deep dive into how regional car enthusiasts are reshaping weekend meetups across Westchester, Long Island, and Queens, keeping custom builds thriving despite tight city spaces.',
+        url: 'https://www.speedhunters.com/nyc-car-culture-evolution',
         urlToImage: 'https://images.unsplash.com/photo-1617531653332-bd46c24f2068?w=400&h=250&fit=crop',
-        publishedAt: new Date(Date.now() - 18000000).toISOString(),
+        publishedAt: new Date(Date.now() - 10800000).toISOString(),
         source: { name: 'Speedhunters' }
       },
       {
-        title: 'Tesla Model Y Refresh Spotted Testing in California',
-        description: 'Spy photographers have captured images of the upcoming Tesla Model Y refresh, featuring redesigned headlights and updated interior technology.',
-        url: 'https://electrek.co/tesla-model-y-refresh',
-        urlToImage: 'https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=400&h=250&fit=crop',
-        publishedAt: new Date(Date.now() - 21600000).toISOString(),
-        source: { name: 'Electrek' }
-      },
-      {
-        title: 'Porsche Announces New GT3 RS With Increased Performance',
-        description: 'Porsche unveils the latest iteration of their track-focused GT3 RS, featuring aerodynamic improvements and a more powerful flat-six engine.',
-        url: 'https://autoweek.com/porsche-gt3-rs',
-        urlToImage: 'https://images.unsplash.com/photo-1614200187524-dc4b892acf16?w=400&h=250&fit=crop',
-        publishedAt: new Date(Date.now() - 25200000).toISOString(),
-        source: { name: 'Autoweek' }
-      },
-      {
-        title: 'Ford Mustang Dark Horse Sets Nürburgring Record',
-        description: 'The Ford Mustang Dark Horse has set a new lap record for American muscle cars at the legendary Nürburgring Nordschleife circuit.',
-        url: 'https://motortrend.com/mustang-dark-horse-record',
-        urlToImage: 'https://images.unsplash.com/photo-1584345604476-8ec5f5d9d5d0?w=400&h=250&fit=crop',
-        publishedAt: new Date(Date.now() - 28800000).toISOString(),
-        source: { name: 'MotorTrend' }
-      },
-      {
-        title: 'BMW M3 Touring Finally Coming to North America',
-        description: 'After years of waiting, BMW confirms the M3 Touring wagon will be available in North American markets starting next year.',
-        url: 'https://caranddriver.com/bmw-m3-touring-usa',
-        urlToImage: 'https://images.unsplash.com/photo-1555215695-3004980ad54e?w=400&h=250&fit=crop',
-        publishedAt: new Date(Date.now() - 32400000).toISOString(),
-        source: { name: 'Car and Driver' }
-      },
-      {
-        title: 'Rivian R2 Pre-Orders Exceed 100,000 in First Week',
-        description: 'Rivian\'s more affordable R2 electric SUV has generated massive interest with over 100,000 pre-orders placed within the first week of unveiling.',
-        url: 'https://insideevs.com/rivian-r2-preorders',
-        urlToImage: 'https://images.unsplash.com/photo-1593941707882-a5bba14938c7?w=400&h=250&fit=crop',
-        publishedAt: new Date(Date.now() - 36000000).toISOString(),
+        title: 'Tesla Model Y Refresh Spotted Testing Outside Tri-State Showrooms',
+        description: 'Local car spotters capture test mules of the highly anticipated Tesla Model Y variant cruising near local engineering facilities. Interior configurations show complete modern dashboard overhauls.',
+        url: 'https://www.insideevs.com/model-y-spied-ny',
+        urlToImage: 'https://images.unsplash.com/photo-1619405399517-d7fce0f13302?w=400&h=250&fit=crop',
+        publishedAt: new Date(Date.now() - 14400000).toISOString(),
         source: { name: 'InsideEVs' }
       },
       {
-        title: 'Honda Civic Type R Breaks Production Car Record',
-        description: 'The latest Honda Civic Type R has set a new lap record for front-wheel drive production cars at several major racing circuits worldwide.',
-        url: 'https://roadandtrack.com/civic-type-r-record',
+        title: 'Porsche Announces New GT3 RS Track Allocations For NY Drivers',
+        description: 'Porsche North America confirms allocation metrics for the uncompromising GT3 RS, detailing special track configurations optimized for local road courses like Lime Rock and Monticello.',
+        url: 'https://www.autoweek.com/porsche-gt3-rs-allocations',
+        urlToImage: 'https://images.unsplash.com/photo-1614200187524-dc4b892acf16?w=400&h=250&fit=crop',
+        publishedAt: new Date(Date.now() - 18000000).toISOString(),
+        source: { name: 'Autoweek' }
+      },
+      {
+        title: 'Major Expressway Upgrades Promise Automated Traffic Flow Updates',
+        description: 'State DOT outlines the integration of smart highway cameras designed to dynamically route vehicle navigation around major arterial chokepoints during peak hours.',
+        url: 'https://www.motortrend.com/ny-smart-highways',
+        urlToImage: 'https://images.unsplash.com/photo-1555215695-3004980ad54e?w=400&h=250&fit=crop',
+        publishedAt: new Date(Date.now() - 21600000).toISOString(),
+        source: { name: 'MotorTrend' }
+      },
+      {
+        title: 'Ford Mustang Dark Horse Shines in Regional Track Testing',
+        description: 'Performance testing on tight Northeast road circuits proves the Dark Horse handling package can successfully iron out uneven surfaces while laying down impressive acceleration parameters.',
+        url: 'https://www.motortrend.com/mustang-dark-horse-northeast',
+        urlToImage: 'https://images.unsplash.com/photo-1584345604476-8ec5f5d9d5d0?w=400&h=250&fit=crop',
+        publishedAt: new Date(Date.now() - 25200000).toISOString(),
+        source: { name: 'MotorTrend' }
+      },
+      {
+        title: 'BMW M3 Touring Order Logs Confirmed for North American Debut',
+        description: 'Regional dealerships are opening priority request sheets for the long-awaited high-performance wagon, a utility option perfectly suited for New York all-weather touring.',
+        url: 'https://www.caranddriver.com/bmw-m3-touring-usa-confirmed',
+        urlToImage: 'https://images.unsplash.com/photo-1555215695-3004980ad54e?w=400&h=250&fit=crop',
+        publishedAt: new Date(Date.now() - 28800000).toISOString(),
+        source: { name: 'Car and Driver' }
+      },
+      {
+        title: 'Rivian R2 Pre-Orders Spike Across Suburban NY Commuter Belts',
+        description: 'Analysis of midsize EV demand reveals significant pre-order volume from drivers outside the immediate five boroughs looking for robust ground clearance paired with a clean drivetrain.',
+        url: 'https://www.insideevs.com/rivian-r2-ny-demand',
+        urlToImage: 'https://images.unsplash.com/photo-1593941707882-a5bba14938c7?w=400&h=250&fit=crop',
+        publishedAt: new Date(Date.now() - 32400000).toISOString(),
+        source: { name: 'InsideEVs' }
+      },
+      {
+        title: 'Honda Civic Type R Retains Value in Regional Secondary Market',
+        description: 'Hot hatch metrics demonstrate incredible resilience to depreciation across local classified networks, driven by reliable mechanical layouts and premium enthusiast demand.',
+        url: 'https://www.roadandtrack.com/civic-type-r-resale',
         urlToImage: 'https://images.unsplash.com/photo-1590362891991-f776e747a588?w=400&h=250&fit=crop',
-        publishedAt: new Date(Date.now() - 39600000).toISOString(),
+        publishedAt: new Date(Date.now() - 36000000).toISOString(),
         source: { name: 'Road & Track' }
       },
       {
-        title: 'Lamborghini Teases All-Electric Supercar Concept',
-        description: 'Lamborghini has released teaser images of their first all-electric supercar concept, scheduled for full reveal at the upcoming Geneva Motor Show.',
-        url: 'https://topgear.com/lamborghini-electric-concept',
+        title: 'Lamborghini Concept Previews Electric Infrastructure Shift',
+        description: 'The upcoming full reveal of the brand\'s electric powertrain roadmap sets high expectations for the supercar class, striking an elegant balance between instant torque and track endurance.',
+        url: 'https://www.topgear.com/lamborghini-ev-concept',
         urlToImage: 'https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=400&h=250&fit=crop',
-        publishedAt: new Date(Date.now() - 43200000).toISOString(),
+        publishedAt: new Date(Date.now() - 39600000).toISOString(),
         source: { name: 'Top Gear' }
       },
       {
-        title: 'Mazda MX-5 Celebrates 35 Years With Special Edition',
-        description: 'Mazda commemorates 35 years of the iconic MX-5 roadster with a limited edition model featuring unique styling and performance enhancements.',
-        url: 'https://autocar.co.uk/mazda-mx5-35th-anniversary',
+        title: 'Winter Maintenance Prep: Protecting Your Undercarriage from Salt and Potholes',
+        description: 'Expert automotive advice on modern clear-film under-coatings and suspension inspections vital for keeping structural integrity safe from harsh Northeast highway wear.',
+        url: 'https://www.autocar.co.uk/winter-car-care-guide',
         urlToImage: 'https://images.unsplash.com/photo-1617531653332-bd46c24f2068?w=400&h=250&fit=crop',
-        publishedAt: new Date(Date.now() - 46800000).toISOString(),
+        publishedAt: new Date(Date.now() - 43200000).toISOString(),
         source: { name: 'Autocar' }
       },
       {
-        title: 'Audi Unveils New E-Tron GT Performance Variant',
-        description: 'Audi expands the E-Tron GT lineup with a new high-performance variant delivering over 900 horsepower and sub-2-second acceleration.',
-        url: 'https://electrek.co/audi-etron-gt-performance',
+        title: 'Audi Unveils E-Tron GT Performance Specs Targeting Quick Acceleration',
+        description: 'Boasting optimized dual-motor configurations, the latest flagship sedan pairs blistering performance metrics with robust handling to tackle aggressive road terrain confidently.',
+        url: 'https://www.electrek.co/audi-etron-gt-performance-reveal',
         urlToImage: 'https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=400&h=250&fit=crop',
-        publishedAt: new Date(Date.now() - 50400000).toISOString(),
+        publishedAt: new Date(Date.now() - 46800000).toISOString(),
         source: { name: 'Electrek' }
       },
       {
-        title: 'Mercedes-AMG One Hypercar Begins Customer Deliveries',
-        description: 'Mercedes-Benz has started delivering the AMG One hypercar to customers, bringing Formula 1 technology to the road in a limited production run.',
-        url: 'https://autoweek.com/mercedes-amg-one-deliveries',
+        title: 'Mercedes-AMG One Hypercar Deliveries Shift Track Engineering Benchmark',
+        description: 'Formula 1 internal combustion technology makes its highly regulated debut on public streets, raising the bar for modern complex hybrid powertrains.',
+        url: 'https://www.autoweek.com/mercedes-amg-one-engineering',
         urlToImage: 'https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=400&h=250&fit=crop',
-        publishedAt: new Date(Date.now() - 54000000).toISOString(),
+        publishedAt: new Date(Date.now() - 50400000).toISOString(),
         source: { name: 'Autoweek' }
       },
       {
-        title: 'Volkswagen ID.7 GTX Unveiled as Performance Electric Sedan',
-        description: 'Volkswagen reveals the sporty GTX variant of the ID.7 electric sedan, featuring dual motors and enhanced driving dynamics.',
-        url: 'https://insideevs.com/vw-id7-gtx',
+        title: 'Volkswagen ID.7 GTX Expands Long-Range Electric Commuter Lineup',
+        description: 'Featuring an athletic dual-motor AWD layout, the new variant yields impressive range parameters alongside stability enhancements optimized for varying slick surface conditions.',
+        url: 'https://www.insideevs.com/vw-id7-gtx-specs',
         urlToImage: 'https://images.unsplash.com/photo-1542282088-72c9c27ed0cd?w=400&h=250&fit=crop',
-        publishedAt: new Date(Date.now() - 57600000).toISOString(),
+        publishedAt: new Date(Date.now() - 54000000).toISOString(),
         source: { name: 'InsideEVs' }
       },
       {
-        title: 'Nissan Z NISMO Returns With 450 Horsepower',
-        description: 'Nissan announces the return of the Z NISMO badge with a performance-enhanced version producing 450 horsepower from its twin-turbo V6.',
-        url: 'https://motortrend.com/nissan-z-nismo',
+        title: 'Nissan Z NISMO Edition Sharpens Dynamics with Responsive Twin-Turbo V6',
+        description: 'Engineered for optimal precision, the NISMO model offers structural reinforcement and fine-tuned transmission mappings tailored for true car enthusiasts.',
+        url: 'https://www.motortrend.com/nissan-z-nismo-review',
         urlToImage: 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=400&h=250&fit=crop',
-        publishedAt: new Date(Date.now() - 61200000).toISOString(),
+        publishedAt: new Date(Date.now() - 57600000).toISOString(),
         source: { name: 'MotorTrend' }
       },
       {
-        title: 'Hyundai IONIQ 7 Three-Row Electric SUV Revealed',
-        description: 'Hyundai unveils the production version of the IONIQ 7, a three-row electric SUV with advanced autonomous driving capabilities.',
-        url: 'https://caranddriver.com/hyundai-ioniq-7',
+        title: 'Hyundai IONIQ 7 Reveals Advanced Three-Row Interior Space Concept',
+        description: 'Aiming at high-occupancy families, the interior layout embraces modular seating configurations and sustainable components without compromising on driving automation features.',
+        url: 'https://www.caranddriver.com/hyundai-ioniq-7-preview',
         urlToImage: 'https://images.unsplash.com/photo-1617814076367-b759c7d7e738?w=400&h=250&fit=crop',
-        publishedAt: new Date(Date.now() - 64800000).toISOString(),
+        publishedAt: new Date(Date.now() - 61200000).toISOString(),
         source: { name: 'Car and Driver' }
       },
       {
-        title: 'Alpine A110 R Ultimate Edition Announced',
-        description: 'Alpine unveils the ultimate version of the A110 sports car with weight reductions, aerodynamic improvements, and track-focused upgrades.',
-        url: 'https://topgear.com/alpine-a110-r-ultimate',
+        title: 'How App-Based Maintenance Portals Help NY Drivers Sidestep Service Queues',
+        description: 'A study on digital-first automotive repair platforms proving that real-time scheduling fixes local mechanic backlogs throughout highly populated municipal centers.',
+        url: 'https://www.topgear.com/digital-mechanic-trends',
+        urlToImage: 'https://images.unsplash.com/photo-1614200187524-dc4b892acf16?w=400&h=250&fit=crop',
+        publishedAt: new Date(Date.now() - 64800000).toISOString(),
+        source: { name: 'Top Gear' }
+      },
+      {
+        title: 'Alpine A110 R Ultimate Edition Details Aggressive Weight Reduction Profile',
+        description: 'Utilizing specialized carbon fiber composite layout sections, the final iteration achieves highly responsive power-to-weight delivery intended for track day dominance.',
+        url: 'https://www.topgear.com/alpine-a110-r-track-review',
         urlToImage: 'https://images.unsplash.com/photo-1614200187524-dc4b892acf16?w=400&h=250&fit=crop',
         publishedAt: new Date(Date.now() - 68400000).toISOString(),
         source: { name: 'Top Gear' }

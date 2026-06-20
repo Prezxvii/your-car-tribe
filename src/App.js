@@ -7,7 +7,7 @@ import Footer from './components/common/Footer';
 
 // Page Imports
 import Homepage from './pages/home/Homepage'; 
-import NewsPage from './pages/news/NewsPage'; // ✅ Added NewsPage
+import NewsPage from './pages/news/NewsPage'; 
 import MarketplaceFeed from './pages/marketplace/MarketplaceFeed';
 import ListingForm from './pages/listings/ListingForm';
 import ListingDetail from './pages/listings/ListingDetail'; 
@@ -26,7 +26,7 @@ import ModerationDashboard from './pages/admin/ModerationDashboard';
 import './styles/App.css';
 import './styles/Mobile.css'; 
 
-// ✅ Helper to reset scroll position on navigation
+
 const ScrollToTop = () => {
   const { pathname } = useLocation();
   useEffect(() => {
@@ -36,8 +36,24 @@ const ScrollToTop = () => {
 };
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
+  // Synchronously initialize state straight from storage so it's ready on frame 1
+  const [isLoggedIn, setIsLoggedIn] = useState(() => {
+    const token = localStorage.getItem('token');
+    const userData = localStorage.getItem('user');
+    return !!(token && userData && userData !== "undefined" && userData !== "null");
+  });
+
+  const [isAdmin, setIsAdmin] = useState(() => {
+    const userData = localStorage.getItem('user');
+    if (userData && userData !== "undefined" && userData !== "null") {
+      try {
+        return JSON.parse(userData)?.role === 'admin';
+      } catch {
+        return false;
+      }
+    }
+    return false;
+  });
 
   const checkAuth = useCallback(() => {
     const token = localStorage.getItem('token');

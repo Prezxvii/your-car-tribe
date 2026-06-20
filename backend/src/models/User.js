@@ -28,6 +28,32 @@ const userSchema = new mongoose.Schema({
   bannedAt: { type: Date },
   strikes: { type: Number, default: 0 },
   lastActive: { type: Date, default: Date.now },
+
+  // --- 🆕 NEW MODERATION & TRANSACTION TRACKING FIELDS ---
+  identityVerified: { 
+    type: String, 
+    enum: ['pending', 'verified', 'failed'], 
+    default: 'pending' 
+  },
+  flaggedSuspicious: { 
+    type: Boolean, 
+    default: false 
+  },
+  buyerCount: { 
+    type: Number, 
+    default: 0 
+  },
+  sellerCount: { 
+    type: Number, 
+    default: 0 
+  },
+  loginHistory: [
+    {
+      ip: { type: String },
+      device: { type: String },
+      date: { type: Date, default: Date.now }
+    }
+  ],
   
   createdAt: { type: Date, default: Date.now }
 });

@@ -1,4 +1,3 @@
-// backend/src/routes/adminRoutes.js
 const express = require('express');
 const router = express.Router();
 const { protect, adminOnly } = require('../middleware/authMiddleware');
@@ -7,6 +6,7 @@ const Post = require('../models/Post');
 const Reply = require('../models/Reply');
 const Listing = require('../models/Listing');
 const FAQ = require('../models/FAQ');
+const Transaction = require('../models/Transaction'); // Imported transaction reference
 
 // Apply protection to ALL admin routes
 router.use(protect, adminOnly);
@@ -26,7 +26,7 @@ router.get('/users', async (req, res) => {
   }
 });
 
-// Update user
+// Update user details manually
 router.put('/users/:id', async (req, res) => {
   try {
     const { username, email, role, tribes, bio } = req.body;
@@ -66,13 +66,60 @@ router.put('/users/:id/ban', async (req, res) => {
   }
 });
 
+// 🆕 Verify Identity Matrix
+router.put('/users/:id/verify-identity', async (req, res) => {
+  try {
+    const { identityVerified } = req.body;
+    const user = await User.findByIdAndUpdate(
+      req.params.id,
+      { identityVerified },
+      { new: true }
+    ).select('-password');
+    res.json(user);
+  } catch (error) {
+    console.error('Error verifying identity:', error);
+    res.status(500).json({ message: 'Error updating verification status' });
+  }
+});
+
+// 🆕 Flag Suspicious Accounts
+router.put('/users/:id/flag', async (req, res) => {
+  try {
+    const { flaggedSuspicious } = req.body;
+    const user = await User.findByIdAndUpdate(
+      req.params.id,
+      { flaggedSuspicious },
+      { new: true }
+    ).select('-password');
+    res.json(user);
+  } catch (error) {
+    console.error('Error flagging user profile:', error);
+    res.status(500).json({ message: 'Error mapping risk parameter' });
+  }
+});
+
+// 🆕 Hard Account Reset Credential Overwrite
+router.put('/users/:id/reset-details', async (req, res) => {
+  try {
+    const { password } = req.body;
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ message: 'User profile missing' });
+    
+    user.password = password; // Triggers mongoose .pre('save') pre-hook crypt execution
+    await user.save();
+    res.json({ success: true, message: 'Account overwritten smoothly' });
+  } catch (error) {
+    console.error('Error saving overwritten security profile:', error);
+    res.status(500).json({ message: 'Error overriding profile data' });
+  }
+});
+
 // Delete user
 router.delete('/users/:id', async (req, res) => {
   try {
-    // Delete user's posts, replies, listings
     await Post.deleteMany({ author: req.params.id });
     await Reply.deleteMany({ author: req.params.id });
-    await Listing.deleteMany({ seller: req.params.id });
+    await Listing.deleteMany({ 'seller.id': req.params.id });
     
     const user = await User.findByIdAndDelete(req.params.id);
     
@@ -106,41 +153,13 @@ router.get('/posts', async (req, res) => {
 // Delete post
 router.delete('/posts/:id', async (req, res) => {
   try {
-    // Delete all replies to this post
     await Reply.deleteMany({ post: req.params.id });
-    
     const post = await Post.findByIdAndDelete(req.params.id);
-    
-    if (!post) {
-      return res.status(404).json({ message: 'Post not found' });
-    }
-    
+    if (!post) return res.status(404).json({ message: 'Post not found' });
     res.json({ message: 'Post deleted successfully' });
   } catch (error) {
     console.error('Error deleting post:', error);
     res.status(500).json({ message: 'Error deleting post' });
-  }
-});
-
-// Update post (edit content, change category, etc.)
-router.put('/posts/:id', async (req, res) => {
-  try {
-    const { title, description, category, tribe } = req.body;
-    
-    const post = await Post.findByIdAndUpdate(
-      req.params.id,
-      { title, description, category, tribe },
-      { new: true }
-    ).populate('author', 'username email');
-    
-    if (!post) {
-      return res.status(404).json({ message: 'Post not found' });
-    }
-    
-    res.json(post);
-  } catch (error) {
-    console.error('Error updating post:', error);
-    res.status(500).json({ message: 'Error updating post' });
   }
 });
 
@@ -165,42 +184,12 @@ router.get('/replies', async (req, res) => {
 router.delete('/replies/:id', async (req, res) => {
   try {
     const reply = await Reply.findByIdAndDelete(req.params.id);
-    
-    if (!reply) {
-      return res.status(404).json({ message: 'Reply not found' });
-    }
-    
-    // Decrement reply count on post
-    await Post.findByIdAndUpdate(reply.post, {
-      $inc: { replyCount: -1 }
-    });
-    
+    if (!reply) return res.status(404).json({ message: 'Reply not found' });
+    await Post.findByIdAndUpdate(reply.post, { $inc: { replyCount: -1 } });
     res.json({ message: 'Reply deleted successfully' });
   } catch (error) {
     console.error('Error deleting reply:', error);
     res.status(500).json({ message: 'Error deleting reply' });
-  }
-});
-
-// Update reply
-router.put('/replies/:id', async (req, res) => {
-  try {
-    const { text } = req.body;
-    
-    const reply = await Reply.findByIdAndUpdate(
-      req.params.id,
-      { text },
-      { new: true }
-    ).populate('author', 'username email');
-    
-    if (!reply) {
-      return res.status(404).json({ message: 'Reply not found' });
-    }
-    
-    res.json(reply);
-  } catch (error) {
-    console.error('Error updating reply:', error);
-    res.status(500).json({ message: 'Error updating reply' });
   }
 });
 
@@ -210,7 +199,7 @@ router.put('/replies/:id', async (req, res) => {
 router.get('/listings', async (req, res) => {
   try {
     const listings = await Listing.find()
-      .populate('seller', 'username email')
+      .populate('seller', 'username email avatar verified')
       .sort({ createdAt: -1 });
     res.json(listings);
   } catch (error) {
@@ -219,15 +208,69 @@ router.get('/listings', async (req, res) => {
   }
 });
 
+// 🆕 Edit Specific Attributes for a Listing
+router.put('/listings/:id/edit', async (req, res) => {
+  try {
+    const updatedListing = await Listing.findByIdAndUpdate(
+      req.params.id,
+      { $set: req.body },
+      { new: true }
+    ).populate('seller', 'username email avatar verified');
+    res.json(updatedListing);
+  } catch (error) {
+    console.error('Error editing listing fields:', error);
+    res.status(500).json({ message: 'Failed to update listing metrics' });
+  }
+});
+
+// 🆕 Duplicate an Existing Listing
+router.post('/listings/duplicate', async (req, res) => {
+  try {
+    const { originalId } = req.body;
+    const original = await Listing.findById(originalId);
+    if (!original) return res.status(404).json({ message: 'Source listing missing' });
+
+    const sourceData = original.toObject();
+    delete sourceData._id;
+    delete sourceData.createdAt;
+    delete sourceData.updatedAt;
+
+    const copy = new Listing({
+      ...sourceData,
+      status: 'pending' // Force review lifecycle back on clone
+    });
+
+    await copy.save();
+    res.status(201).json(copy);
+  } catch (error) {
+    console.error('Error processing duplication mutation:', error);
+    res.status(500).json({ message: 'Duplication sequence broken' });
+  }
+});
+
+// Update listing status
+router.put('/listings/:id/status', async (req, res) => {
+  try {
+    const { status } = req.body;
+    const listing = await Listing.findByIdAndUpdate(
+      req.params.id,
+      { status },
+      { new: true, runValidators: true }
+    ).populate('seller', 'username email avatar verified');
+    
+    if (!listing) return res.status(404).json({ message: 'Listing not found' });
+    res.json(listing);
+  } catch (error) {
+    console.error('Error updating listing status:', error);
+    res.status(500).json({ message: 'Error changing listing status' });
+  }
+});
+
 // Delete listing
 router.delete('/listings/:id', async (req, res) => {
   try {
     const listing = await Listing.findByIdAndDelete(req.params.id);
-    
-    if (!listing) {
-      return res.status(404).json({ message: 'Listing not found' });
-    }
-    
+    if (!listing) return res.status(404).json({ message: 'Listing not found' });
     res.json({ message: 'Listing deleted successfully' });
   } catch (error) {
     console.error('Error deleting listing:', error);
@@ -235,25 +278,47 @@ router.delete('/listings/:id', async (req, res) => {
   }
 });
 
-// Update listing status (approve/reject)
-router.put('/listings/:id/status', async (req, res) => {
+// ==================== 🆕 TRANSACTIONS HANDLING ====================
+
+// Fetch full transaction historical tracking list
+router.get('/transactions', async (req, res) => {
   try {
-    const { status } = req.body; // 'active', 'pending', 'rejected', 'sold'
-    
-    const listing = await Listing.findByIdAndUpdate(
-      req.params.id,
-      { status },
-      { new: true }
-    ).populate('seller', 'username email');
-    
-    if (!listing) {
-      return res.status(404).json({ message: 'Listing not found' });
-    }
-    
-    res.json(listing);
+    const transactions = await Transaction.find({})
+      .populate('buyerId', 'username email')
+      .populate('sellerId', 'username email')
+      .populate('listingId', 'year make model price')
+      .sort({ createdAt: -1 });
+    res.json(transactions);
   } catch (error) {
-    console.error('Error updating listing:', error);
-    res.status(500).json({ message: 'Error updating listing' });
+    console.error('Error processing audit profiles:', error);
+    res.status(500).json({ message: 'Internal validation failed' });
+  }
+});
+
+// Handle incoming Proof of Off-Platform Transaction Submission
+router.post('/transactions/approve-proof', async (req, res) => {
+  const { listingId, buyerId, sellerId, finalPrice, notes, proofUrl } = req.body;
+  try {
+    const tx = new Transaction({
+      listingId,
+      buyerId,
+      sellerId,
+      finalPrice,
+      notes,
+      proofUrl,
+      status: 'approved'
+    });
+    await tx.save();
+
+    // Cascading updates across adjacent structures
+    await Listing.findByIdAndUpdate(listingId, { status: 'sold' });
+    await User.findByIdAndUpdate(buyerId, { $inc: { buyerCount: 1 } });
+    await User.findByIdAndUpdate(sellerId, { $inc: { sellerCount: 1 } });
+
+    res.status(201).json({ success: true, tx });
+  } catch (error) {
+    console.error('Error processing pipeline signature logging:', error);
+    res.status(400).json({ message: 'Validation parse failure on input credentials' });
   }
 });
 
@@ -269,19 +334,6 @@ router.get('/faqs', async (req, res) => {
   } catch (error) {
     console.error('Error fetching FAQs:', error);
     res.status(500).json({ message: 'Error fetching FAQs' });
-  }
-});
-
-// Get unanswered questions
-router.get('/faqs/unanswered', async (req, res) => {
-  try {
-    const questions = await FAQ.find({ answered: false })
-      .populate('askedBy', 'username email')
-      .sort({ createdAt: -1 });
-    res.json(questions);
-  } catch (error) {
-    console.error('Error fetching questions:', error);
-    res.status(500).json({ message: 'Error fetching questions' });
   }
 });
 
@@ -302,10 +354,7 @@ router.put('/faqs/:id/answer', async (req, res) => {
       { new: true }
     ).populate('askedBy', 'username email');
     
-    if (!faq) {
-      return res.status(404).json({ message: 'Question not found' });
-    }
-    
+    if (!faq) return res.status(404).json({ message: 'Question not found' });
     res.json(faq);
   } catch (error) {
     console.error('Error answering question:', error);
@@ -317,11 +366,7 @@ router.put('/faqs/:id/answer', async (req, res) => {
 router.delete('/faqs/:id', async (req, res) => {
   try {
     const faq = await FAQ.findByIdAndDelete(req.params.id);
-    
-    if (!faq) {
-      return res.status(404).json({ message: 'FAQ not found' });
-    }
-    
+    if (!faq) return res.status(404).json({ message: 'FAQ not found' });
     res.json({ message: 'FAQ deleted successfully' });
   } catch (error) {
     console.error('Error deleting FAQ:', error);
@@ -333,17 +378,8 @@ router.delete('/faqs/:id', async (req, res) => {
 router.put('/faqs/:id/publish', async (req, res) => {
   try {
     const { published } = req.body;
-    
-    const faq = await FAQ.findByIdAndUpdate(
-      req.params.id,
-      { published },
-      { new: true }
-    );
-    
-    if (!faq) {
-      return res.status(404).json({ message: 'FAQ not found' });
-    }
-    
+    const faq = await FAQ.findByIdAndUpdate(req.params.id, { published }, { new: true });
+    if (!faq) return res.status(404).json({ message: 'FAQ not found' });
     res.json(faq);
   } catch (error) {
     console.error('Error updating FAQ:', error);
