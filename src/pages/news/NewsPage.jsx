@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Newspaper, Clock, TrendingUp, Filter, Search, Calendar, ArrowUpRight } from 'lucide-react';
+import { Newspaper, Clock, TrendingUp, Filter, Search, Calendar, ArrowUpRight, Award } from 'lucide-react';
 import { API_BASE_URL } from '../../config/api';
 import '../../styles/News.css';
 
@@ -12,31 +12,18 @@ const NewsPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
 
-  // Categories optimized strictly for automotive segments
-  const categories = ['all', 'electric', 'luxury', 'racing', 'tech', 'industry', 'ny-local'];
+  // Integrated premium auction tracking directly into category segment chips
+  const categories = ['all', 'Bring a Trailer', 'Jalopnik', 'Cars & Bids', 'electric', 'ny-local'];
 
   useEffect(() => {
     const fetchNews = async () => {
       try {
         setLoading(true);
         const response = await fetch(`${API_BASE_URL}/api/news/car-news`);
-        
-        if (!response.ok) {
-          throw new Error('Failed to fetch news');
-        }
-        
+        if (!response.ok) throw new Error('Failed to fetch news');
         const data = await response.json();
-        
-        // Strictly ensure only car-related content passes onto the client state
-        const carKeywords = ['car', 'auto', 'vehicle', 'motor', 'ev', 'suv', 'truck', 'sedan', 'automotive', 'speed', 'drive'];
-        const strictlyCars = data.filter(article => {
-          const content = `${article.title} ${article.description || ''}`.toLowerCase();
-          return carKeywords.some(keyword => content.includes(keyword));
-        });
-
-        console.log(`✅ Fetched & strict-filtered ${strictlyCars.length} automotive articles`); 
-        setNews(strictlyCars);
-        setFilteredNews(strictlyCars);
+        setNews(data);
+        setFilteredNews(data);
       } catch (error) {
         console.error('Error fetching news:', error);
         setError(error.message);
@@ -44,52 +31,73 @@ const NewsPage = () => {
         setLoading(false);
       }
     };
-
     fetchNews();
   }, []);
 
-  // Filter news based on search and category
-  useEffect(() => {
-    let filtered = news;
+  // Filter news based on search, category selection, or premium publication source match
+// Filter news based on search, category selection, and strict vehicle relevancy
+useEffect(() => {
+  let filtered = news;
 
-    // Search filter
-    if (searchQuery) {
-      filtered = filtered.filter(article =>
-        article.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        article.description?.toLowerCase().includes(searchQuery.toLowerCase())
-      );
+  // 1. STRICT ENTHUSIAST FILTER: Eliminate generic/tangential news streams
+  const strictCarKeywords = ['car', 'auto', 'vehicle', 'motor', 'ev', 'suv', 'truck', 'sedan', 'porsche', 'bmw', 'nissan', 'toyota', 'hypercar', 'supercar', 'auction', 'drive', 'speed', 'wheels', 'horsepower', 'dealership'];
+  
+  filtered = filtered.filter(article => {
+    const title = (article.title || '').toLowerCase();
+    const description = (article.description || '').toLowerCase();
+    const source = (article.source?.name || '').toLowerCase();
+
+    // Instantly pass premium sources requested by the client
+    if (['bring a trailer', 'jalopnik', 'cars & bids', 'car and driver', 'motortrend', 'road & track'].some(src => source.includes(src))) {
+      return true;
     }
 
-    // Category filter (including handling for regional NY tracking keywords)
-    if (selectedCategory !== 'all') {
-      filtered = filtered.filter(article => {
-        const content = `${article.title} ${article.description || ''}`.toLowerCase();
-        if (selectedCategory === 'ny-local') {
-          return content.includes('new york') || content.includes('ny') || content.includes('nyc');
-        }
-        return content.includes(selectedCategory);
-      });
-    }
+    // Otherwise, require at least TWO distinct car keywords to bypass generic environmental or geopolitical wire pollution
+    const matchCount = strictCarKeywords.reduce((count, word) => {
+      return count + (title.includes(word) || description.includes(word) ? 1 : 0);
+    }, 0);
 
-    setFilteredNews(filtered);
-  }, [searchQuery, selectedCategory, news]);
+    return matchCount >= 2;
+  });
 
-  const getArticleImage = (article) => {
-    return article.urlToImage || article.image || article.imageUrl || 
-           'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=600&h=400&fit=crop';
+  // 2. Apply Text Search Filter
+  if (searchQuery) {
+    filtered = filtered.filter(article =>
+      article.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      article.description?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }
+
+  // 3. Apply Category Tab Selection
+  if (selectedCategory !== 'all') {
+    filtered = filtered.filter(article => {
+      const content = `${article.title} ${article.description || ''}`.toLowerCase();
+      const sourceName = (article.source?.name || '').toLowerCase();
+      
+      if (selectedCategory === 'ny-local') {
+        return content.includes('new york') || content.includes('ny') || content.includes('nyc');
+      }
+      if (['bring a trailer', 'jalopnik', 'cars & bids'].includes(selectedCategory.toLowerCase())) {
+        return sourceName.includes(selectedCategory.toLowerCase());
+      }
+      return content.includes(selectedCategory.toLowerCase());
+    });
+  }
+
+  setFilteredNews(filtered);
+}, [searchQuery, selectedCategory, news]);
+
+  // Helper function to return dynamic highlight classes for custom client requirements
+  const getSourceBadgeClass = (sourceName) => {
+    const name = sourceName.toLowerCase();
+    if (name.includes('trailer')) return 'badge-bat';
+    if (name.includes('jalopnik')) return 'badge-jalopnik';
+    if (name.includes('bids')) return 'badge-carsandbids';
+    return 'badge-standard';
   };
 
-  const getArticleDescription = (article) => {
-    const desc = article.description || article.summary || article.excerpt || article.content || '';
-    
-    if (desc && desc.trim().length > 0) {
-      return desc
-        .replace(/\[.*?\]/g, '')
-        .replace(/<[^>]*>/g, '')
-        .trim();
-    }
-    
-    return 'Click to read this automotive news story.';
+  const getArticleImage = (article) => {
+    return article.urlToImage || 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=600&h=400&fit=crop';
   };
 
   const truncateText = (text, maxLength) => {
@@ -100,62 +108,36 @@ const NewsPage = () => {
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     const now = new Date();
-    const diffTime = Math.abs(now - date);
-    const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-
-    if (diffHours < 1) {
-      return 'Just now';
-    } else if (diffHours < 24) {
-      return `${diffHours}h ago`;
-    } else if (diffDays === 1) {
-      return 'Yesterday';
-    } else if (diffDays < 7) {
-      return `${diffDays}d ago`;
-    } else {
-      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-    }
+    const diffHours = Math.floor(Math.abs(now - date) / (1000 * 60 * 60));
+    if (diffHours < 24) return `${diffHours || 1}h ago`;
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 
   return (
     <div className="news-page">
-      {/* Hero Header - Contextualized to NY */}
       <section className="news-hero">
         <div className="news-hero-content">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="hero-text"
-          >
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="hero-text">
             <div className="hero-badge">
-              <Newspaper size={18} />
-              <span>NY METRO AUTOMOTIVE NEWS</span>
+              <Award size={18} />
+              <span>LIVE AUTOMOTIVE APIS & AUCTIONS</span>
             </div>
-            <h1>Automotive Feed</h1>
-            <p>The latest vehicle launches, automotive trends, and local car updates across New York</p>
+            <h1>Premium Feed</h1>
+            <p>Aggregated insight tracking across Bring a Trailer, Jalopnik, Cars & Bids, and regional New York networks</p>
           </motion.div>
         </div>
       </section>
 
-      {/* Search and Filter Bar */}
       <section className="news-controls">
         <div className="controls-container">
           <div className="search-box">
             <Search size={20} />
             <input
               type="text"
-              placeholder="Search automotive articles..."
+              placeholder="Filter premium streams..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
-            {searchQuery && (
-              <button 
-                className="clear-search"
-                onClick={() => setSearchQuery('')}
-              >
-                ✕
-              </button>
-            )}
           </div>
 
           <div className="category-filters">
@@ -166,74 +148,28 @@ const NewsPage = () => {
                 className={`filter-btn ${selectedCategory === category ? 'active' : ''}`}
                 onClick={() => setSelectedCategory(category)}
               >
-                {category === 'ny-local' ? 'NY Local' : category.charAt(0).toUpperCase() + category.slice(1)}
+                {category === 'ny-local' ? 'NY Local' : category}
               </button>
             ))}
-          </div>
-
-          <div className="results-count">
-            Showing <strong>{filteredNews.length}</strong> of <strong>{news.length}</strong> articles
           </div>
         </div>
       </section>
 
-      {/* News Grid */}
       <section className="news-content-section">
         <div className="news-container">
           {loading ? (
-            <div className="news-grid">
-              {[...Array(20)].map((_, i) => (
-                <div key={i} className="news-article-skeleton">
-                  <div className="skeleton-img"></div>
-                  <div className="skeleton-body">
-                    <div className="skeleton-source"></div>
-                    <div className="skeleton-title"></div>
-                    <div className="skeleton-desc"></div>
-                    <div className="skeleton-desc"></div>
-                    <div className="skeleton-desc short"></div>
-                    <div className="skeleton-meta"></div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : error ? (
-            <div className="news-error-state">
-              <Newspaper size={64} />
-              <h3>Unable to load automotive news</h3>
-              <p>{error}</p>
-              <button onClick={() => window.location.reload()}>Try Again</button>
-            </div>
-          ) : filteredNews.length === 0 ? (
-            <div className="news-empty-state">
-              <Search size={64} />
-              <h3>No automotive articles found</h3>
-              <p>Try adjusting your search terms or filters</p>
-              <button onClick={() => { setSearchQuery(''); setSelectedCategory('all'); }}>
-                Clear Filters
-              </button>
-            </div>
+            <div className="loading-placeholder">Loading live streams...</div>
           ) : (
             <div className="news-grid">
               {filteredNews.map((article, idx) => (
                 <motion.article
                   key={`${article.url}-${idx}`}
                   className="news-article-card"
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: Math.min(idx * 0.03, 0.6) }}
+                  whileHover={{ y: -5 }}
                   onClick={() => window.open(article.url, '_blank')}
                 >
                   <div className="article-image">
-                    <img
-                      src={getArticleImage(article)}
-                      alt={article.title}
-                      onError={(e) => {
-                        e.target.src = 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=600&h=400&fit=crop';
-                      }}
-                    />
-                    <div className="article-overlay">
-                      <ArrowUpRight size={20} />
-                    </div>
+                    <img src={getArticleImage(article)} alt={article.title} />
                     <div className="article-date-badge">
                       <Clock size={14} />
                       {formatDate(article.publishedAt)}
@@ -241,53 +177,22 @@ const NewsPage = () => {
                   </div>
 
                   <div className="article-content">
-                    <div className="article-source">
-                      {article.source?.name || 'Automotive Source'}
+                    {/* Render custom dynamic brand badge */}
+                    <div className={`article-source-tag ${getSourceBadgeClass(article.source?.name)}`}>
+                      {article.source?.name}
                     </div>
                     
-                    <h2 className="article-title">
-                      {article.title}
-                    </h2>
-                    
-                    <p className="article-description">
-                      {truncateText(getArticleDescription(article), 160)}
-                    </p>
+                    <h2 className="article-title">{article.title}</h2>
+                    <p className="article-description">{truncateText(article.description, 150)}</p>
 
                     <div className="article-footer">
-                      <span className="read-more">
-                        Read Full Article →
-                      </span>
+                      <span className="read-more">View Live Metrics <ArrowUpRight size={14} /></span>
                     </div>
                   </div>
                 </motion.article>
               ))}
             </div>
           )}
-        </div>
-      </section>
-
-      {/* Stats Footer */}
-      <section className="news-stats">
-        <div className="stat-card">
-          <Newspaper size={24} />
-          <div className="stat-info">
-            <span className="stat-number">{news.length}</span>
-            <span className="stat-label">Car Articles</span>
-          </div>
-        </div>
-        <div className="stat-card">
-          <TrendingUp size={24} />
-          <div className="stat-info">
-            <span className="stat-number">{filteredNews.length}</span>
-            <span className="stat-label">Matching Views</span>
-          </div>
-        </div>
-        <div className="stat-card">
-          <Calendar size={24} />
-          <div className="stat-info">
-            <span className="stat-number">24/7</span>
-            <span className="stat-label">Tri-State Coverage</span>
-          </div>
         </div>
       </section>
     </div>
