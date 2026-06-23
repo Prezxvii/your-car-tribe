@@ -28,10 +28,22 @@ const storage = new CloudinaryStorage({
 
 const upload = multer({ storage });
 
+// Wrapper middleware to intercept and handle fatal Multer/Cloudinary stream crashes safely
+const safeUploadMiddleware = (req, res, next) => {
+  upload.array('photos')(req, res, (err) => {
+    if (err) {
+      console.error("❌ MULTER/CLOUDINARY MIDDLEWARE CRASH:", err.message);
+      // Fallback gracefully so the route can still process text fields
+      req.multerError = err.message;
+    }
+    next();
+  });
+};
+
 // ==========================================================================
-// CREATE A LISTING (ROBUST FALLBACKS ADDED)
+// CREATE A LISTING
 // ==========================================================================
-router.post('/submit', upload.array('photos'), async (req, res) => {
+router.post('/submit', safeUploadMiddleware, async (req, res) => {
   try {
     console.log('=== SUBMIT REACHED ===');
 
@@ -51,6 +63,14 @@ router.post('/submit', upload.array('photos'), async (req, res) => {
 
     if (!currentUser) {
       return res.status(401).json({ error: 'User profile not found' });
+    }
+
+    // Safely extract paths from Cloudinary files array if multer succeeded
+    let photoUrls = [];
+    if (!req.multerError && req.files?.length > 0) {
+      photoUrls = req.files.map(f => f.path || f.secure_url || f.url);
+    } else {
+      photoUrls = ['https://placehold.co/600x400?text=No+Image'];
     }
 
     const { year, make, model, price, miles, location, description, titleStatus, tag, highlights, specs } = req.body;
@@ -76,12 +96,6 @@ router.post('/submit', upload.array('photos'), async (req, res) => {
     const parsedPrice = parseFloat(String(price).replace(/[^0-9.]/g, '')) || 0;
     const cleanMiles = miles ? String(miles).replace(/[^0-9]/g, '') : '0';
 
-    // Safely extract paths from Cloudinary files array
-    const photoUrls = req.files?.length > 0 
-      ? req.files.map(f => f.path || f.secure_url || f.url) 
-      : ['https://placehold.co/600x400?text=No+Image'];
-
-    // Enforce matching fields with schema requirements strictly
     const listingPayload = {
       year:        parsedYear,
       make:        make        || 'Unknown Make',
