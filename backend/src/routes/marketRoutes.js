@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose'); 
 const multer = require('multer');
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const cloudinary = require('cloudinary').v2;
@@ -52,35 +53,24 @@ router.post('/submit', upload.array('photos'), async (req, res) => {
       return res.status(401).json({ error: 'User not found' });
     }
 
-    console.log('user verified:', currentUser._id);
-
     const { year, make, model, price, miles, location, description, titleStatus, tag, highlights, specs } = req.body;
 
     let parsedHighlights = [];
     let parsedSpecs = {};
 
     try {
-      parsedHighlights = highlights
-        ? (Array.isArray(highlights) ? highlights : JSON.parse(highlights))
-        : [];
+      parsedHighlights = highlights ? (Array.isArray(highlights) ? highlights : JSON.parse(highlights)) : [];
     } catch (e) { console.error('highlights parse error:', e.message); }
 
     try {
-      parsedSpecs = specs
-        ? (typeof specs === 'object' && !Array.isArray(specs) ? specs : JSON.parse(specs))
-        : {};
+      parsedSpecs = specs ? (typeof specs === 'object' && !Array.isArray(specs) ? specs : JSON.parse(specs)) : {};
     } catch (e) { console.error('specs parse error:', e.message); }
 
     const parsedYear = parseInt(String(year).replace(/[^0-9]/g, ''), 10) || new Date().getFullYear();
     const parsedPrice = parseFloat(String(price).replace(/[^0-9.]/g, '')) || 0;
     const cleanMiles = String(miles).replace(/[^0-9]/g, '') || '0';
 
-    // Real Cloudinary URLs from uploaded files
-    const photoUrls = req.files?.length > 0
-      ? req.files.map(f => f.path)
-      : ['https://placehold.co/600x400?text=No+Image'];
-
-    console.log('Photos uploaded to Cloudinary:', photoUrls);
+    const photoUrls = req.files?.length > 0 ? req.files.map(f => f.path) : ['https://placehold.co/600x400?text=No+Image'];
 
     const listingPayload = {
       year:        parsedYear,
@@ -96,14 +86,11 @@ router.post('/submit', upload.array('photos'), async (req, res) => {
       specs:       parsedSpecs,
       images:      photoUrls,
       status:      'active',
-      // FIX: Matches your Schema definition (direct reference, not object mapping)
       seller:      currentUser._id 
     };
 
     const newListing = new Listing(listingPayload);
     await newListing.save();
-
-    console.log('=== LISTING SAVED SUCCESSFULLY ===');
 
     return res.status(201).json({
       success: true,
@@ -112,10 +99,7 @@ router.post('/submit', upload.array('photos'), async (req, res) => {
     });
 
   } catch (error) {
-    console.error('SUBMIT ERROR:', error.name, '-', error.message);
-    if (error.name === 'ValidationError') {
-      return res.status(400).json({ error: 'Validation failed', details: error.message });
-    }
+    console.error('SUBMIT ERROR:', error.message);
     return res.status(500).json({ error: 'Server error', details: error.message });
   }
 });
@@ -159,7 +143,6 @@ router.get('/listing/:id', async (req, res) => {
       }
     } else {
       if (id.match(/^[0-9a-fA-F]{24}$/)) {
-        // FIXED: Added .populate('seller') so your frontend profile widget works smoothly
         listing = await Listing.findById(id).populate('seller', 'username personalName avatar interests knowWhats');
       } else {
         return res.status(400).json({ message: "Invalid listing ID format" });
@@ -187,7 +170,7 @@ router.post('/listing/:id/review', async (req, res) => {
     }
 
     if (!username || !rating || !comment) {
-      return res.status(400).json({ error: "Missing required review payload elements" });
+      return res.status(400).json({ error: "Missing required review fields" });
     }
 
     const listing = await Listing.findById(id);
@@ -195,28 +178,49 @@ router.post('/listing/:id/review', async (req, res) => {
       return res.status(404).json({ error: "Vehicle dossier not found" });
     }
 
-    // Try to find the actual user to fulfill the schema's required userId field
     const numericRating = Number(rating);
-    const userDoc = await User.findOne({ username });
+
+    // Find the actual user template database row
+    let finalUserId = new mongoose.Types.ObjectId(); 
+    let finalAvatar = "";
+
+    try {
+      const userDoc = await User.findOne({ username });
+      if (userDoc) {
+        finalUserId = userDoc._id;
+        finalAvatar = userDoc.avatar || "";
+      }
+    } catch (userErr) {
+      console.log("Non-critical user reference lookup bypass.");
+    }
     
+    // BUILD TARGET: Explicitly matches all properties expected by reviewSchema layout
     const targetReview = {
-      userId: userDoc ? userDoc._id : new require('mongoose').Types.ObjectId(), // Fallback placeholder if missing
-      username,
+      userId: finalUserId,
+      username: String(username),
+      userAvatar: finalAvatar, // <-- Added to perfectly align with your Schema validation
       tribe: tribe || 'Enthusiast',
       rating: isNaN(numericRating) ? 5 : numericRating,
-      comment
+      comment: String(comment)
     };
 
     listing.reviews.push(targetReview);
     
-    // Triggers schema calculations automatically
+    // Attempt document persistence save rewrite
     await listing.save();
 
-    // Returns the fresh listing document containing the new data structure array
-    return res.status(201).json(listing);
+    // Re-populate the seller data before returning to frontend so user widgets don't break
+    const updatedListing = await Listing.findById(id).populate('seller', 'username personalName avatar interests knowWhats');
+
+    return res.status(201).json(updatedListing);
   } catch (err) {
-    console.error("Review creation endpoint breakdown:", err);
-    return res.status(500).json({ error: "Could not post verification recommendation to document." });
+    // CRITICAL: This logs the exact path property that failed validation directly to your console
+    console.error("❌ CRITICAL DB VALIDATION FAILURE DETAILS:", err);
+    return res.status(500).json({ 
+      error: "Could not post verification recommendation.", 
+      message: err.message,
+      validationErrors: err.errors ? Object.keys(err.errors) : null 
+    });
   }
 });
 

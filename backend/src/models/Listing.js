@@ -2,11 +2,10 @@ const mongoose = require('mongoose');
 
 // ─── REVIEW SCHEMA ───
 const reviewSchema = new mongoose.Schema({
-  // Relink user to their actual account instead of hardcoded strings
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   username: { type: String, required: true },
   userAvatar: { type: String },
-  tribe: { type: String }, // e.g., 'JDM', 'Euro'
+  tribe: { type: String }, 
   rating: { type: Number, required: true, min: 1, max: 5 },
   comment: { type: String, required: true },
   createdAt: { type: Date, default: Date.now }
@@ -18,11 +17,10 @@ const listingSchema = new mongoose.Schema({
   make: { type: String, required: true },
   model: { type: String, required: true },
   price: { type: Number, required: true },
-  miles: { type: String, required: true }, // Tip: If you want to filter/sort by miles, change this to Number
+  miles: { type: String, required: true }, 
   location: { type: String, required: true },
   zipCode: { type: String },
   
-  // Technical categorization
   tag: { type: String, enum: ['JDM', 'EURO', 'MUSCLE', '4X4', 'CLASSIC', 'OTHER'], default: 'OTHER' },
   titleStatus: { type: String, default: 'Clean' }, 
   
@@ -44,7 +42,6 @@ const listingSchema = new mongoose.Schema({
   reviews: [reviewSchema],
   averageRating: { type: Number, default: 0 },
 
-  // Refactored to point directly to the User collection for perfect aggregation and populate execution
   seller: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
@@ -57,15 +54,19 @@ const listingSchema = new mongoose.Schema({
     default: 'pending' 
   }
 }, { 
-  timestamps: true // Automatically handles clean createdAt and updatedAt variations for tables
+  timestamps: true 
 });
 
-// ─── AUTOMATED AGGREGATIONS ───
-// Fixed hook logic ensuring calculations complete gracefully before writes
+// ─── AUTOMATED AGGREGATIONS (FIXED & CASTED SAFE) ───
 listingSchema.pre('save', function(next) {
   if (this.reviews && this.reviews.length > 0) {
-    const total = this.reviews.reduce((acc, item) => item.rating + acc, 0);
-    this.averageRating = parseFloat((total / this.reviews.length).toFixed(1));
+
+    const total = this.reviews.reduce((acc, item) => {
+      const r = Number(item.rating) || 0;
+      return acc + r;
+    }, 0);
+    
+    this.averageRating = parseFloat((total / this.reviews.length).toFixed(1)) || 0;
   } else {
     this.averageRating = 0;
   }
