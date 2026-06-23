@@ -118,36 +118,58 @@ const MechanicPage = () => {
               exit={{ y: 50, opacity: 0 }}
               onClick={e => e.stopPropagation()}
             >
-              <button className="close-modal" onClick={() => setSelectedShop(null)}><X size={20}/></button>
+              <button className="close-modal" onClick={() => setSelectedShop(null)}><X size={18}/></button>
               
-              <div className="modal-header">
-                <div className="verified-badge-large"><ShieldCheck size={16} /> Tribe Verified</div>
-                <h2>{selectedShop.name}</h2>
-                <span className="specialty-pill">{selectedShop.specialty}</span>
-                <a href={`tel:${selectedShop.phone.replace(/\D/g, '')}`} className="modal-phone">
-                  <Phone size={16}/> {selectedShop.phone}
-                </a>
+              {/* Refactored Clean Header Profile Row */}
+              <div className="modal-header-profile">
+                <div className="profile-brand-block">
+                  <span className="badge-verified"><ShieldCheck size={13} /> Tribe Verified</span>
+                  <h2>{selectedShop.name}</h2>
+                  <span className="specialty-label-sub">{selectedShop.specialty}</span>
+                </div>
+                
+                <div className="profile-contact-meta">
+                  <a href={`tel:${selectedShop.phone?.replace(/\D/g, '')}`} className="phone-link">
+                    <Phone size={14}/> <span>{selectedShop.phone}</span>
+                  </a>
+                </div>
               </div>
 
+              {/* Enhanced Symmetrical Grid */}
               <div className="modal-grid">
-                <div className="modal-main">
-                  <h3><Info size={18} className="text-blue" /> About</h3>
-                  <p>{selectedShop.about}</p>
-                  <h3><Wrench size={18} className="text-blue" /> Recent Projects</h3>
-                  <div className="project-tags">
-                    {selectedShop.projects && selectedShop.projects.length > 0 ? (
-                      selectedShop.projects.map(p => (
-                        <span key={p} className="project-tag"><Wrench size={14}/> {p}</span>
-                      ))
-                    ) : <span>No projects recorded yet.</span>}
+                <div className="modal-main-content">
+                  <div className="content-section">
+                    <h3><Info size={16} className="text-blue" /> About</h3>
+                    <p>{selectedShop.about}</p>
+                  </div>
+
+                  <div className="content-section">
+                    <h3><Wrench size={16} className="text-blue" /> Recent Projects</h3>
+                    <div className="project-list">
+                      {selectedShop.projects && selectedShop.projects.length > 0 ? (
+                        selectedShop.projects.map((p, index) => (
+                          <div key={index} className="project-list-item">
+                            <Wrench size={13} className="item-icon" />
+                            <span>{p}</span>
+                          </div>
+                        ))
+                      ) : <span className="no-projects">No projects recorded yet.</span>}
+                    </div>
                   </div>
                 </div>
-                <div className="modal-side">
-                  <div className="stat-card">
+
+                <div className="modal-side-panel">
+                  <div className="metric-tile">
                     <Clock size={20} className="text-blue" />
-                    <div><strong>Turnaround</strong><p>Avg. 3-5 Days</p></div>
+                    <div>
+                      <h4>Turnaround</h4>
+                      <p>Avg. 3-5 Days</p>
+                    </div>
                   </div>
-                  <button className="btn-contact full-width"><MessageSquare size={18}/> Request Quote</button>
+                  <button className="btn-contact full-width">
+                    <MessageSquare size={16}/> 
+                    <span>Request Quote</span>
+                  </button>
                 </div>
               </div>
             </motion.div>

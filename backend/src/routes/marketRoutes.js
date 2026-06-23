@@ -247,4 +247,66 @@ router.post('/listing/:id/review', async (req, res) => {
   }
 });
 
+// ==========================================================================
+// UPDATE AN EXISTING RECOMMENDATION / REVIEW (INLINE EDIT)
+// ==========================================================================
+router.put('/listing/:id/review/:reviewId', async (req, res) => {
+  try {
+    const { id, reviewId } = req.params;
+    const { rating, comment } = req.body;
+
+    if (!id.match(/^[0-9a-fA-F]{24}$/) || !reviewId.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({ error: "Invalid format detected for parameters." });
+    }
+
+    const listing = await Listing.findById(id);
+    if (!listing) {
+      return res.status(404).json({ error: "Vehicle dossier not found." });
+    }
+
+    // Access individual review subdocument directly using Mongoose array helpers
+    const review = listing.reviews.id(reviewId);
+    if (!review) {
+      return res.status(404).json({ error: "Target recommendation entry could not be located." });
+    }
+
+    // Apply inline updates
+    if (rating !== undefined) review.rating = Number(rating);
+    if (comment !== undefined) review.comment = String(comment);
+
+    await listing.save();
+    return res.json({ reviews: listing.reviews });
+  } catch (err) {
+    console.error("❌ REVIEW EDIT SYSTEM ROUTE EXCEPTION:", err);
+    return res.status(500).json({ error: "Engine execution error updating observation files." });
+  }
+});
+
+// ==========================================================================
+// REMOVE / DELETE A RECOMMENDATION FROM DOSSIER
+// ==========================================================================
+router.delete('/listing/:id/review/:reviewId', async (req, res) => {
+  try {
+    const { id, reviewId } = req.params;
+
+    if (!id.match(/^[0-9a-fA-F]{24}$/) || !reviewId.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({ error: "Invalid format detected for parameters." });
+    }
+
+    const listing = await Listing.findById(id);
+    if (!listing) {
+      return res.status(404).json({ error: "Vehicle dossier not found." });
+    }
+
+    // Pull out subdocument out of model instance array list cleanly
+    listing.reviews.pull({ _id: reviewId });
+    await listing.save();
+
+    return res.json({ reviews: listing.reviews });
+  } catch (err) {
+    console.error("❌ REVIEW DELETION SYSTEM ROUTE EXCEPTION:", err);
+    return res.status(500).json({ error: "Engine execution error executing target removal block." });
+  }
+});
+
 module.exports = router;

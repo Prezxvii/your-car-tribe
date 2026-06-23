@@ -10,7 +10,6 @@
   margin-bottom: 40px; 
 }
 
-/* Layout wrapper row to structure layout balance cleanly */
 .header-flex-row {
   display: flex;
   justify-content: space-between;
@@ -33,7 +32,6 @@
   color: #64748b;
 }
 
-/* Modern styling for the new Add Shop Trigger Action Button */
 .btn-add-shop {
   display: inline-flex;
   align-items: center;
@@ -129,27 +127,26 @@
 .btn-view-profile { flex: 1; background: #1a1a1a; color: white; border: none; padding: 12px; border-radius: 12px; font-weight: 700; cursor: pointer; }
 .btn-icon-call { display: flex; align-items: center; justify-content: center; background: #f1f5f9; color: #1a1a1a; border: none; padding: 12px; border-radius: 12px; cursor: pointer; text-decoration: none; }
 
-/* --- MODAL (CLEANED & ENHANCED VIEWPORT CENTERING) --- */
+/* --- MODAL WRAPPERS & SCROLLBAR --- */
 .modal-overlay {
   position: fixed; 
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(15, 23, 42, 0.45); /* Premium slate-tinted translucent curtain shadow */
-  backdrop-filter: blur(8px);        /* Soft organic environment backdrop blur */
-  z-index: 9999;                      /* Forces absolute prioritization stack order layer */
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(8px);       
+  z-index: 9999;                      
   display: flex; 
-  align-items: center;               /* Forces dynamic absolute vertical screen centering */
-  justify-content: center;           /* Forces dynamic absolute horizontal screen centering */
+  align-items: center;               
+  justify-content: center;           
   padding: 24px;
 }
 
-/* --- MODAL (SCROLLBAR FIXES FOR PERFECT BORDER RADIUS INTEGRATION) --- */
 .shop-modal {
   background: white; 
   width: 100%; 
-  max-width: 620px; 
+  max-width: 660px; 
   border-radius: 28px; 
   padding: 36px; 
   position: relative;
@@ -157,36 +154,19 @@
   max-height: 85vh;
   overflow-y: auto;
   border: 1px solid rgba(241, 245, 249, 0.8);
-  
-  /* Crucial fix: Prevents custom scrollbar tracks from bleeding out over the border radius corners */
   overflow-x: hidden;
   clip-path: inset(0% 0% 0% 0% round 28px); 
 }
 
-/* Thinned down and tucked inward to perfectly align with your inputs */
-.shop-modal::-webkit-scrollbar {
-  width: 14px; /* Slightly wider track allows margin breathing room */
-}
-
-.shop-modal::-webkit-scrollbar-track {
-  background: transparent;
-  /* Adds padding to top/bottom/sides so the scrollbar never hits the raw outer edges */
-  margin: 16px 4px 16px 0; 
-}
-
+.shop-modal::-webkit-scrollbar { width: 14px; }
+.shop-modal::-webkit-scrollbar-track { background: transparent; margin: 16px 4px 16px 0; }
 .shop-modal::-webkit-scrollbar-thumb {
   background: #cbd5e1;
   border-radius: 20px;
-  /* Creates a floating scrollbar thumb effect that sits neatly inside the modal padding grid */
   border: 4px solid transparent;
   background-clip: padding-box;
 }
-
-.shop-modal::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
-  border: 4px solid transparent;
-  background-clip: padding-box;
-}
+.shop-modal::-webkit-scrollbar-thumb:hover { background: #94a3b8; border: 4px solid transparent; background-clip: padding-box; }
 
 .close-modal { 
   position: absolute; 
@@ -202,49 +182,205 @@
   justify-content: center;
   color: #64748b;
   transition: all 0.2s ease-in-out;
+  z-index: 10;
 }
+.close-modal:hover { background: #e2e8f0; color: #1e293b; transform: scale(1.05); }
 
-.close-modal:hover {
-  background: #e2e8f0;
-  color: #1e293b;
-  transform: scale(1.05);
-}
-
-.modal-header {
+/* --- BRAND NEW REFACTORED VIEW PROFILE DESIGN --- */
+.modal-header-profile {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 20px;
   margin-bottom: 24px;
 }
 
-.modal-header h2 { 
-  font-size: 1.75rem; 
-  font-weight: 800; 
-  letter-spacing: -0.5px;
-  color: #0f172a;
-  margin: 0; 
+.profile-brand-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
+.badge-verified {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--primary-blue, #0066ff);
+  background: rgba(0, 102, 255, 0.08);
+  padding: 4px 8px;
+  border-radius: 6px;
+  width: fit-content;
+}
+
+.profile-brand-block h2 {
+  font-size: 2rem;
+  font-weight: 900;
+  color: #0f172a;
+  margin: 6px 0 2px 0;
+  letter-spacing: -0.5px;
+  line-height: 1.1;
+}
+
+.specialty-label-sub {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #64748b;
+}
+
+.profile-contact-meta {
+  padding-top: 22px;
+  margin-right: 36px;
+}
+
+.phone-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #475569;
+  font-weight: 700;
+  font-size: 0.9rem;
+  text-decoration: none;
+  background: #f8fafc;
+  padding: 8px 14px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  transition: all 0.2s;
+}
+.phone-link:hover { border-color: var(--primary-blue, #0066ff); color: var(--primary-blue, #0066ff); background: white; }
+
+/* MODAL INTERNAL SYMMETRICAL LAYOUT SPLIT */
 .modal-grid { 
   display: grid; 
   grid-template-columns: 1fr 220px; 
   gap: 30px; 
-  margin-top: 25px; 
+  margin-top: 0; 
 }
 
-.text-blue { color: var(--primary-blue, #0066ff); }
-.full-width { width: 100%; }
-.btn-contact { background: var(--primary-blue, #0066ff); color: white; border: none; padding: 14px; border-radius: 14px; font-weight: 800; cursor: pointer; margin-bottom: 10px; }
-
-/* --- SUBMISSION FORM FORM-INPUT SPECIAL STYLES --- */
-.form-adjustments {
-  max-width: 600px !important;
+.modal-main-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 }
 
-.dossier-form-grid {
+.content-section h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 10px 0;
+}
+
+.content-section p {
+  font-size: 0.95rem;
+  color: #475569;
+  line-height: 1.6;
+  font-weight: 500;
+  margin: 0;
+}
+
+/* CLEAN RECENT PROJECTS ROW ELEMENT CARDS */
+.project-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.project-list-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #334155;
+  background: #f8fafc;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid #f1f5f9;
+}
+
+.project-list-item .item-icon {
+  color: #64748b;
+  flex-shrink: 0;
+}
+
+.no-projects {
+  font-size: 0.9rem;
+  color: #94a3b8;
+  font-style: italic;
+}
+
+/* ACTION SIDEBAR METRICS */
+.modal-side-panel {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  margin-top: 20px;
 }
 
+.metric-tile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  padding: 16px;
+  border-radius: 16px;
+}
+
+.metric-tile h4 {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: #64748b;
+  font-weight: 800;
+  margin: 0;
+}
+
+.metric-tile p {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 2px 0 0 0;
+}
+
+/* PERFECTLY CENTERED ACTION BUTTON WITH VECTOR ALIGNMENT FIX */
+.btn-contact {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px; 
+  background: var(--primary-blue, #0066ff);
+  color: white;
+  border: none;
+  padding: 14px 20px;
+  border-radius: 14px;
+  font-size: 0.95rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 102, 255, 0.15);
+}
+
+.btn-contact:hover {
+  background: #0052cc;
+  box-shadow: 0 6px 16px rgba(0, 102, 255, 0.25);
+  transform: translateY(-1px);
+}
+
+.btn-contact svg {
+  flex-shrink: 0;
+}
+
+/* --- UTILITIES & FORMS --- */
+.text-blue { color: var(--primary-blue, #0066ff); }
+.full-width { width: 100%; }
+
+.form-adjustments { max-width: 600px !important; }
+.dossier-form-grid { display: flex; flex-direction: column; gap: 16px; margin-top: 20px; }
 .dossier-form-grid input,
 .dossier-form-grid select,
 .dossier-form-grid textarea {
@@ -266,13 +402,8 @@
   background: white;
   box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.1);
 }
+.dossier-form-grid textarea { min-height: 100px; resize: vertical; }
 
-.dossier-form-grid textarea {
-  min-height: 100px;
-  resize: vertical;
-}
-
-/* Loading Layout State styling hook */
 .market-loader-ui {
   display: flex;
   flex-direction: column;
@@ -284,12 +415,8 @@
   gap: 12px;
 }
 
-.spinner {
-  animation: rotate 1s linear infinite;
-  color: var(--primary-blue, #0066ff);
-}
+.spinner { animation: rotate 1s linear infinite; color: var(--primary-blue, #0066ff); }
+@keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-@keyframes rotate {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
+.no-results { text-align: center; padding: 60px; color: #94a3b8; width: 100%; grid-column: 1 / -1; }
+.no-results h3 { margin-top: 12px; color: #475569; }

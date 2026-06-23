@@ -622,3 +622,145 @@
   .main-image-wrapper { height: 350px; }
   .specs-info-grid { grid-template-columns: 1fr; }
 }
+
+/* --- INLINE CONTEXT MENU DROP ARCHITECTURE --- */
+.rec-user {
+  position: relative; /* Context positioning anchor for menu */
+}
+
+.dropdown-wrapper {
+  position: relative;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+}
+
+.btn-trigger-dropdown {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.btn-trigger-dropdown:hover {
+  background: #f1f5f9;
+  color: #1e293b;
+}
+
+.rec-action-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  box-shadow: 0 10px 25px -5px rgba(0,0,0,0.08);
+  z-index: 50;
+  min-width: 130px;
+  overflow: hidden;
+  padding: 4px;
+}
+
+.rec-action-menu button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: none;
+  padding: 8px 12px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #475569;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+}
+
+.rec-action-menu button:hover {
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+.rec-action-menu button.danger-action {
+  color: #ef4444;
+}
+
+.rec-action-menu button.danger-action:hover {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+/* --- INLINE ACTIVE REWRIITING ARCHITECTURE --- */
+.edit-review-inline-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.edit-review-inline-wrapper textarea {
+  width: 100%;
+  min-height: 80px;
+  padding: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  outline: none;
+  resize: vertical;
+  background: #fafafa;
+}
+
+.edit-review-inline-wrapper textarea:focus {
+  border-color: var(--primary-blue, #0066ff);
+  background: white;
+}
+
+.edit-action-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-save-inline {
+  background: var(--primary-blue, #0066ff);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  border-radius: 6px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-save-inline:hover {
+  background: #0052cc;
+}
+
+.btn-cancel-inline {
+  background: #f1f5f9;
+  color: #475569;
+  border: none;
+  padding: 8px 14px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  border-radius: 6px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-cancel-inline:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}

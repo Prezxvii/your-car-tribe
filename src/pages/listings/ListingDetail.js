@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { CheckCircle, MessageSquare, ChevronLeft, MapPin, ShieldCheck, X, Send, Gauge, Loader2, Info, Zap, Star, Plus } from 'lucide-react';
+import { 
+  CheckCircle, MessageSquare, ChevronLeft, MapPin, ShieldCheck, X, Send, 
+  Gauge, Loader2, Info, Zap, Star, Plus, MoreVertical, Edit2, Trash2 
+} from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 import ProfileLicense from '../../components/profile/ProfileLicense';
@@ -17,14 +20,24 @@ const ListingDetail = () => {
   const [mainImage, setMainImage] = useState('');
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const [messageText, setMessageText] = useState('');
+  const [currentUser, setCurrentUser] = useState(null);
 
   // Review System State
   const [reviews, setReviews] = useState([]);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [newReview, setNewReview] = useState({ rating: 5, comment: '' });
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+  
+  // Inline Management States for Editing & Deleting
+  const [activeDropdownIndex, setActiveDropdownIndex] = useState(null);
+  const [editingReviewId, setEditingReviewId] = useState(null);
+  const [editForm, setEditForm] = useState({ rating: 5, comment: '' });
 
   useEffect(() => {
+    // Read user securely out of local system cache
+    const storedUser = JSON.parse(localStorage.getItem('user'));
+    if (storedUser) setCurrentUser(storedUser);
+
     if (!id) return;
 
     const fetchCar = async () => {
@@ -54,11 +67,17 @@ const ListingDetail = () => {
     fetchCar();
   }, [id]);
 
+  // Click outside listener helper for dropdowns
+  useEffect(() => {
+    const closeDropdowns = () => setActiveDropdownIndex(null);
+    window.addEventListener('click', closeDropdowns);
+    return () => window.removeEventListener('click', closeDropdowns);
+  }, []);
+
+  // Form Submit Handler (Create)
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
-    const storedUser = JSON.parse(localStorage.getItem('user'));
-    
-    if (!storedUser) {
+    if (!currentUser) {
       alert("Please sign in to leave a recommendation.");
       return;
     }
@@ -66,34 +85,63 @@ const ListingDetail = () => {
     setIsSubmittingReview(true);
     try {
       const payload = {
-        username: storedUser.username,
-        tribe: Array.isArray(storedUser.tribes) && storedUser.tribes.length > 0 
-          ? storedUser.tribes[0] 
-          : (storedUser.tribe || 'Enthusiast'),
+        username: currentUser.username,
+        tribe: Array.isArray(currentUser.tribes) && currentUser.tribes.length > 0 
+          ? currentUser.tribes[0] 
+          : (currentUser.tribe || 'Enthusiast'),
         rating: Number(newReview.rating), 
         comment: String(newReview.comment)
       };
 
-      console.log("Submitting sanitized payload to market engine:", payload);
-
       const { data } = await axios.post(`${API_BASE_URL}/api/market/listing/${id}/review`, payload);
-    
-      if (data && data.reviews) {
-        setReviews(data.reviews);
-      } else if (Array.isArray(data)) {
-        setReviews(data);
-      }
-    
+      setReviews(data.reviews || data);
       setNewReview({ rating: 5, comment: '' });
       setShowReviewForm(false);
       alert("Recommendation recorded successfully!");
     } catch (err) {
-      console.error("Review submission error details:", err.response?.data || err);
-      const serverErrorMessage = err.response?.data?.message || err.response?.data?.error || "Transaction failure encountered.";
-      alert(`Error saving review: ${serverErrorMessage}`);
+      console.error("Submission anomaly detected:", err);
+      alert("Error saving review profile payload.");
     } finally {
       setIsSubmittingReview(false);
     }
+  };
+
+  // Inline Review Edit Handler (Update)
+  const handleReviewUpdate = async (e, reviewId) => {
+    e.preventDefault();
+    try {
+      // Intentionally formatted matching the validation stack
+      const payload = {
+        rating: Number(editForm.rating),
+        comment: String(editForm.comment)
+      };
+      
+      const { data } = await axios.put(`${API_BASE_URL}/api/market/listing/${id}/review/${reviewId}`, payload);
+      setReviews(data.reviews || data);
+      setEditingReviewId(null);
+      alert("Recommendation updated flawlessly.");
+    } catch (err) {
+      console.error("Failed to re-sync updated log:", err);
+      alert("Could not update review details. Please verify connections.");
+    }
+  };
+
+  // Inline Review Destruction Handler (Delete)
+  const handleReviewDelete = async (reviewId) => {
+    if (!window.confirm("Are you sure you want to permanently remove this recommendation?")) return;
+    try {
+      const { data } = await axios.delete(`${API_BASE_URL}/api/market/listing/${id}/review/${reviewId}`);
+      setReviews(data.reviews || data);
+      alert("Recommendation removed from community archive.");
+    } catch (err) {
+      console.error("Review deletion failure:", err);
+      alert("Could not complete review engine removal.");
+    }
+  };
+
+  const startEditing = (rec) => {
+    setEditingReviewId(rec._id || rec.id);
+    setEditForm({ rating: rec.rating, comment: rec.comment });
   };
 
   const handleSendMessage = () => {
@@ -275,23 +323,92 @@ const ListingDetail = () => {
 
             <div className="rec-grid">
               {reviews.length > 0 ? (
-                reviews.map((rec, i) => (
-                  <div key={i} className="rec-card">
-                    <div className="rec-user">
-                      <div className="rec-avatar">{rec.username?.[0] || 'U'}</div>
-                      <div className="rec-meta">
-                        <strong>{rec.username}</strong>
-                        <span>{rec.tribe} Tribe</span>
-                      </div>
-                      <div className="rec-stars">
-                        {[...Array(rec.rating)].map((_, starI) => (
-                          <Star key={starI} size={12} fill="#f59e0b" color="#f59e0b" />
-                        ))}
-                      </div>
+                reviews.map((rec, i) => {
+                  const isReviewOwner = currentUser && (currentUser.username === rec.username);
+                  const isEditingThis = editingReviewId === (rec._id || rec.id);
+
+                  return (
+                    <div key={rec._id || rec.id || i} className="rec-card">
+                      {isEditingThis ? (
+                        /* INLINE ACTIVE EDIT FORM */
+                        <form onSubmit={(e) => handleReviewUpdate(e, rec._id || rec.id)} className="edit-review-inline-wrapper">
+                          <div className="rating-input">
+                            <label>Adjust Score:</label>
+                            {[1, 2, 3, 4, 5].map((s) => (
+                              <Star 
+                                key={s} 
+                                size={16} 
+                                fill={s <= editForm.rating ? "#f59e0b" : "none"} 
+                                color={s <= editForm.rating ? "#f59e0b" : "#cbd5e1"}
+                                onClick={() => setEditForm({...editForm, rating: s})}
+                                style={{cursor: 'pointer'}}
+                              />
+                            ))}
+                          </div>
+                          <textarea 
+                            value={editForm.comment}
+                            onChange={(e) => setEditForm({...editForm, comment: e.target.value})}
+                            required
+                          />
+                          <div className="edit-action-row">
+                            <button type="submit" className="btn-save-inline">Save Logs</button>
+                            <button type="button" className="btn-cancel-inline" onClick={() => setEditingReviewId(null)}>Cancel</button>
+                          </div>
+                        </form>
+                      ) : (
+                        /* STANDARD VIEW PROFILE PROFILE LAYOUT */
+                        <>
+                          <div className="rec-user">
+                            <div className="rec-avatar">{rec.username?.[0] || 'U'}</div>
+                            <div className="rec-meta">
+                              <strong>{rec.username}</strong>
+                              <span>{rec.tribe} Tribe</span>
+                            </div>
+                            <div className="rec-stars">
+                              {[...Array(rec.rating)].map((_, starI) => (
+                                <Star key={starI} size={12} fill="#f59e0b" color="#f59e0b" />
+                              ))}
+                            </div>
+
+                            {/* CUSTODIAN CONTEXT DROP-MENU TRIGGER */}
+                            {isReviewOwner && (
+                              <div className="dropdown-wrapper" onClick={(e) => e.stopPropagation()}>
+                                <button 
+                                  className="btn-trigger-dropdown"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    setActiveDropdownIndex(activeDropdownIndex === i ? null : i);
+                                  }}
+                                >
+                                  <MoreVertical size={16} />
+                                </button>
+                                
+                                <AnimatePresence>
+                                  {activeDropdownIndex === i && (
+                                    <motion.div 
+                                      className="rec-action-menu"
+                                      initial={{ opacity: 0, scale: 0.95, y: -5 }}
+                                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                                      exit={{ opacity: 0, scale: 0.95, y: -5 }}
+                                    >
+                                      <button onClick={() => { startEditing(rec); setActiveDropdownIndex(null); }}>
+                                        <Edit2 size={13} /> Edit
+                                      </button>
+                                      <button className="danger-action" onClick={() => { handleReviewDelete(rec._id || rec.id); setActiveDropdownIndex(null); }}>
+                                        <Trash2 size={13} /> Delete
+                                      </button>
+                                    </motion.div>
+                                  )}
+                                </AnimatePresence>
+                              </div>
+                            )}
+                          </div>
+                          <p>"{rec.comment}"</p>
+                        </>
+                      )}
                     </div>
-                    <p>"{rec.comment}"</p>
-                  </div>
-                ))
+                  );
+                })
               ) : (
                 <p className="no-reviews">No technical observations recorded for this dossier yet.</p>
               )}
