@@ -57,10 +57,9 @@ const listingSchema = new mongoose.Schema({
   timestamps: true 
 });
 
-// ─── AUTOMATED AGGREGATIONS (FIXED & CASTED SAFE) ───
-listingSchema.pre('save', function(next) {
+// ─── AUTOMATED AGGREGATIONS (CORRECTED) ───
+listingSchema.pre('save', function() {
   if (this.reviews && this.reviews.length > 0) {
-
     const total = this.reviews.reduce((acc, item) => {
       const r = Number(item.rating) || 0;
       return acc + r;
@@ -70,7 +69,7 @@ listingSchema.pre('save', function(next) {
   } else {
     this.averageRating = 0;
   }
-  next();
+
 });
 
 module.exports = mongoose.model('Listing', listingSchema);
