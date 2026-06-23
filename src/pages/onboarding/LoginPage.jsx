@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
+import { Mail, Lock, ArrowRight, Loader2, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import axios from 'axios';
 import '../../styles/Onboarding.css';
 import { API_BASE_URL } from '../../config/api';
@@ -10,6 +10,7 @@ const LoginPage = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -26,11 +27,8 @@ const LoginPage = () => {
       });
 
       if (response.data.token) {
-        // 1. Store the JWT Token
         localStorage.setItem('token', response.data.token);
 
-        // 2. Prepare and Store the User Object
-        // ✅ Ensure this structure matches what checkAuth() in App.js expects
         const userObject = {
           id: response.data.id || response.data.user?.id,
           username: response.data.username || response.data.user?.username,
@@ -41,14 +39,11 @@ const LoginPage = () => {
 
         localStorage.setItem('user', JSON.stringify(userObject));
         localStorage.setItem('userName', userObject.fullName || userObject.username);
-
-        // ✅ THE FIX: Manually dispatch storage event for instant UI update
         window.dispatchEvent(new Event("storage"));
-
         navigate('/');
       }
     } catch (err) {
-      console.error('❌ Login Error:', err.response?.data || err.message);
+      console.error('Login Error:', err.response?.data || err.message);
       setError(err.response?.data?.message || 'Invalid email or password. Please try again.');
     } finally {
       setLoading(false);
@@ -68,7 +63,7 @@ const LoginPage = () => {
         </div>
 
         {error && (
-          <div className="login-error-msg" style={{ color: '#e53e3e', background: '#fff5f5', padding: '10px', borderRadius: '8px', marginBottom: '15px', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div className="login-error-msg">
             <AlertCircle size={16} /> {error}
           </div>
         )}
@@ -77,8 +72,9 @@ const LoginPage = () => {
           <div className="form-group">
             <label>Email Address</label>
             <div className="input-with-icon">
-              <Mail size={18} />
+              <Mail size={18} className="input-icon" />
               <input
+                className="onboard-input"
                 type="email"
                 placeholder="driver@yctribe.com"
                 required
@@ -91,14 +87,22 @@ const LoginPage = () => {
           <div className="form-group">
             <label>Password</label>
             <div className="input-with-icon">
-              <Lock size={18} />
+              <Lock size={18} className="input-icon" />
               <input
-                type="password"
+                className="onboard-input"
+                type={showPassword ? "text" : "password"}
                 placeholder="••••••••"
                 required
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
               />
+              <button
+                type="button"
+                className="toggle-password"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
             </div>
           </div>
 
@@ -107,10 +111,22 @@ const LoginPage = () => {
           </button>
         </form>
 
-        <div className="login-footer">
-          <p>Don't have an account? <Link to="/onboarding">Join the Tribe</Link></p>
-          <Link to="/forgot-password" id="forgot-pass">Forgot password?</Link>
-        </div>
+        <motion.div 
+          className="login-footer"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+        >
+          <p className="footer-text">
+            Don't have an account?{' '}
+            <Link to="/onboarding" className="footer-link">
+              Join the Tribe
+            </Link>
+          </p>
+          <Link to="/forgot-password" id="forgot-pass">
+            Forgot password?
+          </Link>
+        </motion.div>
       </motion.div>
     </div>
   );

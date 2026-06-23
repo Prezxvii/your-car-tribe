@@ -20,7 +20,7 @@ html, body {
   padding: 20px;
 }
 
-/* ✅ Allow the card to shrink naturally on small screens */
+
 .onboarding-card {
   width: 100%;
   max-width: 520px;
@@ -122,12 +122,11 @@ html, body {
 
 .onboard-input {
   width: 100%;
-  padding: 16px;
+  padding: 16px 16px 16px 48px; 
   border: 1px solid #e2e8f0;
   border-radius: 14px;
   background: #f8fafc;
   font-size: 1rem;
-  font-family: inherit;
   outline: none;
   transition: all 0.2s ease;
 }
@@ -148,8 +147,9 @@ html, body {
 .input-icon {
   position: absolute;
   left: 16px;
-  top: 50%;
-  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: #a0aec0;
   pointer-events: none;
   transition: color 0.2s;
@@ -159,7 +159,7 @@ html, body {
   padding-left: 50px !important;
 }
 
-/* ✅ FIX: Your icon is NOT the next sibling of input, so this is the correct selector */
+
 .input-with-icon:focus-within .input-icon {
   color: var(--primary-blue);
 }
@@ -276,6 +276,24 @@ html, body {
   animation: scaleIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
+
+.toggle-password {
+  position: absolute;
+  right: 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #a0aec0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+}
+
+.toggle-password:hover {
+  color: #718096;
+}
+
 @keyframes scaleIn {
   from { transform: scale(0.5); opacity: 0; }
   to { transform: scale(1); opacity: 1; }
@@ -349,19 +367,55 @@ html, body {
   cursor: not-allowed;
 }
 
+.login-footer {
+  margin-top: 30px;
+  text-align: center;
+  font-size: 0.9rem;
+  color: #718096;
+}
+
+.footer-text {
+  margin-bottom: 12px;
+}
+
+.footer-link {
+  color: var(--primary-blue);
+  font-weight: 700;
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+}
+
+.footer-link:hover {
+  opacity: 0.8;
+  text-decoration: underline;
+}
+
+#forgot-pass {
+  display: inline-block;
+  color: #a0aec0;
+  font-size: 0.85rem;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+#forgot-pass:hover {
+  color: #000;
+}
+
+
 /* ======================================================
    MOBILE OPTIMIZATION
 ====================================================== */
 @media (max-width: 768px) {
   .onboarding-container {
     padding: 14px;
-    align-items: flex-start; /* ✅ helps on short screens */
+    align-items: flex-start; 
   }
 
   .onboarding-card {
     max-width: 100%;
-    min-height: auto;          /* ✅ remove forced height */
-    padding: 28px 18px;        /* ✅ less padding */
+    min-height: auto;         
+    padding: 28px 18px;        
     border-radius: 24px;
   }
 
@@ -404,7 +458,7 @@ html, body {
 
 @media (max-width: 420px) {
   .interests-grid {
-    grid-template-columns: 1fr; /* ✅ easier tapping on small phones */
+    grid-template-columns: 1fr; 
   }
 
   .interest-tile {
@@ -419,4 +473,39 @@ html, body {
     font-size: 1rem;
     margin-bottom: 30px;
   }
+}
+
+
+/* --- LOGIN BUTTON ALIGNMENT FIX --- */
+.btn-login {
+  width: 100%;
+  padding: 20px;
+  background: #000;
+  color: white;
+  border: none;
+  border-radius: 16px;
+  font-weight: 800;
+  font-size: 1rem;
+  cursor: pointer;
+  
+  /* Flex layout to center content and align the arrow */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px; 
+  
+  transition: transform 0.2s, filter 0.2s;
+}
+
+.btn-login:hover {
+  filter: brightness(1.2);
+}
+
+.btn-login:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.spinner {
+  animation: rotate 1s linear infinite;
 }
