@@ -8,7 +8,6 @@ const NewsPage = () => {
   const [news, setNews] = useState([]);
   const [filteredNews, setFilteredNews] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
 
@@ -25,7 +24,6 @@ const NewsPage = () => {
         setFilteredNews(data);
       } catch (_error) {
         console.error('Error fetching news:', _error);
-        setError(_error.message);
       } finally {
         setLoading(false);
       }
