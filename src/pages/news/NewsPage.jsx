@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Newspaper, Clock, TrendingUp, Filter, Search, Calendar, ArrowUpRight, Award } from 'lucide-react';
+import { Filter, Search, ArrowUpRight, Award, Clock } from 'lucide-react';
 import { API_BASE_URL } from '../../config/api';
 import '../../styles/News.css';
 
@@ -12,7 +12,6 @@ const NewsPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
 
-  // Integrated premium auction tracking directly into category segment chips
   const categories = ['all', 'Bring a Trailer', 'Jalopnik', 'Cars & Bids', 'electric', 'ny-local'];
 
   useEffect(() => {
@@ -24,9 +23,9 @@ const NewsPage = () => {
         const data = await response.json();
         setNews(data);
         setFilteredNews(data);
-      } catch (error) {
-        console.error('Error fetching news:', error);
-        setError(error.message);
+      } catch (_error) {
+        console.error('Error fetching news:', _error);
+        setError(_error.message);
       } finally {
         setLoading(false);
       }
@@ -34,62 +33,54 @@ const NewsPage = () => {
     fetchNews();
   }, []);
 
-  // Filter news based on search, category selection, or premium publication source match
-// Filter news based on search, category selection, and strict vehicle relevancy
-useEffect(() => {
-  let filtered = news;
+  useEffect(() => {
+    let filtered = news;
 
-  // 1. STRICT ENTHUSIAST FILTER: Eliminate generic/tangential news streams
-  const strictCarKeywords = ['car', 'auto', 'vehicle', 'motor', 'ev', 'suv', 'truck', 'sedan', 'porsche', 'bmw', 'nissan', 'toyota', 'hypercar', 'supercar', 'auction', 'drive', 'speed', 'wheels', 'horsepower', 'dealership'];
-  
-  filtered = filtered.filter(article => {
-    const title = (article.title || '').toLowerCase();
-    const description = (article.description || '').toLowerCase();
-    const source = (article.source?.name || '').toLowerCase();
+    const strictCarKeywords = ['car', 'auto', 'vehicle', 'motor', 'ev', 'suv', 'truck', 'sedan', 'porsche', 'bmw', 'nissan', 'toyota', 'hypercar', 'supercar', 'auction', 'drive', 'speed', 'wheels', 'horsepower', 'dealership'];
+    
+    filtered = filtered.filter(article => {
+      const title = (article.title || '').toLowerCase();
+      const description = (article.description || '').toLowerCase();
+      const source = (article.source?.name || '').toLowerCase();
 
-    // Instantly pass premium sources requested by the client
-    if (['bring a trailer', 'jalopnik', 'cars & bids', 'car and driver', 'motortrend', 'road & track'].some(src => source.includes(src))) {
-      return true;
+      if (['bring a trailer', 'jalopnik', 'cars & bids', 'car and driver', 'motortrend', 'road & track'].some(src => source.includes(src))) {
+        return true;
+      }
+
+      const matchCount = strictCarKeywords.reduce((count, word) => {
+        return count + (title.includes(word) || description.includes(word) ? 1 : 0);
+      }, 0);
+
+      return matchCount >= 2;
+    });
+
+    if (searchQuery) {
+      filtered = filtered.filter(article =>
+        article.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        article.description?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
     }
 
-    // Otherwise, require at least TWO distinct car keywords to bypass generic environmental or geopolitical wire pollution
-    const matchCount = strictCarKeywords.reduce((count, word) => {
-      return count + (title.includes(word) || description.includes(word) ? 1 : 0);
-    }, 0);
+    if (selectedCategory !== 'all') {
+      filtered = filtered.filter(article => {
+        const content = `${article.title} ${article.description || ''}`.toLowerCase();
+        const sourceName = (article.source?.name || '').toLowerCase();
+        
+        if (selectedCategory === 'ny-local') {
+          return content.includes('new york') || content.includes('ny') || content.includes('nyc');
+        }
+        if (['bring a trailer', 'jalopnik', 'cars & bids'].includes(selectedCategory.toLowerCase())) {
+          return sourceName.includes(selectedCategory.toLowerCase());
+        }
+        return content.includes(selectedCategory.toLowerCase());
+      });
+    }
 
-    return matchCount >= 2;
-  });
+    setFilteredNews(filtered);
+  }, [searchQuery, selectedCategory, news]);
 
-  // 2. Apply Text Search Filter
-  if (searchQuery) {
-    filtered = filtered.filter(article =>
-      article.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      article.description?.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  }
-
-  // 3. Apply Category Tab Selection
-  if (selectedCategory !== 'all') {
-    filtered = filtered.filter(article => {
-      const content = `${article.title} ${article.description || ''}`.toLowerCase();
-      const sourceName = (article.source?.name || '').toLowerCase();
-      
-      if (selectedCategory === 'ny-local') {
-        return content.includes('new york') || content.includes('ny') || content.includes('nyc');
-      }
-      if (['bring a trailer', 'jalopnik', 'cars & bids'].includes(selectedCategory.toLowerCase())) {
-        return sourceName.includes(selectedCategory.toLowerCase());
-      }
-      return content.includes(selectedCategory.toLowerCase());
-    });
-  }
-
-  setFilteredNews(filtered);
-}, [searchQuery, selectedCategory, news]);
-
-  // Helper function to return dynamic highlight classes for custom client requirements
   const getSourceBadgeClass = (sourceName) => {
-    const name = sourceName.toLowerCase();
+    const name = (sourceName || '').toLowerCase();
     if (name.includes('trailer')) return 'badge-bat';
     if (name.includes('jalopnik')) return 'badge-jalopnik';
     if (name.includes('bids')) return 'badge-carsandbids';
@@ -177,7 +168,6 @@ useEffect(() => {
                   </div>
 
                   <div className="article-content">
-                    {/* Render custom dynamic brand badge */}
                     <div className={`article-source-tag ${getSourceBadgeClass(article.source?.name)}`}>
                       {article.source?.name}
                     </div>
