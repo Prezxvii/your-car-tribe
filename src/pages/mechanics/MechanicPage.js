@@ -1,169 +1,113 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Wrench, Star, Phone, MapPin, CheckCircle, 
-  ShieldCheck, Search, X, MessageSquare, Clock, Info 
+  Wrench, Star, Phone, MapPin, CheckCircle, Plus,
+  ShieldCheck, Search, X, MessageSquare, Clock, Info, Loader2 
 } from 'lucide-react';
+import axios from 'axios';
 import './Mechanic.css';
+import { API_BASE_URL } from '../../config/api';
 
 const MechanicPage = () => {
+  // State Management
+  const [mechanics, setMechanics] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedShop, setSelectedShop] = useState(null);
+  
+  // Form Submission States
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [newShop, setNewShop] = useState({
+    name: '', specialty: 'German / Euro', location: '', phone: '', about: '', services: '', projects: ''
+  });
 
-  const mechanics = [
-    {
-      id: 1,
-      name: "Precision Euro Works",
-      specialty: "German / Euro",
-      rating: 4.9,
-      reviews: 128,
-      location: "Mt Vernon, NY",
-      distance: "1.2 mi",
-      verified: true,
-      phone: "(914) 555-1234",
-      about: "Specialize in BMW M-Series and Porsche performance tuning. Factory trained technicians with over 15 years experience.",
-      services: ["Engine Tuning", "Diagnostics", "Oil Service", "Brake Upgrades"],
-      projects: ["911 GT3 RS Alignment", "M4 Stage 2 Tune"]
-    },
-    {
-      id: 2,
-      name: "JDM Performance Hub",
-      specialty: "JDM / Japanese",
-      rating: 4.8,
-      reviews: 95,
-      location: "Yonkers, NY",
-      distance: "4.5 mi",
-      verified: true,
-      phone: "(914) 555-5678",
-      about: "The go-to spot for forced induction and suspension tuning for Japanese icons. Full track prep available.",
-      services: ["Turbo Kits", "Suspension", "Track Prep", "ECU Remapping"],
-      projects: ["R34 GTR Single Turbo Conversion", "Supra A90 Widebody"]
-    },
-    {
-      id: 3,
-      name: "Westchester Auto Repair",
-      specialty: "Domestic",
-      rating: 4.7,
-      reviews: 102,
-      location: "White Plains, NY",
-      distance: "3.8 mi",
-      verified: true,
-      phone: "(914) 555-9012",
-      about: "Full-service auto repair for all domestic vehicles. Honest pricing and ASE certified mechanics.",
-      services: ["Oil Change", "Brake Service", "Transmission Repair", "Tire Rotation"],
-      projects: ["F-150 Brake Overhaul", "Camry Transmission Repair"]
-    },
-    {
-      id: 4,
-      name: "Yonkers Import Garage",
-      specialty: "European / Euro",
-      rating: 4.6,
-      reviews: 88,
-      location: "Yonkers, NY",
-      distance: "2.1 mi",
-      verified: true,
-      phone: "(914) 555-3456",
-      about: "Specializing in high-end European imports. Precision service with state-of-the-art equipment.",
-      services: ["Engine Diagnostics", "Suspension", "Alignment", "Performance Tuning"],
-      projects: ["Audi RS5 Performance Tune", "Mercedes AMG Suspension Upgrade"]
-    },
-    {
-      id: 5,
-      name: "Hudson Valley Auto Works",
-      specialty: "Classic",
-      rating: 4.9,
-      reviews: 67,
-      location: "Peekskill, NY",
-      distance: "7.5 mi",
-      verified: true,
-      phone: "(914) 555-7890",
-      about: "Classic car restoration and maintenance. Experts in vintage European and American vehicles.",
-      services: ["Restoration", "Engine Rebuild", "Paint Work", "Custom Fabrication"],
-      projects: ["1967 Mustang Restoration", "1972 BMW 3.0CS Rebuild"]
-    },
-    {
-      id: 6,
-      name: "Yonkers Auto Clinic",
-      specialty: "Domestic",
-      rating: 4.5,
-      reviews: 54,
-      location: "Yonkers, NY",
-      distance: "3.0 mi",
-      verified: true,
-      phone: "(914) 555-2345",
-      about: "Reliable repairs for domestic vehicles. Friendly service and fast turnaround.",
-      services: ["Brake Service", "Oil Change", "Battery Replacement", "Tire Service"],
-      projects: ["Honda Accord Brake Replacement", "Chevy Silverado Oil Change"]
-    },
-    {
-      id: 7,
-      name: "Westchester JDM Garage",
-      specialty: "JDM / Japanese",
-      rating: 4.8,
-      reviews: 77,
-      location: "New Rochelle, NY",
-      distance: "5.2 mi",
-      verified: true,
-      phone: "(914) 555-6789",
-      about: "Japanese car specialists. Performance upgrades and maintenance for all Japanese imports.",
-      services: ["Engine Tuning", "Suspension", "Track Prep", "ECU Remap"],
-      projects: ["Nissan 370Z Track Prep", "Mazda RX-7 Turbo Upgrade"]
-    },
-    {
-      id: 8,
-      name: "White Plains European Motors",
-      specialty: "European / Euro",
-      rating: 4.7,
-      reviews: 60,
-      location: "White Plains, NY",
-      distance: "2.5 mi",
-      verified: true,
-      phone: "(914) 555-4321",
-      about: "High-end European car service and repairs. Skilled in both maintenance and performance upgrades.",
-      services: ["Diagnostics", "Oil Change", "Brake Service", "Performance Tuning"],
-      projects: ["Porsche 911 Alignment", "BMW X5 Brake Upgrade"]
-    },
-    {
-      id: 9,
-      name: "Yonkers Classic Auto",
-      specialty: "Classic",
-      rating: 4.6,
-      reviews: 40,
-      location: "Yonkers, NY",
-      distance: "4.0 mi",
-      verified: true,
-      phone: "(914) 555-8765",
-      about: "Restoring classic cars to their former glory. Experienced with both American and European vintage vehicles.",
-      services: ["Restoration", "Engine Rebuild", "Custom Interiors", "Paint Work"],
-      projects: ["1969 Camaro Rebuild", "Jaguar E-Type Restoration"]
-    },
-    {
-      id: 10,
-      name: "Peekskill Auto Specialists",
-      specialty: "Domestic",
-      rating: 4.8,
-      reviews: 72,
-      location: "Peekskill, NY",
-      distance: "6.3 mi",
-      verified: true,
-      phone: "(914) 555-3450",
-      about: "Full-service domestic car repair and diagnostics. ASE certified and customer-focused.",
-      services: ["Oil Change", "Brakes", "Tires", "Diagnostics"],
-      projects: ["Ford Explorer Brake Replacement", "Chevy Malibu Engine Diagnostics"]
+  // Fetch from Database
+  const fetchMechanics = async () => {
+    try {
+      setLoading(true);
+      const { data } = await axios.get(`${API_BASE_URL}/api/mechanics/all`);
+      setMechanics(data);
+    } catch (err) {
+      console.error("Error loading directory database:", err);
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
 
+  useEffect(() => {
+    fetchMechanics();
+  }, []);
+
+  // Submit Handler
+  const handleFormSubmit = async (e) => {
+    e.preventDefault();
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert("Authentication token not found. Please log in first.");
+      return;
+    }
+
+    try {
+      await axios.post(`${API_BASE_URL}/api/mechanics/submit`, newShop, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      alert("Shop submitted for community review successfully!");
+      setIsFormOpen(false);
+      setNewShop({ name: '', specialty: 'German / Euro', location: '', phone: '', about: '', services: '', projects: '' });
+      fetchMechanics(); // Reload live list
+    } catch (err) {
+      alert(err.response?.data?.error || "Error adding shop details.");
+    }
+  };
+
+  // Internal normalized formatting filter
   const filteredMechanics = mechanics.filter(m => {
     const matchesFilter = filter === 'All' || m.specialty === filter;
     const matchesSearch = m.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                         m.services.some(s => s.toLowerCase().includes(searchQuery.toLowerCase()));
+                         m.services?.some(s => s.toLowerCase().includes(searchQuery.toLowerCase()));
     return matchesFilter && matchesSearch;
   });
 
   return (
     <div className="mechanic-container">
-      {/* SHOP DETAIL MODAL */}
+      
+      {/* SHOP CREATION SUBMISSION MODAL */}
+      <AnimatePresence>
+        {isFormOpen && (
+          <div className="modal-overlay" onClick={() => setIsFormOpen(false)}>
+            <motion.div 
+              className="shop-modal form-adjustments"
+              initial={{ y: 60, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 60, opacity: 0 }}
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="modal-header">
+                <h2>List Local Specialist</h2>
+                <button className="close-modal" onClick={() => setIsFormOpen(false)}><X size={20}/></button>
+              </div>
+              <form onSubmit={handleFormSubmit} className="dossier-form-grid">
+                <input type="text" placeholder="Shop Name" required value={newShop.name} onChange={e => setNewShop({...newShop, name: e.target.value})} />
+                <select value={newShop.specialty} onChange={e => setNewShop({...newShop, specialty: e.target.value})}>
+                  <option value="German / Euro">German / Euro</option>
+                  <option value="JDM / Japanese">JDM / Japanese</option>
+                  <option value="Domestic">Domestic</option>
+                  <option value="Classic">Classic</option>
+                </select>
+                <input type="text" placeholder="Location (City, State)" required value={newShop.location} onChange={e => setNewShop({...newShop, location: e.target.value})} />
+                <input type="text" placeholder="Phone Number" required value={newShop.phone} onChange={e => setNewShop({...newShop, phone: e.target.value})} />
+                <textarea placeholder="About the shop (experience, tuning focus...)" required value={newShop.about} onChange={e => setNewShop({...newShop, about: e.target.value})} />
+                <input type="text" placeholder="Services (comma separated: Engine Tuning, Alignment, Oil Service)" value={newShop.services} onChange={e => setNewShop({...newShop, services: e.target.value})} />
+                <input type="text" placeholder="Recent Projects (comma separated: Porsche Stage 2, E46 Rebuild)" value={newShop.projects} onChange={e => setNewShop({...newShop, projects: e.target.value})} />
+                <button type="submit" className="btn-contact full-width">Add Shop to Map</button>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* SHOP DETAIL VIEW MODAL */}
       <AnimatePresence>
         {selectedShop && (
           <div className="modal-overlay" onClick={() => setSelectedShop(null)}>
@@ -191,9 +135,11 @@ const MechanicPage = () => {
                   <p>{selectedShop.about}</p>
                   <h3><Wrench size={18} className="text-blue" /> Recent Projects</h3>
                   <div className="project-tags">
-                    {selectedShop.projects.map(p => (
-                      <span key={p} className="project-tag"><Wrench size={14}/> {p}</span>
-                    ))}
+                    {selectedShop.projects && selectedShop.projects.length > 0 ? (
+                      selectedShop.projects.map(p => (
+                        <span key={p} className="project-tag"><Wrench size={14}/> {p}</span>
+                      ))
+                    ) : <span>No projects recorded yet.</span>}
                   </div>
                 </div>
                 <div className="modal-side">
@@ -210,7 +156,12 @@ const MechanicPage = () => {
       </AnimatePresence>
 
       <header className="page-header">
-        <div className="header-badge"><ShieldCheck size={14} /> Verified Experts</div>
+        <div className="header-flex-row">
+          <div className="header-badge"><ShieldCheck size={14} /> Verified Experts</div>
+          <button className="btn-add-shop" onClick={() => setIsFormOpen(true)}>
+            <Plus size={16} /> Add Expert Shop
+          </button>
+        </div>
         <h1>Local Experts & Mechanics</h1>
         <div className="search-bar-container">
           <Search className="search-icon" size={20} />
@@ -235,53 +186,60 @@ const MechanicPage = () => {
         ))}
       </div>
 
-      <div className="mechanic-grid">
-        <AnimatePresence mode="popLayout">
-          {filteredMechanics.length > 0 ? (
-            filteredMechanics.map(mechanic => (
-              <motion.div 
-                key={mechanic.id} 
-                layout
-                className="mechanic-card"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-              >
-                <div className="mechanic-card-content">
-                  <div className="mechanic-info-main">
-                    <div className="title-row">
-                      <h3>{mechanic.name}</h3>
-                      {mechanic.verified && <CheckCircle size={16} className="text-blue" fill="white" />}
-                    </div>
-                    <span className="specialty-label">{mechanic.specialty}</span>
-                    
-                    <div className="stats-row">
-                      <div className="rating-pill"><Star size={14} fill="#ffcc00" color="#ffcc00" /> {mechanic.rating}</div>
-                      <span className="dot-sep">•</span>
-                      <span className="location-text"><MapPin size={14} /> {mechanic.location}</span>
+      {loading ? (
+        <div className="market-loader-ui">
+          <Loader2 className="spinner" size={40} />
+          <p>Scanning Area For Specialists...</p>
+        </div>
+      ) : (
+        <div className="mechanic-grid">
+          <AnimatePresence mode="popLayout">
+            {filteredMechanics.length > 0 ? (
+              filteredMechanics.map(mechanic => (
+                <motion.div 
+                  key={mechanic._id || mechanic.id} 
+                  layout
+                  className="mechanic-card"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                >
+                  <div className="mechanic-card-content">
+                    <div className="mechanic-info-main">
+                      <div className="title-row">
+                        <h3>{mechanic.name}</h3>
+                        {mechanic.verified && <CheckCircle size={16} className="text-blue" fill="white" />}
+                      </div>
+                      <span className="specialty-label">{mechanic.specialty}</span>
+                      
+                      <div className="stats-row">
+                        <div className="rating-pill"><Star size={14} fill="#ffcc00" color="#ffcc00" /> {mechanic.rating}</div>
+                        <span className="dot-sep">•</span>
+                        <span className="location-text"><MapPin size={14} /> {mechanic.location}</span>
+                      </div>
+
+                      <div className="service-tags">
+                        {mechanic.services?.slice(0, 3).map(s => <span key={s} className="s-tag">{s}</span>)}
+                      </div>
                     </div>
 
-                    <div className="service-tags">
-                      {mechanic.services.slice(0, 3).map(s => <span key={s} className="s-tag">{s}</span>)}
+                    <div className="mechanic-card-actions">
+                      <button className="btn-view-profile" onClick={() => setSelectedShop(mechanic)}>View Profile</button>
+                      <a href={`tel:${mechanic.phone?.replace(/\D/g, '')}`} className="btn-icon-call">
+                        <Phone size={18} />
+                      </a>
                     </div>
                   </div>
-
-                  <div className="mechanic-card-actions">
-                    <button className="btn-view-profile" onClick={() => setSelectedShop(mechanic)}>View Profile</button>
-                    <a href={`tel:${mechanic.phone.replace(/\D/g, '')}`} className="btn-icon-call">
-                      <Phone size={18} />
-                    </a>
-                  </div>
-                </div>
-              </motion.div>
-            ))
-          ) : (
-            <div className="no-results">
-              <Search size={40} />
-              <h3>No mechanics found</h3>
-            </div>
-          )}
-        </AnimatePresence>
-      </div>
+                </motion.div>
+              ))
+            ) : (
+              <div className="no-results">
+                <Search size={40} />
+                <h3>No mechanics found</h3>
+              </div>
+            )}
+          </AnimatePresence>
+        </div>
+      )}
     </div>
   );
 };
