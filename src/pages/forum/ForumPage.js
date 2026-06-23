@@ -164,7 +164,7 @@ const ForumPage = () => {
             <motion.div className="modal-card" initial={{ y: 50 }} animate={{ y: 0 }}>
               <div className="modal-header">
                 <h3>New Community Topic</h3>
-                <button onClick={() => setIsModalOpen(false)}><X /></button>
+                <button className="btn-close-modal" onClick={() => setIsModalOpen(false)}><X /></button>
               </div>
 
               <form onSubmit={handlePost}>

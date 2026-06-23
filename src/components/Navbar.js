@@ -39,7 +39,7 @@ const Navbar = () => {
 
   const navLinks = [
     { name: 'Home',      path: '/',           icon: <Car size={18} /> },
-    { name: 'Experts',   path: '/marketplace', icon: <Wrench size={18} /> },
+    { name: 'Marketplace',   path: '/marketplace', icon: <Wrench size={18} /> },
     { name: 'Forum',     path: '/forum',       icon: <Users size={18} /> },
     { name: 'Mechanics', path: '/mechanics',   icon: <Wrench size={18} /> },
     { name: 'Events',    path: '/events',      icon: <Car size={18} /> },

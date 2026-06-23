@@ -72,16 +72,24 @@ const ListingDetail = () => {
         rating: newReview.rating,
         comment: newReview.comment
       });
-
-      // Update local state with fresh data from backend
-      setReviews(data.reviews);
+    
+      // Safe fallback check: handles both whole listing response or direct array response
+      if (data && data.reviews) {
+        setReviews(data.reviews);
+      } else if (Array.isArray(data)) {
+        setReviews(data);
+      }
+    
       setNewReview({ rating: 5, comment: '' });
       setShowReviewForm(false);
     } catch (err) {
-      console.error("Review submission error:", err);
-      alert("Error saving review. Please try again.");
-    } finally {
-      setIsSubmittingReview(false);
+      console.error("Review submission error details:", err.response || err);
+      
+      if (err.response?.status === 404) {
+        alert("API Endpoint not found. Ensure backend changes are fully deployed to Render and restarted.");
+      } else {
+        alert(`Error saving review: ${err.response?.data?.error || "Please try again."}`);
+      }
     }
   };
 

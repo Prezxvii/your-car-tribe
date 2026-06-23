@@ -271,6 +271,37 @@
     height: 160px;
     resize: none;
   }
+
+  .btn-close-modal {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-soft);
+    color: var(--text-muted);
+    border: 1px solid var(--border-light);
+    padding: 10px;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .btn-close-modal:hover {
+    background: #f1f5f9;
+    color: var(--danger-red);
+    border-color: #fee2e2;
+    transform: scale(1.05);
+  }
+  
+  .btn-close-modal:active {
+    transform: scale(0.95);
+  }
+  
+
+  .btn-close-modal svg {
+    width: 20px;
+    height: 20px;
+    stroke-width: 2.5;
+  }
   
   /* --- 7. BUTTONS & STATS --- */
   .btn-add-question {

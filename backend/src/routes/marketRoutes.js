@@ -27,6 +27,9 @@ const storage = new CloudinaryStorage({
 
 const upload = multer({ storage });
 
+// ==========================================================================
+// CREATE A LISTING
+// ==========================================================================
 router.post('/submit', upload.array('photos'), async (req, res) => {
   try {
     console.log('=== SUBMIT REACHED ===');
@@ -93,12 +96,8 @@ router.post('/submit', upload.array('photos'), async (req, res) => {
       specs:       parsedSpecs,
       images:      photoUrls,
       status:      'active',
-      seller: {
-        name:     currentUser.username || currentUser.name || 'Unknown',
-        id:       currentUser._id,
-        avatar:   currentUser.avatar || '',
-        verified: currentUser.verified || false,
-      }
+      // FIX: Matches your Schema definition (direct reference, not object mapping)
+      seller:      currentUser._id 
     };
 
     const newListing = new Listing(listingPayload);
@@ -114,17 +113,16 @@ router.post('/submit', upload.array('photos'), async (req, res) => {
 
   } catch (error) {
     console.error('SUBMIT ERROR:', error.name, '-', error.message);
-    console.error('STACK:', error.stack);
     if (error.name === 'ValidationError') {
       return res.status(400).json({ error: 'Validation failed', details: error.message });
-    }
-    if (error.name === 'CastError') {
-      return res.status(400).json({ error: 'Invalid field type', details: error.message });
     }
     return res.status(500).json({ error: 'Server error', details: error.message });
   }
 });
 
+// ==========================================================================
+// GET ALL LISTINGS
+// ==========================================================================
 router.get('/all', async (req, res) => {
   try {
     const { search, zip, radius } = req.query;
@@ -146,6 +144,9 @@ router.get('/all', async (req, res) => {
   }
 });
 
+// ==========================================================================
+// GET SINGLE LISTING BY ID
+// ==========================================================================
 router.get('/listing/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -158,7 +159,8 @@ router.get('/listing/:id', async (req, res) => {
       }
     } else {
       if (id.match(/^[0-9a-fA-F]{24}$/)) {
-        listing = await Listing.findById(id);
+        // FIXED: Added .populate('seller') so your frontend profile widget works smoothly
+        listing = await Listing.findById(id).populate('seller', 'username personalName avatar interests knowWhats');
       } else {
         return res.status(400).json({ message: "Invalid listing ID format" });
       }
@@ -169,6 +171,52 @@ router.get('/listing/:id', async (req, res) => {
     res.json(listing);
   } catch (error) {
     res.status(500).json({ message: "Error retrieving details", error: error.message });
+  }
+});
+
+// ==========================================================================
+// ADD A RECOMMENDATION / REVIEW TO A LISTING
+// ==========================================================================
+router.post('/listing/:id/review', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { username, tribe, rating, comment } = req.body;
+
+    if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({ error: "Invalid listing ID format" });
+    }
+
+    if (!username || !rating || !comment) {
+      return res.status(400).json({ error: "Missing required review payload elements" });
+    }
+
+    const listing = await Listing.findById(id);
+    if (!listing) {
+      return res.status(404).json({ error: "Vehicle dossier not found" });
+    }
+
+    // Try to find the actual user to fulfill the schema's required userId field
+    const numericRating = Number(rating);
+    const userDoc = await User.findOne({ username });
+    
+    const targetReview = {
+      userId: userDoc ? userDoc._id : new require('mongoose').Types.ObjectId(), // Fallback placeholder if missing
+      username,
+      tribe: tribe || 'Enthusiast',
+      rating: isNaN(numericRating) ? 5 : numericRating,
+      comment
+    };
+
+    listing.reviews.push(targetReview);
+    
+    // Triggers schema calculations automatically
+    await listing.save();
+
+    // Returns the fresh listing document containing the new data structure array
+    return res.status(201).json(listing);
+  } catch (err) {
+    console.error("Review creation endpoint breakdown:", err);
+    return res.status(500).json({ error: "Could not post verification recommendation to document." });
   }
 });
 
