@@ -74,38 +74,86 @@ const MechanicPage = () => {
       
       {/* SHOP CREATION SUBMISSION MODAL */}
       <AnimatePresence>
-        {isFormOpen && (
-          <div className="modal-overlay" onClick={() => setIsFormOpen(false)}>
-            <motion.div 
-              className="shop-modal form-adjustments"
-              initial={{ y: 60, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: 60, opacity: 0 }}
-              onClick={e => e.stopPropagation()}
-            >
-              <div className="modal-header">
-                <h2>List Local Specialist</h2>
-                <button className="close-modal" onClick={() => setIsFormOpen(false)}><X size={20}/></button>
-              </div>
-              <form onSubmit={handleFormSubmit} className="dossier-form-grid">
-                <input type="text" placeholder="Shop Name" required value={newShop.name} onChange={e => setNewShop({...newShop, name: e.target.value})} />
-                <select value={newShop.specialty} onChange={e => setNewShop({...newShop, specialty: e.target.value})}>
-                  <option value="German / Euro">German / Euro</option>
-                  <option value="JDM / Japanese">JDM / Japanese</option>
-                  <option value="Domestic">Domestic</option>
-                  <option value="Classic">Classic</option>
-                </select>
-                <input type="text" placeholder="Location (City, State)" required value={newShop.location} onChange={e => setNewShop({...newShop, location: e.target.value})} />
-                <input type="text" placeholder="Phone Number" required value={newShop.phone} onChange={e => setNewShop({...newShop, phone: e.target.value})} />
-                <textarea placeholder="About the shop (experience, tuning focus...)" required value={newShop.about} onChange={e => setNewShop({...newShop, about: e.target.value})} />
-                <input type="text" placeholder="Services (comma separated: Engine Tuning, Alignment, Oil Service)" value={newShop.services} onChange={e => setNewShop({...newShop, services: e.target.value})} />
-                <input type="text" placeholder="Recent Projects (comma separated: Porsche Stage 2, E46 Rebuild)" value={newShop.projects} onChange={e => setNewShop({...newShop, projects: e.target.value})} />
-                <button type="submit" className="btn-contact full-width">Add Shop to Map</button>
-              </form>
-            </motion.div>
+  {isFormOpen && (
+    <div className="modal-overlay" onClick={() => setIsFormOpen(false)}>
+      <motion.div 
+        className="shop-modal form-adjustments"
+        initial={{ y: 60, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        exit={{ y: 60, opacity: 0 }}
+        onClick={e => e.stopPropagation()}
+      >
+        <button className="close-modal" onClick={() => setIsFormOpen(false)}><X size={20}/></button>
+
+        <div className="form-modal-header">
+          <div className="form-modal-icon"><Wrench size={22} /></div>
+          <div>
+            <h2>List Your Shop</h2>
+            <p>Join the verified specialist network and get discovered by local car owners.</p>
           </div>
-        )}
-      </AnimatePresence>
+        </div>
+
+        <form onSubmit={handleFormSubmit} className="dossier-form-grid">
+          <div className="field-group">
+            <label htmlFor="shop-name">Shop Name</label>
+            <div className="input-icon-wrap">
+              <Wrench size={16} className="field-icon" />
+              <input id="shop-name" type="text" placeholder="e.g. Mueller Performance Tuning" required value={newShop.name} onChange={e => setNewShop({...newShop, name: e.target.value})} />
+            </div>
+          </div>
+
+          <div className="field-row">
+            <div className="field-group">
+              <label htmlFor="specialty">Specialty</label>
+              <select id="specialty" value={newShop.specialty} onChange={e => setNewShop({...newShop, specialty: e.target.value})}>
+                <option value="German / Euro">German / Euro</option>
+                <option value="JDM / Japanese">JDM / Japanese</option>
+                <option value="Domestic">Domestic</option>
+                <option value="Classic">Classic</option>
+              </select>
+            </div>
+            <div className="field-group">
+              <label htmlFor="location">Location</label>
+              <div className="input-icon-wrap">
+                <MapPin size={16} className="field-icon" />
+                <input id="location" type="text" placeholder="City, State" required value={newShop.location} onChange={e => setNewShop({...newShop, location: e.target.value})} />
+              </div>
+            </div>
+          </div>
+
+          <div className="field-group">
+            <label htmlFor="phone">Phone Number</label>
+            <div className="input-icon-wrap">
+              <Phone size={16} className="field-icon" />
+              <input id="phone" type="text" placeholder="(555) 123-4567" required value={newShop.phone} onChange={e => setNewShop({...newShop, phone: e.target.value})} />
+            </div>
+          </div>
+
+          <div className="field-group">
+            <label htmlFor="about">About the Shop</label>
+            <textarea id="about" placeholder="Tell car owners about your experience, tuning focus, and specialties..." required value={newShop.about} onChange={e => setNewShop({...newShop, about: e.target.value})} />
+          </div>
+
+          <div className="field-group">
+            <label htmlFor="services">Services <span className="label-optional">Optional</span></label>
+            <input id="services" type="text" placeholder="Engine Tuning, Alignment, Oil Service" value={newShop.services} onChange={e => setNewShop({...newShop, services: e.target.value})} />
+            <span className="field-hint">Separate each service with a comma</span>
+          </div>
+
+          <div className="field-group">
+            <label htmlFor="projects">Recent Projects <span className="label-optional">Optional</span></label>
+            <input id="projects" type="text" placeholder="Porsche Stage 2, E46 Rebuild" value={newShop.projects} onChange={e => setNewShop({...newShop, projects: e.target.value})} />
+            <span className="field-hint">Separate each project with a comma</span>
+          </div>
+
+          <button type="submit" className="btn-contact full-width">
+            <Plus size={18}/> Add Shop to Map
+          </button>
+        </form>
+      </motion.div>
+    </div>
+  )}
+</AnimatePresence>
 
       {/* SHOP DETAIL VIEW MODAL */}
       <AnimatePresence>

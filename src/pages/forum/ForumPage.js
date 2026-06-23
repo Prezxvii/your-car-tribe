@@ -282,16 +282,20 @@ const ForumPage = () => {
                     </div>
                   )}
 
-                  {user?.role === 'admin' && !post.answer && (
-                    <div className="admin-input-section">
-                      <textarea
-                        placeholder="Admin: Provide an official answer..."
-                        value={adminAnswerText[post._id] || ""}
-                        onChange={(e) => setAdminAnswerText({ ...adminAnswerText, [post._id]: e.target.value })}
-                      />
-                      <button onClick={() => handleAdminAnswer(post._id)}>Submit Official Answer</button>
-                    </div>
-                  )}
+{user?.role === 'admin' && !post.answer && (
+  <div className="admin-input-section">
+    <textarea
+      placeholder="Admin: Provide an official answer..."
+      value={adminAnswerText[post._id] || ""}
+      onChange={(e) => setAdminAnswerText({ ...adminAnswerText, [post._id]: e.target.value })}
+    />
+    <div className="admin-actions">
+      <button className="btn-admin-submit" onClick={() => handleAdminAnswer(post._id)}>
+        <Send size={16} /> Submit Official Answer
+      </button>
+    </div>
+  </div>
+)}
 
                   <div className="post-footer">
                     <div className="post-author">
