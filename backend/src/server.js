@@ -9,6 +9,7 @@ const adminRoutes = require('./routes/adminRoutes');
 const forumRoutes = require('./routes/forumRoutes');
 const eventRoutes = require('./routes/events');
 const newsRoutes = require('./routes/newsRoutes');
+const mechanicRoutes = require('./routes/mechanicRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 10000; 
@@ -62,6 +63,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/forum', forumRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/news', newsRoutes);
+app.use('/api/mechanics', mechanicRoutes); 
 
 app.get('/', (req, res) => {
   res.json({ 
@@ -74,7 +76,8 @@ app.get('/', (req, res) => {
       admin: '/api/admin',
       forum: '/api/forum',
       events: '/api/events',
-      news: '/api/news/car-news'
+      news: '/api/news/car-news',
+      mechanics: '/api/mechanics' 
     }
   });
 });
