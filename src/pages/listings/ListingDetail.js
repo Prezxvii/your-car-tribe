@@ -36,7 +36,7 @@ const ListingDetail = () => {
         );
 
         setCar(data);
-        setReviews(data.reviews || []); // Initialize with existing reviews from DB
+        setReviews(data.reviews || []); 
         const firstImg =
           data.images?.[0] ||
           data.media?.photo_links?.[0] ||
@@ -54,9 +54,6 @@ const ListingDetail = () => {
     fetchCar();
   }, [id]);
 
-  // ==========================================================================
-  // SUBMIT REVIEW TO BACKEND (CORRECTED & SANITIZED TYPES)
-  // ==========================================================================
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
     const storedUser = JSON.parse(localStorage.getItem('user'));
@@ -68,10 +65,8 @@ const ListingDetail = () => {
 
     setIsSubmittingReview(true);
     try {
-      // Force hard primitive types before sending over the wire to protect the aggregation pre-save mathematics
       const payload = {
         username: storedUser.username,
-        // Grabs the primary community tribe from the user's setup arrays, fallback to string properties
         tribe: Array.isArray(storedUser.tribes) && storedUser.tribes.length > 0 
           ? storedUser.tribes[0] 
           : (storedUser.tribe || 'Enthusiast'),
@@ -83,7 +78,6 @@ const ListingDetail = () => {
 
       const { data } = await axios.post(`${API_BASE_URL}/api/market/listing/${id}/review`, payload);
     
-      // Gracefully capture either the full updated document object structure or direct array payload variations
       if (data && data.reviews) {
         setReviews(data.reviews);
       } else if (Array.isArray(data)) {
@@ -95,7 +89,6 @@ const ListingDetail = () => {
       alert("Recommendation recorded successfully!");
     } catch (err) {
       console.error("Review submission error details:", err.response?.data || err);
-      
       const serverErrorMessage = err.response?.data?.message || err.response?.data?.error || "Transaction failure encountered.";
       alert(`Error saving review: ${serverErrorMessage}`);
     } finally {
@@ -104,7 +97,8 @@ const ListingDetail = () => {
   };
 
   const handleSendMessage = () => {
-    alert(`Inquiry sent to ${car?.seller?.name || car?.dealer_name || 'Dealer'}`);
+    const sellerDisplayName = car.seller?.personalName || car.seller?.username || car.dealer_name || 'Dealer';
+    alert(`Inquiry sent to ${sellerDisplayName}`);
     setIsContactModalOpen(false);
   };
 
@@ -134,7 +128,7 @@ const ListingDetail = () => {
 
   return (
     <div className="listing-detail-container">
-      {/* 1. Dossier Navigation */}
+      {/* Dossier Navigation */}
       <div className="listing-nav-bar">
         <button className="back-btn" onClick={() => navigate(-1)}>
           <ChevronLeft size={18} /> Exit Dossier
@@ -144,7 +138,7 @@ const ListingDetail = () => {
         </div>
       </div>
 
-      {/* 2. Professional Header */}
+      {/* Header */}
       <div className="listing-title-header card">
         <div className="title-left">
           <div className="year-badge">{car.year}</div>
@@ -168,7 +162,6 @@ const ListingDetail = () => {
 
       <div className="listing-main-grid">
         <div className="listing-visuals">
-          {/* Main Stage */}
           <div className="main-image-wrapper card">
             <AnimatePresence mode="wait">
               <motion.img
@@ -182,7 +175,6 @@ const ListingDetail = () => {
             </AnimatePresence>
           </div>
 
-          {/* Thumbnails */}
           <div className="thumbnail-strip">
             {allPhotos.slice(0, 10).map((img, i) => (
               <div
@@ -195,7 +187,6 @@ const ListingDetail = () => {
             ))}
           </div>
 
-          {/* Technical Spec Sheet */}
           <div className="specs-grid-section card">
             <div className="section-header">
               <Zap size={20} color="#0066ff" />
@@ -221,7 +212,6 @@ const ListingDetail = () => {
             </div>
           </div>
 
-          {/* Remarks */}
           <div className="details-accordion card">
             <div className="section-header">
               <ShieldCheck size={20} color="#0066ff" />
@@ -232,7 +222,7 @@ const ListingDetail = () => {
             </p>
           </div>
 
-          {/* Tribe Recommendations System */}
+          {/* Recommendations System */}
           <div className="recommendations-section card">
             <div className="section-header">
               <div className="header-left">
@@ -316,11 +306,11 @@ const ListingDetail = () => {
 
             <ProfileLicense
               userData={{
-                username: car.seller?.name || car.dealer_name || 'Dealer Network',
-                personalName: car.seller?.type === 'dealer' ? 'Official Partner' : 'Tribe Member',
+                username: car.seller?.username || 'Enthusiast Member',
+                personalName: car.seller?.personalName || car.seller?.username || car.dealer_name || 'Tribe Member',
                 interests: [car.tag || 'Enthusiast'],
                 avatar: car.seller?.avatar || null,
-                knowWhats: ['Identity Verified', 'Title Authenticated'],
+                knowWhats: car.seller?.knowWhats?.length > 0 ? car.seller.knowWhats : ['Identity Verified', 'Title Authenticated'],
               }}
             />
 
