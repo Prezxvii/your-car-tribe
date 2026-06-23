@@ -29,7 +29,7 @@ const storage = new CloudinaryStorage({
 const upload = multer({ storage });
 
 // ==========================================================================
-// CREATE A LISTING
+// CREATE A LISTING (ROBUST FALLBACKS ADDED)
 // ==========================================================================
 router.post('/submit', upload.array('photos'), async (req, res) => {
   try {
@@ -37,7 +37,7 @@ router.post('/submit', upload.array('photos'), async (req, res) => {
 
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ error: 'No token provided' });
+      return res.status(401).json({ error: 'No authorization token provided' });
     }
 
     const token = authHeader.split(' ')[1];
@@ -46,42 +46,52 @@ router.post('/submit', upload.array('photos'), async (req, res) => {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       currentUser = await User.findById(decoded.id).select('-password');
     } catch (tokenErr) {
-      return res.status(401).json({ error: 'Invalid or expired token' });
+      return res.status(401).json({ error: 'Invalid or expired token. Please sign in again.' });
     }
 
     if (!currentUser) {
-      return res.status(401).json({ error: 'User not found' });
+      return res.status(401).json({ error: 'User profile not found' });
     }
 
     const { year, make, model, price, miles, location, description, titleStatus, tag, highlights, specs } = req.body;
 
     let parsedHighlights = [];
-    let parsedSpecs = {};
+    let parsedSpecs = {
+      engine: 'N/A', transmission: 'Manual 6-Speed', drivetrain: 'N/A',
+      vin: 'Inquire', fuelType: 'Gasoline', exteriorColor: 'N/A', interiorColor: 'N/A'
+    };
 
     try {
       parsedHighlights = highlights ? (Array.isArray(highlights) ? highlights : JSON.parse(highlights)) : [];
-    } catch (e) { console.error('highlights parse error:', e.message); }
+    } catch (e) { console.error('Non-critical highlights parse fallback bypass:', e.message); }
 
     try {
-      parsedSpecs = specs ? (typeof specs === 'object' && !Array.isArray(specs) ? specs : JSON.parse(specs)) : {};
-    } catch (e) { console.error('specs parse error:', e.message); }
+      if (specs) {
+        const incomingSpecs = typeof specs === 'object' ? specs : JSON.parse(specs);
+        parsedSpecs = { ...parsedSpecs, ...incomingSpecs };
+      }
+    } catch (e) { console.error('Non-critical specs parse fallback bypass:', e.message); }
 
     const parsedYear = parseInt(String(year).replace(/[^0-9]/g, ''), 10) || new Date().getFullYear();
     const parsedPrice = parseFloat(String(price).replace(/[^0-9.]/g, '')) || 0;
-    const cleanMiles = String(miles).replace(/[^0-9]/g, '') || '0';
+    const cleanMiles = miles ? String(miles).replace(/[^0-9]/g, '') : '0';
 
-    const photoUrls = req.files?.length > 0 ? req.files.map(f => f.path) : ['https://placehold.co/600x400?text=No+Image'];
+    // Safely extract paths from Cloudinary files array
+    const photoUrls = req.files?.length > 0 
+      ? req.files.map(f => f.path || f.secure_url || f.url) 
+      : ['https://placehold.co/600x400?text=No+Image'];
 
+    // Enforce matching fields with schema requirements strictly
     const listingPayload = {
       year:        parsedYear,
-      make:        make        || 'Unknown',
-      model:       model       || 'Unknown',
+      make:        make        || 'Unknown Make',
+      model:       model       || 'Unknown Model',
       price:       parsedPrice,
       miles:       cleanMiles,
       location:    location    || 'Not Specified',
       description: description || '',
       titleStatus: titleStatus || 'Clean',
-      tag:         tag         || 'OTHER',
+      tag:         ['JDM', 'EURO', 'MUSCLE', '4X4', 'CLASSIC', 'OTHER'].includes(tag) ? tag : 'OTHER',
       highlights:  parsedHighlights,
       specs:       parsedSpecs,
       images:      photoUrls,
@@ -92,15 +102,20 @@ router.post('/submit', upload.array('photos'), async (req, res) => {
     const newListing = new Listing(listingPayload);
     await newListing.save();
 
+    console.log('=== LISTING SAVED SUCCESSFULLY ===');
+
     return res.status(201).json({
       success: true,
-      message: 'Listing created',
+      message: 'Listing created successfully',
       listing: newListing
     });
 
   } catch (error) {
-    console.error('SUBMIT ERROR:', error.message);
-    return res.status(500).json({ error: 'Server error', details: error.message });
+    console.error('❌ CRITICAL SUBMIT ROUTE EXCEPTION:', error);
+    return res.status(500).json({ 
+      error: 'Backend failed to process vehicle submission.', 
+      message: error.message 
+    });
   }
 });
 
@@ -180,7 +195,6 @@ router.post('/listing/:id/review', async (req, res) => {
 
     const numericRating = Number(rating);
 
-    // Find the actual user template database row
     let finalUserId = new mongoose.Types.ObjectId(); 
     let finalAvatar = "";
 
@@ -194,27 +208,22 @@ router.post('/listing/:id/review', async (req, res) => {
       console.log("Non-critical user reference lookup bypass.");
     }
     
-    // BUILD TARGET: Explicitly matches all properties expected by reviewSchema layout
     const targetReview = {
       userId: finalUserId,
       username: String(username),
-      userAvatar: finalAvatar, // <-- Added to perfectly align with your Schema validation
+      userAvatar: finalAvatar, 
       tribe: tribe || 'Enthusiast',
       rating: isNaN(numericRating) ? 5 : numericRating,
       comment: String(comment)
     };
 
     listing.reviews.push(targetReview);
-    
-    // Attempt document persistence save rewrite
     await listing.save();
 
-    // Re-populate the seller data before returning to frontend so user widgets don't break
     const updatedListing = await Listing.findById(id).populate('seller', 'username personalName avatar interests knowWhats');
 
     return res.status(201).json(updatedListing);
   } catch (err) {
-    // CRITICAL: This logs the exact path property that failed validation directly to your console
     console.error("❌ CRITICAL DB VALIDATION FAILURE DETAILS:", err);
     return res.status(500).json({ 
       error: "Could not post verification recommendation.", 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import {CheckCircle, MessageSquare,ChevronLeft,MapPin,ShieldCheck,X,Send,Gauge,Loader2,Info,Zap,Star,Plus,} from 'lucide-react';
+import { CheckCircle, MessageSquare, ChevronLeft, MapPin, ShieldCheck, X, Send, Gauge, Loader2, Info, Zap, Star, Plus } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 import ProfileLicense from '../../components/profile/ProfileLicense';
@@ -54,7 +54,9 @@ const ListingDetail = () => {
     fetchCar();
   }, [id]);
 
-  // Submit Review to Backend
+  // ==========================================================================
+  // SUBMIT REVIEW TO BACKEND (CORRECTED & SANITIZED TYPES)
+  // ==========================================================================
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
     const storedUser = JSON.parse(localStorage.getItem('user'));
@@ -66,14 +68,22 @@ const ListingDetail = () => {
 
     setIsSubmittingReview(true);
     try {
-      const { data } = await axios.post(`${API_BASE_URL}/api/market/listing/${id}/review`, {
+      // Force hard primitive types before sending over the wire to protect the aggregation pre-save mathematics
+      const payload = {
         username: storedUser.username,
-        tribe: storedUser.tribe || 'Enthusiast',
-        rating: newReview.rating,
-        comment: newReview.comment
-      });
+        // Grabs the primary community tribe from the user's setup arrays, fallback to string properties
+        tribe: Array.isArray(storedUser.tribes) && storedUser.tribes.length > 0 
+          ? storedUser.tribes[0] 
+          : (storedUser.tribe || 'Enthusiast'),
+        rating: Number(newReview.rating), 
+        comment: String(newReview.comment)
+      };
+
+      console.log("Submitting sanitized payload to market engine:", payload);
+
+      const { data } = await axios.post(`${API_BASE_URL}/api/market/listing/${id}/review`, payload);
     
-      // Safe fallback check: handles both whole listing response or direct array response
+      // Gracefully capture either the full updated document object structure or direct array payload variations
       if (data && data.reviews) {
         setReviews(data.reviews);
       } else if (Array.isArray(data)) {
@@ -82,14 +92,14 @@ const ListingDetail = () => {
     
       setNewReview({ rating: 5, comment: '' });
       setShowReviewForm(false);
+      alert("Recommendation recorded successfully!");
     } catch (err) {
-      console.error("Review submission error details:", err.response || err);
+      console.error("Review submission error details:", err.response?.data || err);
       
-      if (err.response?.status === 404) {
-        alert("API Endpoint not found. Ensure backend changes are fully deployed to Render and restarted.");
-      } else {
-        alert(`Error saving review: ${err.response?.data?.error || "Please try again."}`);
-      }
+      const serverErrorMessage = err.response?.data?.message || err.response?.data?.error || "Transaction failure encountered.";
+      alert(`Error saving review: ${serverErrorMessage}`);
+    } finally {
+      setIsSubmittingReview(false);
     }
   };
 
@@ -222,7 +232,7 @@ const ListingDetail = () => {
             </p>
           </div>
 
-          {/* NEW FEATURE: Tribe Recommendations System */}
+          {/* Tribe Recommendations System */}
           <div className="recommendations-section card">
             <div className="section-header">
               <div className="header-left">
