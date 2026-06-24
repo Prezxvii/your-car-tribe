@@ -26,7 +26,6 @@ import ModerationDashboard from './pages/admin/ModerationDashboard';
 import './styles/App.css';
 import './styles/Mobile.css'; 
 
-
 const ScrollToTop = () => {
   const { pathname } = useLocation();
   useEffect(() => {
@@ -36,23 +35,22 @@ const ScrollToTop = () => {
 };
 
 function App() {
-  // Synchronously initialize state straight from storage so it's ready on frame 1
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
     const token = localStorage.getItem('token');
     const userData = localStorage.getItem('user');
     return !!(token && userData && userData !== "undefined" && userData !== "null");
   });
 
-  const [isAdmin, setIsAdmin] = useState(() => {
+  const [currentUser, setCurrentUser] = useState(() => {
     const userData = localStorage.getItem('user');
     if (userData && userData !== "undefined" && userData !== "null") {
-      try {
-        return JSON.parse(userData)?.role === 'admin';
-      } catch {
-        return false;
-      }
+      try { return JSON.parse(userData); } catch { return null; }
     }
-    return false;
+    return null;
+  });
+
+  const [isAdmin, setIsAdmin] = useState(() => {
+    return currentUser?.role === 'admin';
   });
 
   const checkAuth = useCallback(() => {
@@ -63,13 +61,16 @@ function App() {
       try {
         const user = JSON.parse(userData);
         setIsLoggedIn(true);
+        setCurrentUser(user);
         setIsAdmin(user?.role === 'admin');
       } catch (error) {
         setIsLoggedIn(false);
+        setCurrentUser(null);
         setIsAdmin(false);
       }
     } else {
       setIsLoggedIn(false);
+      setCurrentUser(null);
       setIsAdmin(false);
     }
   }, []);
@@ -91,16 +92,16 @@ function App() {
 
   return (
     <Router>
-      <ScrollToTop /> {/* ✅ Ensures page starts at top on route change */}
+      <ScrollToTop />
       <div className="app-wrapper">
         
-        <Navbar />
+        <Navbar currentUser={currentUser} />
 
         <main className="content-area">
           <Routes>
             {/* Public Routes */}
             <Route path="/" element={<Homepage />} />
-            <Route path="/news" element={<NewsPage />} /> {/* ✅ New News Route */}
+            <Route path="/news" element={<NewsPage />} />
             <Route path="/marketplace" element={<MarketplaceFeed />} />
             <Route path="/listing/:id" element={<ListingDetail />} /> 
             <Route path="/forum" element={<ForumPage />} />

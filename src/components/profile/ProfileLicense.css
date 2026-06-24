@@ -124,3 +124,13 @@
   font-weight: 900;
   margin-top: 4px;
 }
+
+/* Prevent fixed navbar from layout clipping on explicit pages */
+.license-card {
+  margin-top: 80px !important; /* Pushes card down cleanly out from underneath the navbar zone */
+}
+
+/* Ensure the edit button overlay responds cleanly to permission states */
+.profile-pic-box.read-only {
+  cursor: default !important;
+}

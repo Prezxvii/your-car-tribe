@@ -1,0 +1,226 @@
+.floating-chat-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 1000;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* Floating Action Trigger Button */
+.chat-trigger-bubble {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #0066ff; /* Navy / Sky accent matching brand style */
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(0, 102, 255, 0.3);
+  position: relative;
+}
+
+.unread-indicator {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  background: #ff3366;
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 10px;
+  border: 2px solid #ffffff;
+}
+
+/* Docked Chat Drawer Window Styles */
+.chat-drawer-window {
+  position: absolute;
+  bottom: 72px;
+  right: 0;
+  width: 360px;
+  height: 480px;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.chat-drawer-header {
+  background: #ffffff;
+  padding: 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-info h4 {
+  margin: 0;
+  font-size: 15px;
+  color: #1a1a1a;
+  font-weight: 600;
+}
+
+.header-info p {
+  margin: 2px 0 0 0;
+  font-size: 12px;
+  color: #666666;
+}
+
+.btn-complete-deal {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: #ebf5ff;
+  color: #0066ff;
+  border: 1px solid rgba(0, 102, 255, 0.2);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-complete-deal:hover {
+  background: #0066ff;
+  color: white;
+}
+
+/* Chat Feed Core Layout */
+.chat-drawer-body {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+  background: #f8f9fa;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.chat-msg-row {
+  display: flex;
+  flex-direction: column;
+  max-width: 80%;
+}
+
+.chat-msg-row.outgoing {
+  align-self: flex-end;
+  align-items: flex-end;
+}
+
+.chat-msg-row.incoming {
+  align-self: flex-start;
+  align-items: flex-start;
+}
+
+.msg-bubble {
+  padding: 10px 14px;
+  border-radius: 14px;
+  font-size: 13.5px;
+  line-height: 1.4;
+}
+
+.outgoing .msg-bubble {
+  background: #0066ff;
+  color: #ffffff;
+  border-bottom-right-radius: 2px;
+}
+
+.incoming .msg-bubble {
+  background: #ffffff;
+  color: #212529;
+  border-bottom-left-radius: 2px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.msg-sender-label {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  margin-bottom: 3px;
+  opacity: 0.8;
+}
+
+.msg-time {
+  font-size: 10px;
+  color: #999999;
+  margin-top: 4px;
+  padding: 0 4px;
+}
+
+/* System Message Alert Bubbles */
+.chat-msg-system {
+  align-self: center;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 90%;
+}
+
+.system-bubble {
+  background: rgba(0, 0, 0, 0.05);
+  color: #555555;
+  font-size: 11px;
+  padding: 6px 12px;
+  border-radius: 12px;
+  line-height: 1.3;
+  display: flex;
+  align-items: center;
+}
+
+.chat-msg-system.admin-notice .system-bubble {
+  background: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeeba;
+  font-weight: 500;
+}
+
+/* Input Form Footer Layout */
+.chat-drawer-footer {
+  padding: 12px;
+  background: #ffffff;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  display: flex;
+  gap: 8px;
+}
+
+.chat-drawer-footer input {
+  flex: 1;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  padding: 10px 14px;
+  border-radius: 24px;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.chat-drawer-footer input:focus {
+  border-color: #0066ff;
+}
+
+.chat-drawer-footer button {
+  background: #0066ff;
+  color: white;
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.chat-drawer-footer button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

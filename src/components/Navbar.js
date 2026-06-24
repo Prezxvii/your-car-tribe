@@ -2,9 +2,19 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Menu, X, Car, Users, User, LogOut, Wrench, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import io from 'socket.io-client';
+import { API_BASE_URL } from '../config/api';
 import '../styles/Navbar.css';
 
-const Navbar = () => {
+// Initialize socket manager outside component footprint with forced websocket transport
+const socketUrl = API_BASE_URL.replace('/api', '');
+const socket = io(socketUrl, { 
+  autoConnect: false,
+  transports: ['websocket'],
+  upgrade: false
+});
+
+const Navbar = ({ currentUser }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [userName, setUserName] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('token'));
@@ -37,6 +47,24 @@ const Navbar = () => {
     };
   }, [checkAuth]);
 
+  // Real-time notification socket initialization 
+  useEffect(() => {
+    if (!isLoggedIn || !currentUser?.username) {
+      if (socket.connected) socket.disconnect();
+      return;
+    }
+
+    if (!socket.connected) {
+      socket.connect();
+    }
+
+    socket.emit('identify_user', currentUser.username);
+
+    return () => {
+      // Keep the connection persistent for other components listening to global socket instances
+    };
+  }, [isLoggedIn, currentUser]);
+
   const navLinks = [
     { name: 'Home',      path: '/',           icon: <Car size={18} /> },
     { name: 'Marketplace',   path: '/marketplace', icon: <Wrench size={18} /> },
@@ -52,6 +80,7 @@ const Navbar = () => {
     localStorage.clear();
     setIsLoggedIn(false);
     setUserName('');
+    if (socket.connected) socket.disconnect();
     closeMenu();
     navigate('/login');
     window.dispatchEvent(new Event("storage"));
@@ -82,6 +111,7 @@ const Navbar = () => {
           {isLoggedIn ? (
             <div className="nav-auth-group">
               <span className="welcome-msg">Welcome, {userName}</span>
+              
               <Link to="/profile" className="nav-profile-btn">
                 <User size={20} />
               </Link>

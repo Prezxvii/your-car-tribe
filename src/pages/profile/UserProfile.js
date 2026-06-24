@@ -125,9 +125,11 @@ const UserProfile = () => {
     <div className="profile-page-wrapper">
       <section className="license-display-section">
         <div className="license-relative-wrapper">
+          {/* 🚀 ALLOW PHOTO EDIT ENFORCED HERE */}
           <ProfileLicense 
             userData={{ username: userName || "Enthusiast", personalName: "Verified Member", interests: userTribes, knowWhats, avatar }} 
             onPhotoClick={() => document.getElementById('avatar-upload').click()}
+            allowPhotoEdit={true}
           />
           <input type="file" id="avatar-upload" onChange={handleAvatarChange} accept="image/*" hidden />
         </div>

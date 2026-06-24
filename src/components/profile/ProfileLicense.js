@@ -1,8 +1,9 @@
 import React from 'react';
-import { User, Wrench, Camera } from 'lucide-react'; // Added Camera
+import { User, Wrench, Camera } from 'lucide-react';
 import './ProfileLicense.css';
 
-const ProfileLicense = ({ userData, onPhotoClick }) => {
+// 🚀 RENAME PROP: allowPhotoEdit explicitly dictates when the visual overlay is allowed to show
+const ProfileLicense = ({ userData, onPhotoClick, allowPhotoEdit = false }) => {
   const {
     username = "Guest_Enthusiast",
     personalName = "New Member",
@@ -21,8 +22,11 @@ const ProfileLicense = ({ userData, onPhotoClick }) => {
       <div className="license-body">
         <div className="profile-main-info">
           
-          {/* THE UPDATED PHOTO BOX */}
-          <div className="profile-pic-box" onClick={onPhotoClick}>
+          {/* THE PHOTO BOX — click handler is only bound if explicit edit layout mode is allowed */}
+          <div 
+            className={`profile-pic-box ${!allowPhotoEdit ? 'read-only' : ''}`} 
+            onClick={allowPhotoEdit ? onPhotoClick : undefined}
+          >
             {avatar ? (
               <img src={avatar} alt="Profile" className="license-avatar-img" />
             ) : (
@@ -32,11 +36,13 @@ const ProfileLicense = ({ userData, onPhotoClick }) => {
               </>
             )}
 
-            {/* HOVER OVERLAY - Now strictly inside this box */}
-            <div className="avatar-mini-overlay">
-              <Camera size={20} />
-              <span>EDIT</span>
-            </div>
+            {/* 🚀 VISUAL LOCK: Only renders the camera box if we are explicitly on the Profile Page view */}
+            {allowPhotoEdit && (
+              <div className="avatar-mini-overlay">
+                <Camera size={20} />
+                <span>EDIT</span>
+              </div>
+            )}
           </div>
           
           <div className="info-fields">

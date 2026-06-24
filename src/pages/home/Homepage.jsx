@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, ChevronRight, Newspaper, ExternalLink, Clock, TrendingUp } from 'lucide-react';
+import { Users, ChevronRight, Newspaper, ExternalLink, Clock, TrendingUp, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import ProfileLicense from '../../components/profile/ProfileLicense';
 import '../../styles/Home.css';
@@ -17,6 +17,9 @@ const Homepage = () => {
   const [localNews, setLocalNews] = useState([]);
   const [newsLoading, setNewsLoading] = useState(true);
   const [newsError, setNewsError] = useState(null);
+  
+  // 🚀 INTERACTIVE STORY STATE: Holds the active article object when a story card is clicked
+  const [selectedStory, setSelectedStory] = useState(null);
 
   useEffect(() => {
     const savedTribes = localStorage.getItem('userTribes');
@@ -60,11 +63,30 @@ const Homepage = () => {
     avatar
   };
 
+  // Expanded with dynamic full text blocks for your structural modal views
   const feedContent = [
-    { id: 1, type: 'article', tag: 'Technical', title: 'RB26 vs 2JZ: The Final Verdict', author: 'Expert_Spec', interest: 'JDM', desc: 'Exploring the engines that defined a generation.' },
-    { id: 2, type: 'listing', tag: 'Experts', title: '1993 Mazda RX-7 FD', price: '$42,000', interest: 'JDM', location: 'Los Angeles, CA' },
-    { id: 4, type: 'listing', tag: 'Experts', title: '1969 Mustang Fastback', price: '$55,000', interest: 'Muscle', location: 'Austin, TX' },
-    { id: 5, type: 'article', tag: 'Guide', title: 'Restoring E30 Interiors', author: 'BimmerDude', interest: 'Euro', desc: 'How to source OEM fabric.' },
+    { 
+      id: 1, 
+      type: 'article', 
+      tag: 'Technical', 
+      title: 'RB26 vs 2JZ: The Final Verdict', 
+      author: 'Expert_Spec', 
+      interest: 'JDM', 
+      desc: 'Exploring the engines that defined a generation.',
+      content: "The battle between Nissan's RB26DETT and Toyota's 2JZ-GTE remains the absolute mountaintop of sports tuner engine architecture. While the RB26 relies on sharp independent throttle bodies and an aggressive race lineage honed inside the Japanese Touring Car Championship, Toyota's 2JZ-GTE offers bulletproof cast-iron block stability that easily absorbs high horsepower spikes without breaking factory core internals."
+    },
+    { id: 2, type: 'listing', tag: 'Experts', title: '1993 Mazda RX-7 FD', price: '$42,000', interest: 'JDM', location: 'Los Angeles, CA', listingId: '6a3aa9f67a0ae58e34b15344' },
+    { id: 4, type: 'listing', tag: 'Experts', title: '1969 Mustang Fastback', price: '$55,000', interest: 'Muscle', location: 'Austin, TX', listingId: '6a3aa9f67a0ae58e34b15355' },
+    { 
+      id: 5, 
+      type: 'article', 
+      tag: 'Guide', 
+      title: 'Restoring E30 Interiors', 
+      author: 'BimmerDude', 
+      interest: 'Euro', 
+      desc: 'How to source OEM fabric.',
+      content: "Sourcing replacement parts for late-80s sports car configurations requires patience and precision. Finding clean OEM houndstooth cloth bolt layouts or vintage silver M-Tech patterns means combing dedicated continental distributors, checking specialized restoration centers, and verifying density weight specs before committing to upholstery overhauls."
+    },
   ];
 
   const getArticleImage = (article) => {
@@ -83,6 +105,15 @@ const Homepage = () => {
   const truncateDescription = (text, maxLength = 120) => {
     if (!text || text.length <= maxLength) return text;
     return text.substring(0, maxLength).trim() + '...';
+  };
+
+  // 🚀 ACTION CONTROLLER: Evaluates row click parameters dynamically
+  const handleCardAction = (item) => {
+    if (item.type === 'listing') {
+      navigate(`/listing/${item.listingId}`);
+    } else {
+      setSelectedStory(item);
+    }
   };
 
   return (
@@ -121,9 +152,10 @@ const Homepage = () => {
                 Manage Account
               </button>
             </div>
+            {/* 🚀 FIXED LOGIC: Passing explicit edit lockout prop to safely isolate rendering style classes */}
             <div className="license-preview-container" onClick={() => navigate('/profile')}>
               <div className="license-hover-hint">View My Profile License</div>
-              <ProfileLicense userData={licenseData} />
+              <ProfileLicense userData={licenseData} allowPhotoEdit={false} />
             </div>
           </div>
         </section>
@@ -141,13 +173,15 @@ const Homepage = () => {
             </div>
           </div>
           <div className="home-content-grid">
-            <AnimatePresence mode='wait'>
+            <AnimatePresence mode="popLayout">
               {feedContent.filter(item => item.interest === activeTab).map((item) => (
                 <motion.div key={item.id} layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className={`content-card ${item.type}`}>
                   <span className="content-badge">{item.tag}</span>
                   <h3>{item.title}</h3>
                   {item.type === 'listing' ? <p className="price-text">{item.price}</p> : <p className="desc-text">{item.desc}</p>}
-                  <button className="card-action-btn">
+                  
+                  {/* 🚀 WIRED UP INTERACTION HANDLER */}
+                  <button className="card-action-btn" onClick={() => handleCardAction(item)}>
                     View {item.type === 'listing' ? 'Listing' : 'Story'} <ChevronRight size={16} />
                   </button>
                 </motion.div>
@@ -222,6 +256,38 @@ const Homepage = () => {
           </div>
         </div>
       </section>
+
+      {/* 🚀 IMMERSIVE MODAL VIEW COMPONENT FOR STORIES */}
+      <AnimatePresence>
+        {selectedStory && (
+          <motion.div 
+            className="story-modal-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setSelectedStory(null)}
+          >
+            <motion.div 
+              className="story-modal-content"
+              initial={{ scale: 0.95, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 20 }}
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="modal-header">
+                <span className="modal-badge">{selectedStory.tag}</span>
+                <button className="close-modal-btn" onClick={() => setSelectedStory(null)}>
+                  <X size={20} />
+                </button>
+              </div>
+              <h2>{selectedStory.title}</h2>
+              <p className="modal-author-credit">Written by @{selectedStory.author}</p>
+              <hr className="modal-divider" />
+              <p className="modal-body-text">{selectedStory.content}</p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

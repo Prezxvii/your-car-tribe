@@ -7,6 +7,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 import ProfileLicense from '../../components/profile/ProfileLicense';
+import FloatingVehicleChat from '../../components/chat/FloatingVehicleChat';
 import './ListingDetail.css';
 import { API_BASE_URL } from '../../config/api';
 
@@ -22,6 +23,10 @@ const ListingDetail = () => {
   const [messageText, setMessageText] = useState('');
   const [currentUser, setCurrentUser] = useState(null);
 
+  // Chat Sync States
+  const [isChatDrawerOpen, setIsChatDrawerOpen] = useState(false);
+  const [injectedInquiryMessage, setInjectedInquiryMessage] = useState(null);
+
   // Review System State
   const [reviews, setReviews] = useState([]);
   const [showReviewForm, setShowReviewForm] = useState(false);
@@ -34,7 +39,6 @@ const ListingDetail = () => {
   const [editForm, setEditForm] = useState({ rating: 5, comment: '' });
 
   useEffect(() => {
-    // Read user securely out of local system cache
     const storedUser = JSON.parse(localStorage.getItem('user'));
     if (storedUser) setCurrentUser(storedUser);
 
@@ -67,14 +71,12 @@ const ListingDetail = () => {
     fetchCar();
   }, [id]);
 
-  // Click outside listener helper for dropdowns
   useEffect(() => {
     const closeDropdowns = () => setActiveDropdownIndex(null);
     window.addEventListener('click', closeDropdowns);
     return () => window.removeEventListener('click', closeDropdowns);
   }, []);
 
-  // Form Submit Handler (Create)
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
     if (!currentUser) {
@@ -106,11 +108,9 @@ const ListingDetail = () => {
     }
   };
 
-  // Inline Review Edit Handler (Update)
   const handleReviewUpdate = async (e, reviewId) => {
     e.preventDefault();
     try {
-      // Intentionally formatted matching the validation stack
       const payload = {
         rating: Number(editForm.rating),
         comment: String(editForm.comment)
@@ -118,7 +118,7 @@ const ListingDetail = () => {
       
       const { data } = await axios.put(`${API_BASE_URL}/api/market/listing/${id}/review/${reviewId}`, payload);
       setReviews(data.reviews || data);
-      setEditingReviewId(null);
+      editingReviewId(null);
       alert("Recommendation updated flawlessly.");
     } catch (err) {
       console.error("Failed to re-sync updated log:", err);
@@ -126,7 +126,6 @@ const ListingDetail = () => {
     }
   };
 
-  // Inline Review Destruction Handler (Delete)
   const handleReviewDelete = async (reviewId) => {
     if (!window.confirm("Are you sure you want to permanently remove this recommendation?")) return;
     try {
@@ -145,9 +144,18 @@ const ListingDetail = () => {
   };
 
   const handleSendMessage = () => {
-    const sellerDisplayName = car.seller?.personalName || car.seller?.username || car.dealer_name || 'Dealer';
-    alert(`Inquiry sent to ${sellerDisplayName}`);
+    if (!messageText.trim()) return;
+    
+    setInjectedInquiryMessage({
+      id: `inquiry-${Date.now()}`,
+      sender: currentUser?.username || 'Buyer',
+      text: messageText,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    });
+
+    setMessageText('');
     setIsContactModalOpen(false);
+    setIsChatDrawerOpen(true);
   };
 
   if (loading) {
@@ -176,7 +184,7 @@ const ListingDetail = () => {
 
   return (
     <div className="listing-detail-container">
-      {/* Dossier Navigation */}
+      {/* Dossier Navigation Area */}
       <div className="listing-nav-bar">
         <button className="back-btn" onClick={() => navigate(-1)}>
           <ChevronLeft size={18} /> Exit Dossier
@@ -186,272 +194,273 @@ const ListingDetail = () => {
         </div>
       </div>
 
-      {/* Header */}
-      <div className="listing-title-header card">
-        <div className="title-left">
-          <div className="year-badge">{car.year}</div>
-          <h1>{car.make} {car.model}</h1>
-          <div className="location-tag">
-            <MapPin size={14} /> {car.location || `${car.city}, ${car.state}`}
+      {/* Main Structural Frame Wraps the Rest of Page Views */}
+      <div className="listing-scrollable-content">
+        {/* Header Summary Panel */}
+        <div className="listing-title-header card">
+          <div className="title-left">
+            <div className="year-badge">{car.year}</div>
+            <h1>{car.make} {car.model}</h1>
+            <div className="location-tag">
+              <MapPin size={14} /> {car.location || `${car.city}, ${car.state}`}
+            </div>
+          </div>
+
+          <div className="title-right">
+            <div className="header-price-display">
+              <span>Asking Price</span>
+              <strong>${(car.price || car.msrp)?.toLocaleString() || 'Inquire'}</strong>
+            </div>
+            <div className="header-stat">
+              <Gauge size={16} />
+              <span>{car.miles || car.miles_display || 'N/A'} Miles</span>
+            </div>
           </div>
         </div>
 
-        <div className="title-right">
-          <div className="header-price-display">
-            <span>Asking Price</span>
-            <strong>${(car.price || car.msrp)?.toLocaleString() || 'Inquire'}</strong>
-          </div>
-          <div className="header-stat">
-            <Gauge size={16} />
-            <span>{car.miles || car.miles_display || 'N/A'} Miles</span>
-          </div>
-        </div>
-      </div>
-
-      <div className="listing-main-grid">
-        <div className="listing-visuals">
-          <div className="main-image-wrapper card">
-            <AnimatePresence mode="wait">
-              <motion.img
-                key={mainImage}
-                src={mainImage}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                alt="Main View"
-              />
-            </AnimatePresence>
-          </div>
-
-          <div className="thumbnail-strip">
-            {allPhotos.slice(0, 10).map((img, i) => (
-              <div
-                key={i}
-                className={`thumb card ${mainImage === img ? 'active-thumb' : ''}`}
-                onClick={() => setMainImage(img)}
-              >
-                <img src={img} alt={`View ${i}`} />
-              </div>
-            ))}
-          </div>
-
-          <div className="specs-grid-section card">
-            <div className="section-header">
-              <Zap size={20} color="#0066ff" />
-              <h3>Technical Specifications</h3>
-            </div>
-            <div className="specs-info-grid">
-              <div className="spec-item">
-                <label>Engine</label>
-                <span>{car.specs?.engine || car.engine_description || 'N/A'}</span>
-              </div>
-              <div className="spec-item">
-                <label>Transmission</label>
-                <span className="highlight-spec">{car.specs?.transmission || 'Manual 6-Speed'}</span>
-              </div>
-              <div className="spec-item">
-                <label>Title Status</label>
-                <span className="highlight-spec">{car.titleStatus || 'Clean'}</span>
-              </div>
-              <div className="spec-item">
-                <label>VIN</label>
-                <span className="vin-text">{car.specs?.vin || car.vin || 'Inquire'}</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="details-accordion card">
-            <div className="section-header">
-              <ShieldCheck size={20} color="#0066ff" />
-              <h3>Expert Remarks</h3>
-            </div>
-            <p className="description-text">
-              {car.description || 'No technical remarks provided for this listing.'}
-            </p>
-          </div>
-
-          {/* Recommendations System */}
-          <div className="recommendations-section card">
-            <div className="section-header">
-              <div className="header-left">
-                <Star size={20} color="#f59e0b" />
-                <h3>Community Recommendations</h3>
-              </div>
-              <button 
-                className="btn-add-review" 
-                onClick={() => setShowReviewForm(!showReviewForm)}
-              >
-                {showReviewForm ? <X size={16} /> : <Plus size={16} />}
-                {showReviewForm ? "Cancel" : "Leave a Recommendation"}
-              </button>
+        {/* Layout Grid Split Configuration */}
+        <div className="listing-main-grid">
+          <div className="listing-visuals">
+            <div className="main-image-wrapper card">
+              <AnimatePresence mode="wait">
+                <motion.img
+                  key={mainImage}
+                  src={mainImage}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  alt="Main View"
+                />
+              </AnimatePresence>
             </div>
 
-            <AnimatePresence>
-              {showReviewForm && (
-                <motion.form 
-                  className="review-form-inline"
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  onSubmit={handleReviewSubmit}
+            <div className="thumbnail-strip">
+              {allPhotos.slice(0, 10).map((img, i) => (
+                <div
+                  key={i}
+                  className={`thumb card ${mainImage === img ? 'active-thumb' : ''}`}
+                  onClick={() => setMainImage(img)}
                 >
-                  <div className="rating-input">
-                    <label>Tribe Rating:</label>
-                    {[1, 2, 3, 4, 5].map((s) => (
-                      <Star 
-                        key={s} 
-                        size={18} 
-                        fill={s <= newReview.rating ? "#f59e0b" : "none"} 
-                        color={s <= newReview.rating ? "#f59e0b" : "#cbd5e1"}
-                        onClick={() => setNewReview({...newReview, rating: s})}
-                        style={{cursor: 'pointer'}}
-                      />
-                    ))}
-                  </div>
-                  <textarea 
-                    placeholder="Share your technical observation or vouch for this seller..."
-                    value={newReview.comment}
-                    onChange={(e) => setNewReview({...newReview, comment: e.target.value})}
-                    required
-                  />
-                  <button type="submit" disabled={isSubmittingReview}>
-                    {isSubmittingReview ? "Processing..." : "Submit to Dossier"}
-                  </button>
-                </motion.form>
-              )}
-            </AnimatePresence>
+                  <img src={img} alt={`View ${i}`} />
+                </div>
+              ))}
+            </div>
 
-            <div className="rec-grid">
-              {reviews.length > 0 ? (
-                reviews.map((rec, i) => {
-                  const isReviewOwner = currentUser && (currentUser.username === rec.username);
-                  const isEditingThis = editingReviewId === (rec._id || rec.id);
+            <div className="specs-grid-section card">
+              <div className="section-header">
+                <Zap size={20} color="#0066ff" />
+                <h3>Technical Specifications</h3>
+              </div>
+              <div className="specs-info-grid">
+                <div className="spec-item">
+                  <label>Engine</label>
+                  <span>{car.specs?.engine || car.engine_description || 'N/A'}</span>
+                </div>
+                <div className="spec-item">
+                  <label>Transmission</label>
+                  <span className="highlight-spec">{car.specs?.transmission || 'Manual 6-Speed'}</span>
+                </div>
+                <div className="spec-item">
+                  <label>Title Status</label>
+                  <span className="highlight-spec">{car.titleStatus || 'Clean'}</span>
+                </div>
+                <div className="spec-item">
+                  <label>VIN</label>
+                  <span className="vin-text">{car.specs?.vin || car.vin || 'Inquire'}</span>
+                </div>
+              </div>
+            </div>
 
-                  return (
-                    <div key={rec._id || rec.id || i} className="rec-card">
-                      {isEditingThis ? (
-                        /* INLINE ACTIVE EDIT FORM */
-                        <form onSubmit={(e) => handleReviewUpdate(e, rec._id || rec.id)} className="edit-review-inline-wrapper">
-                          <div className="rating-input">
-                            <label>Adjust Score:</label>
-                            {[1, 2, 3, 4, 5].map((s) => (
-                              <Star 
-                                key={s} 
-                                size={16} 
-                                fill={s <= editForm.rating ? "#f59e0b" : "none"} 
-                                color={s <= editForm.rating ? "#f59e0b" : "#cbd5e1"}
-                                onClick={() => setEditForm({...editForm, rating: s})}
-                                style={{cursor: 'pointer'}}
-                              />
-                            ))}
-                          </div>
-                          <textarea 
-                            value={editForm.comment}
-                            onChange={(e) => setEditForm({...editForm, comment: e.target.value})}
-                            required
-                          />
-                          <div className="edit-action-row">
-                            <button type="submit" className="btn-save-inline">Save Logs</button>
-                            <button type="button" className="btn-cancel-inline" onClick={() => setEditingReviewId(null)}>Cancel</button>
-                          </div>
-                        </form>
-                      ) : (
-                        /* STANDARD VIEW PROFILE PROFILE LAYOUT */
-                        <>
-                          <div className="rec-user">
-                            <div className="rec-avatar">{rec.username?.[0] || 'U'}</div>
-                            <div className="rec-meta">
-                              <strong>{rec.username}</strong>
-                              <span>{rec.tribe} Tribe</span>
-                            </div>
-                            <div className="rec-stars">
-                              {[...Array(rec.rating)].map((_, starI) => (
-                                <Star key={starI} size={12} fill="#f59e0b" color="#f59e0b" />
+            <div className="details-accordion card">
+              <div className="section-header">
+                <ShieldCheck size={20} color="#0066ff" />
+                <h3>Expert Remarks</h3>
+              </div>
+              <p className="description-text">
+                {car.description || 'No technical remarks provided for this listing.'}
+              </p>
+            </div>
+
+            {/* Recommendations Log Space */}
+            <div className="recommendations-section card">
+              <div className="section-header">
+                <div className="header-left">
+                  <Star size={20} color="#f59e0b" />
+                  <h3>Community Recommendations</h3>
+                </div>
+                <button 
+                  className="btn-add-review" 
+                  onClick={() => setShowReviewForm(!showReviewForm)}
+                >
+                  {showReviewForm ? <X size={16} /> : <Plus size={16} />}
+                  {showReviewForm ? "Cancel" : "Leave a Recommendation"}
+                </button>
+              </div>
+
+              <AnimatePresence>
+                {showReviewForm && (
+                  <motion.form 
+                    className="review-form-inline"
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    onSubmit={handleReviewSubmit}
+                  >
+                    <div className="rating-input">
+                      <label>Tribe Rating:</label>
+                      {[1, 2, 3, 4, 5].map((s) => (
+                        <Star 
+                          key={s} 
+                          size={18} 
+                          fill={s <= newReview.rating ? "#f59e0b" : "none"} 
+                          color={s <= newReview.rating ? "#f59e0b" : "#cbd5e1"}
+                          onClick={() => setNewReview({...newReview, rating: s})}
+                          style={{cursor: 'pointer'}}
+                        />
+                      ))}
+                    </div>
+                    <textarea 
+                      placeholder="Share your technical observation or vouch for this seller..."
+                      value={newReview.comment}
+                      onChange={(e) => setNewReview({...newReview, comment: e.target.value})}
+                      required
+                    />
+                    <button type="submit" disabled={isSubmittingReview}>
+                      {isSubmittingReview ? "Processing..." : "Submit to Dossier"}
+                    </button>
+                  </motion.form>
+                )}
+              </AnimatePresence>
+
+              <div className="rec-grid">
+                {reviews.length > 0 ? (
+                  reviews.map((rec, i) => {
+                    const isReviewOwner = currentUser && (currentUser.username === rec.username);
+                    const isEditingThis = editingReviewId === (rec._id || rec.id);
+
+                    return (
+                      <div key={rec._id || rec.id || i} className="rec-card">
+                        {isEditingThis ? (
+                          <form onSubmit={(e) => handleReviewUpdate(e, rec._id || rec.id)} className="edit-review-inline-wrapper">
+                            <div className="rating-input">
+                              <label>Adjust Score:</label>
+                              {[1, 2, 3, 4, 5].map((s) => (
+                                <Star 
+                                  key={s} 
+                                  size={16} 
+                                  fill={s <= editForm.rating ? "#f59e0b" : "none"} 
+                                  color={s <= editForm.rating ? "#f59e0b" : "#cbd5e1"}
+                                  onClick={() => setEditForm({...editForm, rating: s})}
+                                  style={{cursor: 'pointer'}}
+                                />
                               ))}
                             </div>
-
-                            {/* CUSTODIAN CONTEXT DROP-MENU TRIGGER */}
-                            {isReviewOwner && (
-                              <div className="dropdown-wrapper" onClick={(e) => e.stopPropagation()}>
-                                <button 
-                                  className="btn-trigger-dropdown"
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    setActiveDropdownIndex(activeDropdownIndex === i ? null : i);
-                                  }}
-                                >
-                                  <MoreVertical size={16} />
-                                </button>
-                                
-                                <AnimatePresence>
-                                  {activeDropdownIndex === i && (
-                                    <motion.div 
-                                      className="rec-action-menu"
-                                      initial={{ opacity: 0, scale: 0.95, y: -5 }}
-                                      animate={{ opacity: 1, scale: 1, y: 0 }}
-                                      exit={{ opacity: 0, scale: 0.95, y: -5 }}
-                                    >
-                                      <button onClick={() => { startEditing(rec); setActiveDropdownIndex(null); }}>
-                                        <Edit2 size={13} /> Edit
-                                      </button>
-                                      <button className="danger-action" onClick={() => { handleReviewDelete(rec._id || rec.id); setActiveDropdownIndex(null); }}>
-                                        <Trash2 size={13} /> Delete
-                                      </button>
-                                    </motion.div>
-                                  )}
-                                </AnimatePresence>
+                            <textarea 
+                              value={editForm.comment}
+                              onChange={(e) => setEditForm({...editForm, comment: e.target.value})}
+                              required
+                            />
+                            <div className="edit-action-row">
+                              <button type="submit" className="btn-save-inline">Save Logs</button>
+                              <button type="button" className="btn-cancel-inline" onClick={() => setEditingReviewId(null)}>Cancel</button>
+                            </div>
+                          </form>
+                        ) : (
+                          <>
+                            <div className="rec-user">
+                              <div className="rec-avatar">{rec.username?.[0] || 'U'}</div>
+                              <div className="rec-meta">
+                                <strong>{rec.username}</strong>
+                                <span>{rec.tribe} Tribe</span>
                               </div>
-                            )}
-                          </div>
-                          <p>"{rec.comment}"</p>
-                        </>
-                      )}
-                    </div>
-                  );
-                })
-              ) : (
-                <p className="no-reviews">No technical observations recorded for this dossier yet.</p>
-              )}
+                              <div className="rec-stars">
+                                {[...Array(rec.rating)].map((_, starI) => (
+                                  <Star key={starI} size={12} fill="#f59e0b" color="#f59e0b" />
+                                ))}
+                              </div>
+
+                              {isReviewOwner && (
+                                <div className="dropdown-wrapper" onClick={(e) => e.stopPropagation()}>
+                                  <button 
+                                    className="btn-trigger-dropdown"
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      setActiveDropdownIndex(activeDropdownIndex === i ? null : i);
+                                    }}
+                                  >
+                                    <MoreVertical size={16} />
+                                  </button>
+                                  
+                                  <AnimatePresence>
+                                    {activeDropdownIndex === i && (
+                                      <motion.div 
+                                        className="rec-action-menu"
+                                        initial={{ opacity: 0, scale: 0.95, y: -5 }}
+                                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                                        exit={{ opacity: 0, scale: 0.95, y: -5 }}
+                                      >
+                                        <button onClick={() => { startEditing(rec); setActiveDropdownIndex(null); }}>
+                                          <Edit2 size={13} /> Edit
+                                        </button>
+                                        <button className="danger-action" onClick={() => { handleReviewDelete(rec._id || rec.id); setActiveDropdownIndex(null); }}>
+                                          <Trash2 size={13} /> Delete
+                                        </button>
+                                      </motion.div>
+                                    )}
+                                  </AnimatePresence>
+                                </div>
+                              )}
+                            </div>
+                            <p>"{rec.comment}"</p>
+                          </>
+                        )}
+                      </div>
+                    );
+                  })
+                ) : (
+                  <p className="no-reviews">No technical observations recorded for this dossier yet.</p>
+                )}
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Sidebar */}
-        <div className="listing-sidebar">
-          <div className="sticky-sidebar">
-            <h3 className="sidebar-label">Verified Custodian</h3>
+          {/* Sidebar Area */}
+          <div className="listing-sidebar">
+            <div className="sticky-sidebar">
+              <h3 className="sidebar-label">Verified Custodian</h3>
 
-            <ProfileLicense
-              userData={{
-                username: car.seller?.username || 'Enthusiast Member',
-                personalName: car.seller?.personalName || car.seller?.username || car.dealer_name || 'Tribe Member',
-                interests: [car.tag || 'Enthusiast'],
-                avatar: car.seller?.avatar || null,
-                knowWhats: car.seller?.knowWhats?.length > 0 ? car.seller.knowWhats : ['Identity Verified', 'Title Authenticated'],
-              }}
-            />
+              <ProfileLicense
+                userData={{
+                  username: car.seller?.username || 'Enthusiast Member',
+                  personalName: car.seller?.personalName || car.seller?.username || car.dealer_name || 'Tribe Member',
+                  interests: [car.tag || 'Enthusiast'],
+                  avatar: car.seller?.avatar || null,
+                  knowWhats: car.seller?.knowWhats?.length > 0 ? car.seller.knowWhats : ['Identity Verified', 'Title Authenticated'],
+                }}
+              />
 
-            <div className="action-buttons">
-              <button className="btn-primary-contact" onClick={() => setIsContactModalOpen(true)}>
-                <MessageSquare size={18} /> Initiate Inquiry
-              </button>
-            </div>
-
-            <div className="trust-signals card">
-              <div className="signal">
-                <CheckCircle size={16} color="#10b981" />
-                <span>Radius Verified (Local)</span>
+              <div className="action-buttons">
+                <button className="btn-primary-contact" onClick={() => setIsContactModalOpen(true)}>
+                  <MessageSquare size={18} /> Initiate Inquiry
+                </button>
               </div>
-              <div className="signal">
-                <Info size={16} color="#0066ff" />
-                <span>Secure Dossier History</span>
+
+              <div className="trust-signals card">
+                <div className="signal">
+                  <CheckCircle size={16} color="#10b981" />
+                  <span>Radius Verified (Local)</span>
+                </div>
+                <div className="signal">
+                  <Info size={16} color="#0066ff" />
+                  <span>Secure Dossier History</span>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Contact Modal */}
+      {/* Inquiry Form Window Overlay */}
       <AnimatePresence>
         {isContactModalOpen && (
           <div className="modal-overlay">
@@ -482,6 +491,15 @@ const ListingDetail = () => {
           </div>
         )}
       </AnimatePresence>
+
+      <FloatingVehicleChat 
+        listing={car} 
+        currentUser={currentUser} 
+        forcedOpen={isChatDrawerOpen}
+        setForcedOpen={setIsChatDrawerOpen}
+        injectedMessage={injectedInquiryMessage}
+        clearInjectedMessage={() => setInjectedInquiryMessage(null)}
+      />
     </div>
   );
 };
