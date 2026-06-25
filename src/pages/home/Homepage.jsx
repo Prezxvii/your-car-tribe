@@ -18,7 +18,7 @@ const Homepage = () => {
   const [newsLoading, setNewsLoading] = useState(true);
   const [newsError, setNewsError] = useState(null);
   
-  // 🚀 INTERACTIVE STORY STATE: Holds the active article object when a story card is clicked
+  
   const [selectedStory, setSelectedStory] = useState(null);
 
   useEffect(() => {
@@ -107,7 +107,7 @@ const Homepage = () => {
     return text.substring(0, maxLength).trim() + '...';
   };
 
-  // 🚀 ACTION CONTROLLER: Evaluates row click parameters dynamically
+  
   const handleCardAction = (item) => {
     if (item.type === 'listing') {
       navigate(`/listing/${item.listingId}`);
@@ -128,7 +128,7 @@ const Homepage = () => {
             connecting the right people and a space to meet. <strong>Welcome!</strong>
           </p>
           <div className="hero-cta-group">
-            <button className="btn-primary-glow" onClick={() => navigate('/marketplace')}>Experts</button>
+            <button className="btn-primary-glow" onClick={() => navigate('/marketplace')}>Marketplace</button>
             <button className="btn-outline-white" onClick={() => navigate('/events')}>Find a Meet</button>
           </div>
         </motion.div>
@@ -152,7 +152,7 @@ const Homepage = () => {
                 Manage Account
               </button>
             </div>
-            {/* 🚀 FIXED LOGIC: Passing explicit edit lockout prop to safely isolate rendering style classes */}
+            
             <div className="license-preview-container" onClick={() => navigate('/profile')}>
               <div className="license-hover-hint">View My Profile License</div>
               <ProfileLicense userData={licenseData} allowPhotoEdit={false} />
@@ -180,7 +180,7 @@ const Homepage = () => {
                   <h3>{item.title}</h3>
                   {item.type === 'listing' ? <p className="price-text">{item.price}</p> : <p className="desc-text">{item.desc}</p>}
                   
-                  {/* 🚀 WIRED UP INTERACTION HANDLER */}
+             
                   <button className="card-action-btn" onClick={() => handleCardAction(item)}>
                     View {item.type === 'listing' ? 'Listing' : 'Story'} <ChevronRight size={16} />
                   </button>
@@ -257,7 +257,7 @@ const Homepage = () => {
         </div>
       </section>
 
-      {/* 🚀 IMMERSIVE MODAL VIEW COMPONENT FOR STORIES */}
+
       <AnimatePresence>
         {selectedStory && (
           <motion.div 
