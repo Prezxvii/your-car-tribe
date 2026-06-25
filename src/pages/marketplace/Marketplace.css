@@ -623,116 +623,233 @@
   transform: rotate(180deg);
   transition: transform 0.2s ease;
 }
+/* ==========================================================================
+   PRODUCTION-READY MOBILE RESPONSIVE LAYER
+   ========================================================================== */
 
-/* ======================================================
-   RESPONSIVE LAYOUT
-====================================================== */
-
-/* TABLET */
+/* 💻 Large Tablets / Small Laptops (Max 1024px) */
 @media (max-width: 1024px) {
   .marketplace-container {
-    padding: 50px 24px;
+    padding: 40px 24px;
   }
 
   .listing-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 22px;
+    gap: 24px;
   }
 }
 
-/* MOBILE */
+/* 📱 Small Tablets / Landscape Phones (Max 768px) */
 @media (max-width: 768px) {
+  /* Clean Hero Resets */
   .market-hero {
     height: auto;
-    padding: 120px 18px 50px;
-    border-radius: 0 0 40px 40px;
+    margin-top: 0; /* Clear negative desktop margins to avoid viewport clipping */
+  }
+
+  .hero-overlay {
+    padding: 60px 20px 40px 20px;
+    height: auto;
+    display: block;
   }
 
   .hero-content h1 {
-    font-size: 2.3rem;
+    font-size: 2.5rem;
     letter-spacing: -1px;
+    line-height: 1.1;
   }
 
+  .hero-content p {
+    font-size: 1rem;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+
+  /* Structural Reconstruction of Search Container */
   .hero-search-container {
     flex-direction: column;
     border-radius: 24px;
-    padding: 14px;
-    gap: 10px;
+    padding: 12px;
+    gap: 12px;
     width: 100%;
-    max-width: 520px;
+    max-width: 100%;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
   }
 
   .search-main {
     border-right: none;
     border-bottom: 1px solid #e2e8f0;
     width: 100%;
-    padding: 10px 12px 12px 12px;
+    padding: 4px 0 14px 0;
   }
 
+  .search-main input {
+    font-size: 1rem;
+    padding: 10px 10px 10px 40px;
+  }
+
+  .search-main .search-icon {
+    left: 10px;
+  }
+
+  /* Safe flex stacking for inputs */
   .search-location {
     width: 100%;
     padding: 0;
     gap: 10px;
+    flex-direction: row;
   }
 
   .location-input-group {
     flex: 1;
-    min-width: 0;
-    width: 100%;
-    justify-content: center;
+    min-width: 0; /* Overrides rigid desktop minimum declarations safely */
+    width: 50%;
+    padding: 10px 12px;
   }
 
   .location-input-group input {
-    min-width: 120px;
-    font-size: 1.15rem;
+    min-width: 0;
+    width: 100%;
+    font-size: 1rem;
+  }
+
+  .custom-select-wrapper {
+    flex: 1;
+    min-width: 0;
+    width: 50%;
+    background: #f1f5f9;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+  }
+
+  .radius-trigger {
+    padding: 10px 12px;
+    justify-content: center;
+  }
+
+  .custom-dropdown-menu {
+    width: 100%;
+    right: 0;
+    left: 0;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
   }
 
   .hero-search-btn {
     width: 100%;
     padding: 16px;
-    border-radius: 16px;
+    border-radius: 14px;
+    font-size: 1rem;
   }
 
+  /* Feed Filter Updates */
   .feed-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 16px;
+    padding-bottom: 20px;
+    margin-bottom: 30px;
   }
 
-  .card-image-overlay-bottom {
-    position: absolute;
-    bottom: 15px;
-    left: 15px;
-    right: 15px;
-    display: flex;
+  .filter-dropdown-container {
+    width: 100%;
+  }
+
+  .filter-btn, .filter-btn-professional {
+    width: 100%;
     justify-content: space-between;
-    align-items: center;
-    pointer-events: none;
-  }
-  
-  .blue-icon {
-    color: var(--primary-blue);
+    padding: 12px 16px;
   }
 
+  .filter-menu, .filter-menu-professional {
+    width: 100%;
+    left: 0;
+    right: 0;
+    box-sizing: border-box;
+  }
 
-  /* MOBILE GRID */
+  /* Fluid Card Grid Adjustments */
   .listing-grid {
     grid-template-columns: 1fr;
-    gap: 16px;
-    padding: 12px 4px;
+    gap: 20px;
+    padding: 0;
   }
 
-  /* MOBILE CARD TUNING */
   .listing-card {
     border-radius: 20px;
   }
 
   .card-image-wrapper {
-    height: 220px;
+    height: 230px;
   }
 
   .card-content {
-    padding: 16px;
+    padding: 20px;
+  }
+
+  .card-title {
+    font-size: 1.25rem;
+  }
+
+  .card-price {
+    font-size: 1.5rem;
+    margin: 10px 0 20px 0;
+  }
+
+  .card-footer {
+    padding-top: 16px;
+  }
+
+  /* Floating UI Layer Cleanup */
+  .btn-favorite {
+    width: 44px;
+    height: 44px;
+    top: 15px;
+    right: 15px;
+  }
+
+  .badge-no-reserve, .tag-category {
+    top: 15px;
+    left: 15px;
+    padding: 5px 12px;
+  }
+
+  .tag-category {
+    top: auto;
+    bottom: 15px;
+  }
+
+  /* View More Enhancements */
+  .view-more-container {
+    margin: 40px 0 60px 0;
+  }
+
+  .btn-view-more {
+    width: 100%;
+    max-width: 320px;
+    padding: 14px 30px;
+  }
+}
+
+/* 📲 Portrait Smartphones (Max 400px) */
+@media (max-width: 400px) {
+  .hero-content h1 {
+    font-size: 2.1rem;
+  }
+
+  .search-location {
+    flex-direction: column; /* Fallback shift if components get dangerously narrow */
+    gap: 12px;
+  }
+
+  .location-input-group, 
+  .custom-select-wrapper {
+    width: 100%;
+    flex: none;
+  }
+
+  .card-image-wrapper {
+    height: 200px;
   }
 
   .card-title {
@@ -740,23 +857,12 @@
   }
 
   .card-price {
-    font-size: 1.4rem;
-    margin: 10px 0 16px;
+    font-size: 1.35rem;
   }
-
-  .btn-favorite {
-    width: 48px;
-    height: 48px;
-  }
-}
-
-/* SMALL PHONES */
-@media (max-width: 400px) {
-  .card-image-wrapper {
-    height: 200px;
-  }
-
-  .card-title {
-    font-size: 1.05rem;
+  
+  .card-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
   }
 }
