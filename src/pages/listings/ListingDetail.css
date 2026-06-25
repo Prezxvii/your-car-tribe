@@ -558,16 +558,175 @@
   to { transform: rotate(360deg); }
 }
 
-/* --- RESPONSIVENESS --- */
+/* ==========================================================================
+   PRODUCTION-READY MOBILE RESPONSIVE LAYER
+   ========================================================================== */
+
+/* 💻 Tablets & Small Laptops (Max 1100px) */
 @media (max-width: 1100px) {
-  .listing-detail-container { height: auto; overflow: visible; }
-  .listing-scrollable-content { overflow: visible; }
-  .listing-main-grid { grid-template-columns: 1fr; }
-  .sticky-sidebar { position: static; }
+  .listing-detail-container { 
+    height: auto; 
+    overflow: visible; 
+    padding: 20px;
+  }
+
+  .listing-scrollable-content { 
+    overflow: visible; 
+    padding-right: 0;
+  }
+
+  .listing-main-grid { 
+    grid-template-columns: 1fr; 
+    gap: 25px;
+  }
+
+  .sticky-sidebar { 
+    position: static; 
+    width: 100%;
+  }
 }
 
-@media (max-width: 600px) {
-  .listing-detail-container { padding: 10px 20px; }
-  .listing-title-header h1 { font-size: 1.8rem; }
-  .main-image-wrapper { height: 350px; }
+/* 📱 Small Tablets / Large Landscape Phones (Max 768px) */
+@media (max-width: 768px) {
+  .listing-title-header {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 24px;
+    gap: 20px;
+  }
+
+  .header-price-display {
+    text-align: left;
+    width: 100%;
+    border-top: 1px solid var(--glass-border);
+    padding-top: 15px;
+  }
+
+  .header-stat {
+    justify-content: flex-start;
+  }
+
+  .main-image-wrapper {
+    height: 400px;
+  }
+
+  /* Converts rigid thumbnail grid into a native, swipeable mobile carousel track */
+  .thumbnail-strip {
+    display: flex;
+    overflow-x: auto;
+    gap: 12px;
+    padding-bottom: 8px;
+    scrollbar-width: none; /* Firefox */
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .thumbnail-strip::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
+  }
+
+  .thumb {
+    flex: 0 0 85px; /* Keeps thumbnails at a consistent aspect ratio while scrolling */
+    height: 65px;
+  }
+}
+
+/* 📲 Portrait Smartphones (Max 480px) */
+@media (max-width: 480px) {
+  .listing-detail-container { 
+    padding: 12px 16px; 
+  }
+
+  .listing-nav-bar {
+    padding: 8px 0;
+  }
+
+  .nav-breadcrumbs {
+    display: none; /* Hide non-critical long breadcrumb path to prioritize back tap-target spacing */
+  }
+
+  .listing-title-header {
+    padding: 20px 16px;
+    border-radius: 16px;
+    margin-bottom: 20px;
+  }
+
+  .listing-title-header h1 { 
+    font-size: 1.85rem; 
+    letter-spacing: -0.5px;
+  }
+
+  .header-price-display strong {
+    font-size: 2.2rem;
+  }
+
+  .main-image-wrapper { 
+    height: 260px; 
+    border-radius: 16px;
+  }
+
+  .details-accordion, 
+  .specs-grid-section,
+  .trust-signals {
+    padding: 20px 16px;
+    border-radius: 16px;
+    margin-top: 20px;
+  }
+
+  /* Force details metadata rows into a single column array */
+  .specs-info-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .spec-item {
+    padding: 12px;
+  }
+
+  .spec-item span {
+    font-size: 1rem;
+  }
+
+  .btn-primary-contact {
+    padding: 16px;
+    border-radius: 14px;
+    font-size: 1rem;
+  }
+
+  /* Recommendation & Action Header Tuning */
+  .recommendations-section .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .btn-add-review {
+    width: 100%;
+    padding: 10px;
+  }
+
+  /* Safe Adaptive Modal Sizing */
+  .contact-modal {
+    width: 95%;
+    padding: 24px 16px;
+    border-radius: 24px;
+  }
+
+  .modal-header {
+    margin-bottom: 20px;
+  }
+
+  .modal-header h2 {
+    font-size: 1.35rem;
+  }
+
+  .modal-body textarea {
+    height: 120px;
+    padding: 12px;
+    margin: 10px 0 16px;
+  }
+
+  .btn-send-message {
+    padding: 16px;
+    border-radius: 12px;
+  }
 }
