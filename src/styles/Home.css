@@ -800,26 +800,29 @@ html, body {
   }
 }
 
-/* ========================================
-   RESPONSIVE DESIGN
-======================================== */
+/* ==========================================================================
+   PRODUCTION-READY MOBILE RESPONSIVE LAYER
+   ========================================================================== */
 
-/* Large tablets */
+/* 💻 Large Tablets / Small Laptops (Max 1100px) */
 @media (max-width: 1100px) {
   .home-main-layout {
     grid-template-columns: 1fr;
     padding: 0 20px;
+    gap: 30px;
   }
 
   .home-hero-section {
     min-height: 60vh;
     border-radius: 0 0 40px 40px;
     margin-bottom: 40px;
+    padding: 80px 20px 40px; /* Safe space for fixed items */
   }
 
   .hero-text-block h1 {
-    font-size: 3.2rem;
+    font-size: 3.5rem;
     letter-spacing: -2px;
+    line-height: 1.0;
   }
 
   .value-banner {
@@ -831,27 +834,30 @@ html, body {
   .banner-inner {
     flex-direction: column;
     text-align: center;
+    gap: 25px;
   }
 
   .home-news-sidebar {
     position: relative;
     top: 0;
     max-height: none;
+    width: 100%;
   }
 
   .news-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 20px;
     overflow-y: visible;
   }
 }
 
-/* Tablets / Small laptops */
-@media (max-width: 1024px) {
+/* 📱 Small Tablets / Landscape Phones (Max 768px) */
+@media (max-width: 768px) {
   .home-dashboard-inner {
     grid-template-columns: 1fr;
     text-align: center;
+    gap: 40px;
   }
 
   .dashboard-text p,
@@ -862,6 +868,7 @@ html, body {
 
   .quick-stats {
     justify-content: center;
+    gap: 20px;
   }
 
   .btn-manage-profile {
@@ -872,10 +879,7 @@ html, body {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
   }
-}
 
-/* Tablets */
-@media (max-width: 768px) {
   .news-grid {
     grid-template-columns: 1fr;
   }
@@ -889,67 +893,113 @@ html, body {
     padding: 20px;
   }
   
-  .news-description {
-    -webkit-line-clamp: 2 !important;
-    font-size: 0.8rem !important;
+  .tabs {
+    display: flex;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
+    scrollbar-width: none; /* Hide scrollbars for a clean tab bar */
+  }
+  
+  .tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tabs button {
+    flex: 1;
+    padding: 10px 16px;
+    font-size: 0.9rem;
+    text-align: center;
   }
 }
 
-/* Phones */
+/* 📲 Portrait Smartphones (Max 480px) */
 @media (max-width: 480px) {
+  /* Prevent header overlapping with actions */
+  .home-hero-section {
+    padding-top: 100px; 
+    min-height: auto;
+  }
+
   .sign-out-tab {
     top: 16px;
     right: 16px;
-    padding: 10px 14px;
-    font-size: 0.75rem;
+    padding: 8px 16px;
+    font-size: 0.8rem;
   }
 
   .hero-text-block h1 {
-    font-size: 2.25rem;
+    font-size: 2.4rem;
     letter-spacing: -1px;
+    line-height: 1.1;
+  }
+
+  .welcome-badge {
+    font-size: 0.8rem;
+    padding: 6px 16px;
   }
 
   .client-copy {
-    font-size: 1rem;
+    font-size: 0.95rem;
+    line-height: 1.5;
   }
 
   .hero-cta-group {
     flex-direction: column;
     width: 100%;
     gap: 12px;
+    margin-top: 30px;
   }
 
   .btn-primary-glow,
   .btn-outline-white {
     width: 100%;
-    padding: 16px 18px;
+    padding: 16px 20px;
+    font-size: 1rem;
+    text-align: center;
   }
 
   .home-content-grid {
     grid-template-columns: 1fr !important;
+    gap: 16px;
   }
 
   .content-card {
-    border-radius: 22px;
-    padding: 18px;
+    border-radius: 20px;
+    padding: 20px;
+  }
+
+  .price-text {
+    font-size: 1.5rem;
   }
 
   .value-banner {
-    margin: 0 16px 50px;
-    padding: 28px;
+    margin: 0 16px 40px;
+    padding: 30px 20px;
     border-radius: 24px;
   }
 
+  .banner-icon-box {
+    padding: 20px;
+    border-radius: 16px;
+  }
+
   .banner-text h2 {
-    font-size: 1.6rem;
+    font-size: 1.5rem;
   }
 
   .client-copy-alt {
-    font-size: 1rem;
+    font-size: 0.95rem;
+    line-height: 1.6;
   }
 
   .home-dashboard-section {
-    padding: 50px 16px;
+    padding: 40px 16px;
+  }
+
+  .dashboard-text h2 {
+    font-size: 2rem;
   }
 
   .news-header h3 {
@@ -958,15 +1008,21 @@ html, body {
 
   .news-content h4 {
     font-size: 0.9rem;
+    margin-bottom: 6px;
   }
 
   .news-description {
     font-size: 0.8rem !important;
-    -webkit-line-clamp: 2 !important;
+    line-height: 1.4;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 3 !important; /* Limits text heights gracefully on small hardware */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: auto;
   }
 
   .news-image-wrapper {
-    height: 150px;
+    height: 140px;
   }
 
   .news-content {
