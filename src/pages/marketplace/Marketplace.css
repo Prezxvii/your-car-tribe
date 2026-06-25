@@ -642,18 +642,18 @@
 
 /* 📱 Small Tablets & Mobile Devices (Max 768px) */
 @media (max-width: 768px) {
-  /* Clean Hero Resets - Neutralizes the negative margin causing the navigation bar cutoff */
+  /* Clean Hero Resets - Removes rigid heights causing card overlaps */
   .market-hero {
     height: auto !important;
     min-height: auto !important;
-    margin-top: 0 !important; /* Forces the hero container to sit neatly below the navigation bar */
+    margin-top: 0 !important;
     padding: 0 !important;
     background-position: center center;
   }
 
   .hero-overlay {
     height: auto !important;
-    padding: 30px 20px 20px 20px !important; /* Tightens space so elements stack perfectly beneath the nav */
+    padding: 100px 20px 30px 20px !important;
     display: flex;
     flex-direction: column;
     align-items: center;
